@@ -122,33 +122,6 @@ BUAA_Compiler/fast:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/build
 .PHONY : BUAA_Compiler/fast
 
-main.obj: main.cpp.obj
-
-.PHONY : main.obj
-
-# target to build an object file
-main.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/main.cpp.obj
-.PHONY : main.cpp.obj
-
-main.i: main.cpp.i
-
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/main.cpp.s
-.PHONY : main.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -158,9 +131,6 @@ help:
 	@echo ... BUAA_Compiler
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... main.obj
-	@echo ... main.i
-	@echo ... main.s
 .PHONY : help
 
 

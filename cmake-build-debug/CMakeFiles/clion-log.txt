@@ -1,4 +1,11 @@
 "E:\ProgramSoftware\CLion 2019.3.6\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=E:/ProgramSoftware/mingw64/bin/mingw32-make.exe -DCMAKE_C_COMPILER=E:/ProgramSoftware/LLVM/bin/clang.exe -DCMAKE_CXX_COMPILER=E:/ProgramSoftware/LLVM/bin/clang++.exe -D CMAKE_C_COMPILER= E:\ProgramSoftware\LLVM\bin\clang.exe -D CMAKE_CXX_COMPILER= E:\ProgramSoftware\LLVM\bin\clang++.exe -G "CodeBlocks - MinGW Makefiles" E:\ProgramCode\Project\BUAA_Compiler
+-- Configuring done
+You have changed variables that require your cache to be deleted.
+Configure will be re-run and you may have to reset some variables.
+The following variables have changed:
+CMAKE_C_COMPILER= 
+CMAKE_CXX_COMPILER= 
+
 -- The C compiler identification is GNU 8.1.0
 -- The CXX compiler identification is GNU 8.1.0
 -- Check for working C compiler: E:/ProgramSoftware/mingw64/bin/gcc.exe
@@ -14,5 +21,7 @@
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
 -- Configuring done
+CMake Error: Cannot determine link language for target "BUAA_Compiler".
+CMake Error: CMake can not determine linker language for target: BUAA_Compiler
 -- Generating done
--- Build files have been written to: E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug
+CMake Generate step failed.  Build files cannot be regenerated correctly.

@@ -80,7 +80,7 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/main.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/testfile4.txt">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/CMakeLists.txt">

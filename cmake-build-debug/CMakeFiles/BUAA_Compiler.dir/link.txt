@@ -1,3 +1,0 @@
-"E:\ProgramSoftware\CLion 2019.3.6\bin\cmake\win\bin\cmake.exe" -E remove -f CMakeFiles\BUAA_Compiler.dir/objects.a
-E:\ProgramSoftware\mingw64\bin\ar.exe cr CMakeFiles\BUAA_Compiler.dir/objects.a @CMakeFiles\BUAA_Compiler.dir\objects1.rsp
-E:\ProgramSoftware\mingw64\bin\g++.exe -g   -Wl,--whole-archive CMakeFiles\BUAA_Compiler.dir/objects.a -Wl,--no-whole-archive  -o BUAA_Compiler.exe -Wl,--out-implib,libBUAA_Compiler.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\BUAA_Compiler.dir\linklibs.rsp
