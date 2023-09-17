@@ -122,6 +122,87 @@ BUAA_Compiler/fast:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/build
 .PHONY : BUAA_Compiler/fast
 
+src/Lexer/Lexer.obj: src/Lexer/Lexer.cpp.obj
+
+.PHONY : src/Lexer/Lexer.obj
+
+# target to build an object file
+src/Lexer/Lexer.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj
+.PHONY : src/Lexer/Lexer.cpp.obj
+
+src/Lexer/Lexer.i: src/Lexer/Lexer.cpp.i
+
+.PHONY : src/Lexer/Lexer.i
+
+# target to preprocess a source file
+src/Lexer/Lexer.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.i
+.PHONY : src/Lexer/Lexer.cpp.i
+
+src/Lexer/Lexer.s: src/Lexer/Lexer.cpp.s
+
+.PHONY : src/Lexer/Lexer.s
+
+# target to generate assembly for a file
+src/Lexer/Lexer.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.s
+.PHONY : src/Lexer/Lexer.cpp.s
+
+src/Lexer/Token.obj: src/Lexer/Token.cpp.obj
+
+.PHONY : src/Lexer/Token.obj
+
+# target to build an object file
+src/Lexer/Token.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj
+.PHONY : src/Lexer/Token.cpp.obj
+
+src/Lexer/Token.i: src/Lexer/Token.cpp.i
+
+.PHONY : src/Lexer/Token.i
+
+# target to preprocess a source file
+src/Lexer/Token.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.i
+.PHONY : src/Lexer/Token.cpp.i
+
+src/Lexer/Token.s: src/Lexer/Token.cpp.s
+
+.PHONY : src/Lexer/Token.s
+
+# target to generate assembly for a file
+src/Lexer/Token.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.s
+.PHONY : src/Lexer/Token.cpp.s
+
+src/main.obj: src/main.cpp.obj
+
+.PHONY : src/main.obj
+
+# target to build an object file
+src/main.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj
+.PHONY : src/main.cpp.obj
+
+src/main.i: src/main.cpp.i
+
+.PHONY : src/main.i
+
+# target to preprocess a source file
+src/main.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/main.cpp.i
+.PHONY : src/main.cpp.i
+
+src/main.s: src/main.cpp.s
+
+.PHONY : src/main.s
+
+# target to generate assembly for a file
+src/main.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/main.cpp.s
+.PHONY : src/main.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -131,6 +212,15 @@ help:
 	@echo ... BUAA_Compiler
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... src/Lexer/Lexer.obj
+	@echo ... src/Lexer/Lexer.i
+	@echo ... src/Lexer/Lexer.s
+	@echo ... src/Lexer/Token.obj
+	@echo ... src/Lexer/Token.i
+	@echo ... src/Lexer/Token.s
+	@echo ... src/main.obj
+	@echo ... src/main.i
+	@echo ... src/main.s
 .PHONY : help
 
 

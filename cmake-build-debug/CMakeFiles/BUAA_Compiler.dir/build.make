@@ -56,6 +56,69 @@ include CMakeFiles/BUAA_Compiler.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/BUAA_Compiler.dir/flags.make
 
+CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: ../src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\main.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\main.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/main.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\main.cpp > CMakeFiles\BUAA_Compiler.dir\src\main.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/main.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\main.cpp -o CMakeFiles\BUAA_Compiler.dir\src\main.cpp.s
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj: ../src/Lexer/Lexer.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\Lexer\Lexer.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Lexer.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Lexer.cpp > CMakeFiles\BUAA_Compiler.dir\src\Lexer\Lexer.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Lexer.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Lexer\Lexer.cpp.s
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj: ../src/Lexer/Token.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\Lexer\Token.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Token.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Token.cpp > CMakeFiles\BUAA_Compiler.dir\src\Lexer\Token.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Lexer\Token.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Lexer\Token.cpp.s
+
+# Object files for target BUAA_Compiler
+BUAA_Compiler_OBJECTS = \
+"CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj" \
+"CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj" \
+"CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj"
+
+# External object files for target BUAA_Compiler
+BUAA_Compiler_EXTERNAL_OBJECTS =
+
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/build.make
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/linklibs.rsp
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/objects1.rsp
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable BUAA_Compiler.exe"
+	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\BUAA_Compiler.dir\link.txt --verbose=$(VERBOSE)
+
+# Rule to build all files generated by this target.
+CMakeFiles/BUAA_Compiler.dir/build: BUAA_Compiler.exe
+
+.PHONY : CMakeFiles/BUAA_Compiler.dir/build
+
 CMakeFiles/BUAA_Compiler.dir/clean:
 	$(CMAKE_COMMAND) -P CMakeFiles\BUAA_Compiler.dir\cmake_clean.cmake
 .PHONY : CMakeFiles/BUAA_Compiler.dir/clean

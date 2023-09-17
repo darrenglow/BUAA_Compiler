@@ -80,7 +80,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/testfile4.txt">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/main.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/CMakeLists.txt">

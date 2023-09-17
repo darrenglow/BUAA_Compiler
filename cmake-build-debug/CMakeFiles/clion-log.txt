@@ -21,7 +21,5 @@ CMAKE_CXX_COMPILER=
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
 -- Configuring done
-CMake Error: Cannot determine link language for target "BUAA_Compiler".
-CMake Error: CMake can not determine linker language for target: BUAA_Compiler
 -- Generating done
-CMake Generate step failed.  Build files cannot be regenerated correctly.
+-- Build files have been written to: E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug

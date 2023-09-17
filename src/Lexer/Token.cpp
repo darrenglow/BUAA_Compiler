@@ -1,0 +1,24 @@
+//
+// Created by 安达楷 on 2023/9/13.
+//
+#include "Token.h"
+#include <iostream>
+
+//与tokenType一一对应
+std::string Token::type2str[50] = {
+        "IDENFR", "INTCON", "STRCON", "MAINTK", "CONSTTK", "INTTK", "BREAKTK",
+        "CONTINUETK", "IFTK", "ELSETK", "NOT", "AND", "OR", "WHILETK", "GETINTTK",
+        "PRINTFTK", "RETURNTK", "PLUS", "MINU", "VOIDTK", "MULT", "DIV", "MOD", "LSS",
+        "LEQ", "GRE", "GEQ", "EQL", "NEQ", "ASSIGN", "SEMICN", "COMMA", "LPARENT", "RPARENT",
+        "LBRACK", "RBRACK", "LBRACE", "RBRACE", "UNDEFINE"
+//        "Ident", "IntConst", "FormatString", "main", "const", "int", "break",
+//        "continue", "if", "else", "!", "&&", "||", "while", "getint",
+//        "printf", "return", "+", "-", "void", "*", "/", "%", "<",
+//        "<=", ">", ">=", "==", "!=", "=", ";", ",", "(", ")",
+//        "[", "]", "{", "}"
+};
+
+std::ostream& operator<<(std::ostream &ostream, const Token &token) {
+    ostream << Token::type2str[token.tokenType] << " " << token.content;
+    return ostream;
+}
