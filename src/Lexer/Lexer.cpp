@@ -14,7 +14,7 @@ std::map<std::string, Token::TokenType> Lexer::str2type = {
         {"continue", Token::TokenType::CONTINUETK},
         {"if"      , Token::TokenType::IFTK      },
         {"else"    , Token::TokenType::ELSETK    },
-        {"while"   , Token::TokenType::WHILETK   },
+        {"for"   , Token::TokenType::FORTK   },
         {"getint"  , Token::TokenType::GETINTTK  },
         {"printf"  , Token::TokenType::PRINTFTK  },
         {"return"  , Token::TokenType::RETURNTK  },
@@ -75,7 +75,7 @@ void Lexer::nextToken() {
     if (ch == '\0'){
         return;
     }
-    if (ch == '\n' || ch == '\r' || ch == ' ' || ch == '\r') {
+    if (ch == '\n' || ch == '\r' || ch == ' ' || ch == '\t') {
         ch = getChar();
         return;
     }
