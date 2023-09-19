@@ -8,7 +8,12 @@ CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj: ../src/Lexer/Token.h
 CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj: ../src/Lexer/Token.cpp
 CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj: ../src/Lexer/Token.h
 
+CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj: ../src/Lexer/Token.h
+CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj: ../src/Parser/Parser.cpp
+CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj: ../src/Parser/Parser.h
+
 CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: ../src/Lexer/Lexer.h
 CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: ../src/Lexer/Token.h
+CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: ../src/Parser/Parser.h
 CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj: ../src/main.cpp
 

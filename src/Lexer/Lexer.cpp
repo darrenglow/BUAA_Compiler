@@ -79,7 +79,7 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         auto iter = str2type.find(str);
-        tokens.addToken(new Token(iter == str2type.end() ? Token::IDENFR : iter->second, str, curLine));
+        tokenList.addToken(new Token(iter == str2type.end() ? Token::IDENFR : iter->second, str, curLine));
     }
     else if (isdigit(ch)) {
         std::string str;
@@ -87,11 +87,11 @@ void Lexer::nextToken() {
             str.push_back(ch);
             ch = getChar();
         }
-        tokens.addToken(new Token(Token::INTCON, str, curLine, atoi(str.c_str())));
+        tokenList.addToken(new Token(Token::INTCON, str, curLine, atoi(str.c_str())));
     }
     else if (std::string("()[]{},;%*-+").find(ch) != std::string::npos) {
         tokenStr.push_back(ch);
-        tokens.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
+        tokenList.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
         ch = getChar();
     }
     else if (std::string("<>!=").find(ch) != std::string::npos) {
@@ -101,18 +101,18 @@ void Lexer::nextToken() {
             tokenStr.push_back(ch);
             ch = getChar();
         }
-        tokens.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
+        tokenList.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
     }
     else if (ch == '|') {
         ch = getChar();
         if (ch == '|')
-            tokens.addToken(new Token(str2type.find("||")->second, "||", curLine));
+            tokenList.addToken(new Token(str2type.find("||")->second, "||", curLine));
         ch = getChar();
     }
     else if (ch == '&') {
         ch = getChar();
         if (ch == '&')
-            tokens.addToken(new Token(str2type.find("&&")->second, "&&", curLine));
+            tokenList.addToken(new Token(str2type.find("&&")->second, "&&", curLine));
         ch = getChar();
     }
     else if (ch == '/') {
@@ -133,7 +133,7 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         else
-            tokens.addToken(new Token(Token::DIV, "/", curLine));
+            tokenList.addToken(new Token(Token::DIV, "/", curLine));
     }
 
     else if (ch == '"') {
@@ -144,24 +144,24 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         str.push_back('"');
-        tokens.addToken(new Token(Token::STRCON, str, curLine));
+        tokenList.addToken(new Token(Token::STRCON, str, curLine));
         ch = getChar();
     }
 
     else {
-        tokens.addToken(new Token(Token::UNDEFINE, "", curLine));
+        tokenList.addToken(new Token(Token::UNDEFINE, "", curLine));
         ch = getChar();
     }
 }
 
 
 extern std::ofstream output;
-void Lexer::printTokens() const {
-    for (auto token : tokens.) {
+void Lexer::printTokens() {
+    for (auto token : tokenList.getTokens()) {
         output << Token::type2str[token->tokenType] << " " << token->content << std::endl;
     }
 }
 
-TokenList& Lexer::getTokens() const {
-    return tokens;
+TokenList& Lexer::getTokens() {
+    return tokenList;
 }

@@ -24,6 +24,9 @@ std::ostream& operator<<(std::ostream &ostream, const Token &token) {
 }
 
 
+std::vector<Token *> TokenList::getTokens() {
+    return tokens;
+}
 void TokenList::addToken(Token *token) {
     tokens.push_back(token);
 }

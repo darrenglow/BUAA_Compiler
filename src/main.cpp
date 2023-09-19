@@ -5,10 +5,10 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
-#define LexicalAnalysis
+//#define LexicalAnalysis
 #define ParseAnalysis
 
-static const std::string prePath = "../Test/LexicalAnalysis/";
+static const std::string prePath = "../Test/";
 //static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
@@ -24,6 +24,7 @@ int main()
     auto *lexer = new Lexer(fileStr);
     lexer -> lex();
     auto *parser = new Parser(lexer->getTokens());
+
 #ifdef LexicalAnalysis
     lexer->printTokens();
 #endif

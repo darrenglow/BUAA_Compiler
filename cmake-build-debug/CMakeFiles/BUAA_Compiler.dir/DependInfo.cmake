@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj"
   "E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj"
   "E:/ProgramCode/Project/BUAA_Compiler/src/main.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

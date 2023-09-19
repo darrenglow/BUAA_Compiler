@@ -92,6 +92,9 @@
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>

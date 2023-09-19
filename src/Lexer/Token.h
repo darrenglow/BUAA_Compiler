@@ -33,6 +33,7 @@ class TokenList{
 private:
     std::vector<Token*> tokens;
 public:
+    std::vector<Token*> getTokens();
     void addToken(Token* token);
 };
 #endif //BUAA_COMPILER_TOKEN_H

@@ -10,9 +10,11 @@
 
 class Parser{
 private:
-    TokenList &tokens;
+    TokenList &tokenList;
 public:
-    Parser(TokenList& tokens_) : tokens(tokens_) {}
+    explicit Parser(TokenList& tokenList_) : tokenList(tokenList_) {}
+
+    void parse();
     void printParse();
 };
 

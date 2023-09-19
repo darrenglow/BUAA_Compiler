@@ -13,7 +13,7 @@
 
 class Lexer{
 private:
-    TokenList tokens;
+    TokenList tokenList;
     std::string fileStr;
     int curLine = 1;
     int pos = 0;
@@ -26,7 +26,7 @@ public:
     void lex();
     char getChar();
     void nextToken();
-    void printTokens() const;
-    TokenList& getTokens() const;
+    void printTokens();
+    TokenList& getTokens();
 };
 #endif //BUAA_COMPILER_LEXER_H
