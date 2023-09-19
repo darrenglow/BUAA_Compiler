@@ -13,7 +13,7 @@
 
 class Lexer{
 private:
-    std::vector<Token*> tokens;
+    TokenList tokens;
     std::string fileStr;
     int curLine = 1;
     int pos = 0;
@@ -22,8 +22,6 @@ private:
 public:
     Lexer(std::string& fileStr_) : fileStr(fileStr_) {}
 
-    std::vector<Token*> getTokens() const;
-    std::string getFileStr() const;
 
     void lex();
     char getChar();

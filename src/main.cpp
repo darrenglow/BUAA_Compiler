@@ -4,8 +4,8 @@
 #include <string>
 #include "Lexer/Lexer.h"
 
-//static const std::string prePath = "../Test/LexicalAnalysis/";
-static const std::string prePath = "./";
+static const std::string prePath = "../Test/LexicalAnalysis/";
+//static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
 

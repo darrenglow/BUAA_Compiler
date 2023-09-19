@@ -7,50 +7,42 @@
 extern std::ifstream input;
 
 std::map<std::string, Token::TokenType> Lexer::str2type = {
-        {"main"    , Token::TokenType::MAINTK    },
-        {"const"   , Token::TokenType::CONSTTK   },
-        {"int"     , Token::TokenType::INTTK     },
-        {"break"   , Token::TokenType::BREAKTK   },
-        {"continue", Token::TokenType::CONTINUETK},
-        {"if"      , Token::TokenType::IFTK      },
-        {"else"    , Token::TokenType::ELSETK    },
-        {"for"   , Token::TokenType::FORTK   },
-        {"getint"  , Token::TokenType::GETINTTK  },
-        {"printf"  , Token::TokenType::PRINTFTK  },
-        {"return"  , Token::TokenType::RETURNTK  },
-        {"void"    , Token::TokenType::VOIDTK    },
-        {"+"  , Token::TokenType::PLUS    },
-        {"-"  , Token::TokenType::MINU    },
-        {"*"  , Token::TokenType::MULT    },
-        {"/"  , Token::TokenType::DIV     },
-        {"%"  , Token::TokenType::MOD     },
-        {";"  , Token::TokenType::SEMICN  },
-        {","  , Token::TokenType::COMMA   },
-        {"("  , Token::TokenType::LPARENT},
-        {")"  , Token::TokenType::RPARENT},
-        {"["  , Token::TokenType::LBRACK },
-        {"]"  , Token::TokenType::RBRACK },
-        {"{"  , Token::TokenType::LBRACE },
-        {"}"  , Token::TokenType::RBRACE },
-        {"&&" , Token::TokenType::AND     },
-        {"||" , Token::TokenType::OR      },
-        {"<"  , Token::TokenType::LSS     },
-        {"<=" , Token::TokenType::LEQ     },
-        {">"  , Token::TokenType::GRE     },
-        {">=" , Token::TokenType::GEQ     },
-        {"="  , Token::TokenType::ASSIGN  },
-        {"==" , Token::TokenType::EQL     },
-        {"!"  , Token::TokenType::NOT     },
-        {"!=" , Token::TokenType::NEQ     }
+        {"main"    , Token::MAINTK    },
+        {"const"   , Token::CONSTTK   },
+        {"int"     , Token::INTTK     },
+        {"break"   , Token::BREAKTK   },
+        {"continue", Token::CONTINUETK},
+        {"if"      , Token::IFTK      },
+        {"else"    , Token::ELSETK    },
+        {"for"   , Token::FORTK   },
+        {"getint"  , Token::GETINTTK  },
+        {"printf"  , Token::PRINTFTK  },
+        {"return"  , Token::RETURNTK  },
+        {"void"    , Token::VOIDTK    },
+        {"+"  , Token::PLUS    },
+        {"-"  , Token::MINU    },
+        {"*"  , Token::MULT    },
+        {"/"  , Token::DIV     },
+        {"%"  , Token::MOD     },
+        {";"  , Token::SEMICN  },
+        {","  , Token::COMMA   },
+        {"("  , Token::LPARENT},
+        {")"  , Token::RPARENT},
+        {"["  , Token::LBRACK },
+        {"]"  , Token::RBRACK },
+        {"{"  , Token::LBRACE },
+        {"}"  , Token::RBRACE },
+        {"&&" , Token::AND     },
+        {"||" , Token::OR      },
+        {"<"  , Token::LSS     },
+        {"<=" , Token::LEQ     },
+        {">"  , Token::GRE     },
+        {">=" , Token::GEQ     },
+        {"="  , Token::ASSIGN  },
+        {"==" , Token::EQL     },
+        {"!"  , Token::NOT     },
+        {"!=" , Token::NEQ     }
 };
-
-std::vector<Token*> Lexer::getTokens() const {
-    return tokens;
-}
-
-std::string Lexer::getFileStr() const {
-    return fileStr;
-}
 
 char Lexer::getChar() {
     char c = '\0';
@@ -87,7 +79,7 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         auto iter = str2type.find(str);
-        tokens.push_back(new Token(iter == str2type.end() ? Token::TokenType::IDENFR : iter->second, str, curLine));
+        tokens.addToken(new Token(iter == str2type.end() ? Token::IDENFR : iter->second, str, curLine));
     }
     else if (isdigit(ch)) {
         std::string str;
@@ -95,11 +87,11 @@ void Lexer::nextToken() {
             str.push_back(ch);
             ch = getChar();
         }
-        tokens.push_back(new Token(Token::TokenType::INTCON, str, curLine, atoi(str.c_str())));
+        tokens.addToken(new Token(Token::INTCON, str, curLine, atoi(str.c_str())));
     }
     else if (std::string("()[]{},;%*-+").find(ch) != std::string::npos) {
         tokenStr.push_back(ch);
-        tokens.push_back(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
+        tokens.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
         ch = getChar();
     }
     else if (std::string("<>!=").find(ch) != std::string::npos) {
@@ -109,18 +101,18 @@ void Lexer::nextToken() {
             tokenStr.push_back(ch);
             ch = getChar();
         }
-        tokens.push_back(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
+        tokens.addToken(new Token(str2type.find(tokenStr)->second, tokenStr, curLine));
     }
     else if (ch == '|') {
         ch = getChar();
         if (ch == '|')
-            tokens.push_back(new Token(str2type.find("||")->second, "||", curLine));
+            tokens.addToken(new Token(str2type.find("||")->second, "||", curLine));
         ch = getChar();
     }
     else if (ch == '&') {
         ch = getChar();
         if (ch == '&')
-            tokens.push_back(new Token(str2type.find("&&")->second, "&&", curLine));
+            tokens.addToken(new Token(str2type.find("&&")->second, "&&", curLine));
         ch = getChar();
     }
     else if (ch == '/') {
@@ -141,7 +133,7 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         else
-            tokens.push_back(new Token(Token::TokenType::DIV, "/", curLine));
+            tokens.addToken(new Token(Token::DIV, "/", curLine));
     }
 
     else if (ch == '"') {
@@ -152,12 +144,12 @@ void Lexer::nextToken() {
             ch = getChar();
         }
         str.push_back('"');
-        tokens.push_back(new Token(Token::TokenType::STRCON, str, curLine));
+        tokens.addToken(new Token(Token::STRCON, str, curLine));
         ch = getChar();
     }
 
     else {
-        tokens.push_back(new Token(Token::TokenType::UNDEFINE, "", curLine));
+        tokens.addToken(new Token(Token::UNDEFINE, "", curLine));
         ch = getChar();
     }
 }
@@ -165,7 +157,5 @@ void Lexer::nextToken() {
 
 extern std::ofstream output;
 void Lexer::printTokens() const {
-    for (auto& token : tokens) {
-        output << *token << std::endl;
-    }
+    output << tokens;
 }
