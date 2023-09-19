@@ -157,5 +157,11 @@ void Lexer::nextToken() {
 
 extern std::ofstream output;
 void Lexer::printTokens() const {
-    output << tokens;
+    for (auto token : tokens.) {
+        output << Token::type2str[token->tokenType] << " " << token->content << std::endl;
+    }
+}
+
+TokenList& Lexer::getTokens() const {
+    return tokens;
 }

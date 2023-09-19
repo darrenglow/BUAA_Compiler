@@ -27,5 +27,6 @@ public:
     char getChar();
     void nextToken();
     void printTokens() const;
+    TokenList& getTokens() const;
 };
 #endif //BUAA_COMPILER_LEXER_H

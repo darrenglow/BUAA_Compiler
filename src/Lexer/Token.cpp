@@ -27,11 +27,5 @@ std::ostream& operator<<(std::ostream &ostream, const Token &token) {
 void TokenList::addToken(Token *token) {
     tokens.push_back(token);
 }
-std::ostream& operator<<(std::ostream &ostream, const TokenList &tokenList) {
-    for (auto token : tokenList.tokens) {
-        ostream << Token::type2str[token->tokenType] << " " << token->content << std::endl;
-    }
-    return ostream;
-}
 
 

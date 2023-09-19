@@ -10,9 +10,10 @@
 
 class Parser{
 private:
-    std::vector<Token*> tokens;
+    TokenList &tokens;
 public:
-    Parser(std::vector<Token*>& tokens_) : tokens(tokens_){}
+    Parser(TokenList& tokens_) : tokens(tokens_) {}
+    void printParse();
 };
 
 #endif //BUAA_COMPILER_PARSER_H

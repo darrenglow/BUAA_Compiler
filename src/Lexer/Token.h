@@ -27,11 +27,12 @@ public:
         : tokenType(tokenType_), content(content_), line(line_), val(val_) {};
     friend std::ostream &operator<<(std::ostream &ostream, const Token &token);
 };
+
+
 class TokenList{
 private:
     std::vector<Token*> tokens;
 public:
     void addToken(Token* token);
-    friend std::ostream &operator<<(std::ostream &ostream, const TokenList &tokenList);
 };
 #endif //BUAA_COMPILER_TOKEN_H

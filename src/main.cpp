@@ -3,6 +3,10 @@
 #include <sstream>
 #include <string>
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
+
+#define LexicalAnalysis
+#define ParseAnalysis
 
 static const std::string prePath = "../Test/LexicalAnalysis/";
 //static const std::string prePath = "./";
@@ -19,9 +23,13 @@ int main()
     // Lexer Initialization
     auto *lexer = new Lexer(fileStr);
     lexer -> lex();
-
+    auto *parser = new Parser(lexer->getTokens());
+#ifdef LexicalAnalysis
     lexer->printTokens();
-
+#endif
+#ifdef ParseAnalysis
+    parser->printParse();
+#endif
     return 0;
 }
 
