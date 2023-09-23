@@ -176,6 +176,33 @@ src/Lexer/Token.cpp.s:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.s
 .PHONY : src/Lexer/Token.cpp.s
 
+src/Parser/AST.obj: src/Parser/AST.cpp.obj
+
+.PHONY : src/Parser/AST.obj
+
+# target to build an object file
+src/Parser/AST.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj
+.PHONY : src/Parser/AST.cpp.obj
+
+src/Parser/AST.i: src/Parser/AST.cpp.i
+
+.PHONY : src/Parser/AST.i
+
+# target to preprocess a source file
+src/Parser/AST.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.i
+.PHONY : src/Parser/AST.cpp.i
+
+src/Parser/AST.s: src/Parser/AST.cpp.s
+
+.PHONY : src/Parser/AST.s
+
+# target to generate assembly for a file
+src/Parser/AST.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.s
+.PHONY : src/Parser/AST.cpp.s
+
 src/Parser/Parser.obj: src/Parser/Parser.cpp.obj
 
 .PHONY : src/Parser/Parser.obj
@@ -245,6 +272,9 @@ help:
 	@echo ... src/Lexer/Token.obj
 	@echo ... src/Lexer/Token.i
 	@echo ... src/Lexer/Token.s
+	@echo ... src/Parser/AST.obj
+	@echo ... src/Parser/AST.i
+	@echo ... src/Parser/AST.s
 	@echo ... src/Parser/Parser.obj
 	@echo ... src/Parser/Parser.i
 	@echo ... src/Parser/Parser.s

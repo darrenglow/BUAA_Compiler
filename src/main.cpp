@@ -8,8 +8,8 @@
 //#define LexicalAnalysis
 #define ParseAnalysis
 
-static const std::string prePath = "../Test/";
-//static const std::string prePath = "./";
+//static const std::string prePath = "../Test/";
+static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
 
@@ -24,12 +24,12 @@ int main()
     auto *lexer = new Lexer(fileStr);
     lexer -> lex();
     auto *parser = new Parser(lexer->getTokens());
-
+    parser -> parse();
 #ifdef LexicalAnalysis
     lexer->printTokens();
 #endif
 #ifdef ParseAnalysis
-    parser->printParse();
+    parser -> printAST();
 #endif
     return 0;
 }

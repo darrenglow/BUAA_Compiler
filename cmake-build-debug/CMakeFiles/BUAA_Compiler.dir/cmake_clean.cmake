@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "BUAA_Compiler.pdb"
   "CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj"
   "CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj"
+  "CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj"
   "CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj"
   "CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj"
   "libBUAA_Compiler.dll.a"
