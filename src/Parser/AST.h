@@ -83,7 +83,7 @@ class UnaryOp;
 class AddExp{
 public:
     std::vector<MulExp*> mulExps;
-    std::vector<UnaryOp*> unaryOps;
+    std::vector<Token*> ops;
     DECLARE_OSTREAM(AddExp);
 };
 

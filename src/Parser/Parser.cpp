@@ -106,7 +106,7 @@ AddExp *Parser::parseAddExp() {
     addExp->mulExps.push_back(parseMulExp());
     while (tokenList.get()->tokenType == Token::PLUS ||
     tokenList.get()->tokenType == Token::MINU){
-        addExp->unaryOps.push_back(parseUnaryOp());
+        addExp->ops.push_back(tokenList.pop());
         addExp->mulExps.push_back(parseMulExp());
     }
     return addExp;
@@ -300,7 +300,9 @@ FuncFParam *Parser::parseFuncFParam() {
             tokenList.popExpect(Token::RBRACK);
         }
     }
-    funcFParam->isArray = false;
+    else {
+        funcFParam->isArray = false;
+    }
     return funcFParam;
 }
 
@@ -364,8 +366,13 @@ Stmt *Parser::parseStmt() {
     else if (tokenList.get()->tokenType == Token::LBRACE){
         stmt->blockStmt = parseBlockStmt();
     }
+    //exp->addexp->mulexp->unaryexp->primaryexp->'('
+    //                             ->ident '(
+    //                             ->unaryop
     else if ((tokenList.get()->tokenType == Token::IDENFR && tokenList.getNext(1)->tokenType == Token::LPARENT) ||
-    tokenList.get()->tokenType == Token::COMMA) {
+    tokenList.get()->tokenType == Token::LPARENT ||
+    tokenList.get()->tokenType == Token::PLUS || tokenList.get()->tokenType == Token::MINU ||
+    tokenList.get()->tokenType == Token::SEMICN) {
         stmt->expStmt = parseExpStmt();
     }
     else {
@@ -473,7 +480,7 @@ FORStmt *Parser::parseFORStmt() {
         forStmt->cond = parseCond();
     }
     tokenList.popExpect(Token::SEMICN);
-    if (tokenList.get()->tokenType != Token::SEMICN){
+    if (tokenList.get()->tokenType != Token::RPARENT){
         forStmt->forStmt2 = parseForStmt();
     }
     tokenList.popExpect(Token::RPARENT);

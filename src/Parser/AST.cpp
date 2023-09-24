@@ -8,10 +8,10 @@
 
 std::ostream& operator<<(std::ostream &ostream, const CompUnit &obj) {
     for (auto decl : obj.decls) {
-        ostream << *decl;
+        ostream << *decl << std::endl;
     }
     for (auto funcDef : obj.funcDefs) {
-        ostream << *funcDef;
+        ostream << *funcDef << std::endl;
     }
     ostream << *obj.mainFuncDef << std::endl;
     ostream << "<CompUnit>";
@@ -83,7 +83,7 @@ std::ostream& operator<<(std::ostream &ostream, const VarDecl &obj) {
     ostream << *obj.varDefs.at(0) << std::endl;
     for (int i = 1; i < obj.varDefs.size(); i ++ ){
         ostream << Token::COMMA << std::endl;
-        ostream << obj.varDefs.at(i) << std::endl;
+        ostream << *obj.varDefs.at(i) << std::endl;
     }
     ostream << Token::SEMICN << std::endl;
     ostream << "<VarDecl>";
@@ -99,7 +99,7 @@ std::ostream& operator<<(std::ostream &ostream, const VarDef &obj) {
     }
     if (obj.initval != nullptr){
         ostream << Token::ASSIGN << std::endl;
-        ostream << obj.initval << std::endl;
+        ostream << *obj.initval << std::endl;
     }
     ostream << "<VarDef>";
     return ostream;
@@ -113,9 +113,9 @@ std::ostream& operator<<(std::ostream &ostream, const InitVal &obj) {
         ostream << Token::LBRACE << std::endl;
         if (!obj.initVals.empty()) {
             ostream << *obj.initVals.at(0) << std::endl;
-            for (auto initVal : obj.initVals) {
+            for (int i = 1; i < obj.initVals.size(); i ++ ){
                 ostream << Token::COMMA << std::endl;
-                ostream << *initVal << std::endl;
+                ostream << *obj.initVals.at(i) << std::endl;
             }
         }
         ostream << Token::RBRACE << std::endl;
@@ -390,9 +390,15 @@ std::ostream& operator<<(std::ostream &ostream, const UnaryExp &obj) {
     }
     else if (obj.ident != nullptr) {
         ostream << *obj.ident << std::endl;
+        ostream << Token::LPARENT << std::endl;
+        if (obj.funcRParams != nullptr) {
+            ostream << *obj.funcRParams << std::endl;
+        }
+        ostream << Token::RPARENT << std::endl;
     }
     else if (obj.unaryOp != nullptr) {
-        ostream << *obj.unaryOp << *obj.unaryExp << std::endl;
+        ostream << *obj.unaryOp << std::endl;
+        ostream << *obj.unaryExp << std::endl;
     }
     ostream << "<UnaryExp>";
     return ostream;
@@ -417,6 +423,7 @@ std::ostream& operator<<(std::ostream &ostream, const FuncRParams &obj) {
 std::ostream& operator<<(std::ostream &ostream, const MulExp &obj) {
     ostream << *obj.unaryExps.at(0) << std::endl;
     for (int i = 1; i < obj.unaryExps.size(); i ++ ) {
+        ostream << "<MulExp>" << std::endl;
         ostream << *obj.ops.at(i - 1) << std::endl;
         ostream << *obj.unaryExps.at(i) << std::endl;
     }
@@ -427,7 +434,8 @@ std::ostream& operator<<(std::ostream &ostream, const MulExp &obj) {
 std::ostream& operator<<(std::ostream &ostream, const AddExp &obj) {
     ostream << *obj.mulExps.at(0) << std::endl;
     for (int i = 1; i < obj.mulExps.size(); i ++ ) {
-        ostream << *obj.unaryOps.at(i - 1) << std::endl;
+        ostream << "<AddExp>" << std::endl;
+        ostream << *obj.ops.at(i - 1) << std::endl;
         ostream << *obj.mulExps.at(i) << std::endl;
     }
     ostream << "<AddExp>";
@@ -437,6 +445,7 @@ std::ostream& operator<<(std::ostream &ostream, const AddExp &obj) {
 std::ostream& operator<<(std::ostream &ostream, const RelExp &obj) {
     ostream << *obj.addExps.at(0) << std::endl;
     for (int i = 1; i < obj.addExps.size(); i ++ ) {
+        ostream << "<RelExp>" << std::endl;
         ostream << *obj.ops.at(i - 1) << std::endl;
         ostream << *obj.addExps.at(i) << std::endl;
     }
@@ -447,6 +456,7 @@ std::ostream& operator<<(std::ostream &ostream, const RelExp &obj) {
 std::ostream& operator<<(std::ostream &ostream, const EqExp &obj) {
     ostream << *obj.relExps.at(0) << std::endl;
     for (int i = 1; i < obj.relExps.size(); i ++ ) {
+        ostream << "<EqExp>" << std::endl;
         ostream << *obj.ops.at(i - 1) << std::endl;
         ostream << *obj.relExps.at(i) << std::endl;
     }
@@ -457,8 +467,9 @@ std::ostream& operator<<(std::ostream &ostream, const EqExp &obj) {
 std::ostream& operator<<(std::ostream &ostream, const LAndExp &obj) {
     ostream << *obj.eqExps.at(0) << std::endl;
     for (int i = 1; i < obj.eqExps.size(); i ++ ) {
+        ostream << "<LAndExp>" << std::endl;
         ostream << *obj.ops.at(i - 1) << std::endl;
-        ostream << *obj.ops.at(i) << std::endl;
+        ostream << *obj.eqExps.at(i) << std::endl;
     }
     ostream << "<LAndExp>";
     return ostream;
@@ -467,6 +478,7 @@ std::ostream& operator<<(std::ostream &ostream, const LAndExp &obj) {
 std::ostream& operator<<(std::ostream &ostream, const LOrExp &obj) {
     ostream << *obj.lAndExps.at(0) << std::endl;
     for (int i = 1; i < obj.lAndExps.size(); i ++ ) {
+        ostream << "<LOrExp>" << std::endl;
         ostream << *obj.ops.at(i - 1) << std::endl;
         ostream << *obj.lAndExps.at(i) << std::endl;
     }
