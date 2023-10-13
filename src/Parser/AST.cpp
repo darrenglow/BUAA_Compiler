@@ -4,6 +4,7 @@
 
 #include "AST.h"
 #include "../Lexer/Token.h"
+#include "../Visitor/Visitor.h"
 #include <iostream>
 
 std::ostream& operator<<(std::ostream &ostream, const CompUnit &obj) {
@@ -491,3 +492,76 @@ std::ostream& operator<<(std::ostream &ostream, const ConstExp &obj) {
     ostream << "<ConstExp>";
     return ostream;
 }
+
+bool ConstDef::isArray() {
+    return !constExps.empty();
+}
+
+bool ConstDef::isInit() {
+    return true;
+}
+
+bool VarDef::isArray() {
+    return !constExps.empty();
+}
+
+bool VarDef::isInit() {
+    return initval != nullptr;
+}
+
+bool ConstInitVal::isArray() {
+    return constExp == nullptr;
+}
+
+bool InitVal::isArray() {
+    return exp == nullptr;
+}
+
+int Exp::getDim() {
+    if (addExp != nullptr) {
+        if (!addExp->mulExps.empty()) {
+            if (!addExp->mulExps[0]->unaryExps.empty()) {
+                auto tmpUnaryExp = addExp->mulExps[0]->unaryExps[0];
+                return tmpUnaryExp->getDim();
+            }
+        }
+    }
+    std::cout << "Error in exp::getDim()" << std::endl;
+    return -1;
+}
+
+int UnaryExp::getDim() {
+    if (this->primaryExp != nullptr) {
+        this->primaryExp->getDim();
+    }
+    else if (this->ident != nullptr) {
+        // 如果是函数调用，就只会返回int型
+        return 0;
+    }
+    else if (this->unaryExp != nullptr) {
+        return this->getDim();
+    }
+    std::cout << "Error in UnaryExp::getDim" << std::endl;
+    return -1;
+}
+
+int PrimaryExp::getDim() {
+    if (this->lVal != nullptr) {
+        int formDim = this->lVal->exps.size();  // 看上去的维度
+
+        auto ident = this->lVal->ident;
+        auto name = ident->content;
+        auto valueSymbol = dynamic_cast<ValueSymbol*>(Visitor::curTable->getSymbol(name, true));
+        int realDim = (int)(valueSymbol->dims.size()) - formDim;   // 实际传入的维度
+        return realDim;
+    }
+    else if (this->number != nullptr) {
+        return 0;
+    }
+    else if (this->exp != nullptr) {
+        return this->exp->getDim();
+    }
+    std::cout << "error in PrimaryExp::getDIm" << std::endl;
+    return -1;
+}
+

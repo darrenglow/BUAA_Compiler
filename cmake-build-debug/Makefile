@@ -122,6 +122,33 @@ BUAA_Compiler/fast:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/build
 .PHONY : BUAA_Compiler/fast
 
+src/Error/ErrorTable.obj: src/Error/ErrorTable.cpp.obj
+
+.PHONY : src/Error/ErrorTable.obj
+
+# target to build an object file
+src/Error/ErrorTable.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj
+.PHONY : src/Error/ErrorTable.cpp.obj
+
+src/Error/ErrorTable.i: src/Error/ErrorTable.cpp.i
+
+.PHONY : src/Error/ErrorTable.i
+
+# target to preprocess a source file
+src/Error/ErrorTable.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.i
+.PHONY : src/Error/ErrorTable.cpp.i
+
+src/Error/ErrorTable.s: src/Error/ErrorTable.cpp.s
+
+.PHONY : src/Error/ErrorTable.s
+
+# target to generate assembly for a file
+src/Error/ErrorTable.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.s
+.PHONY : src/Error/ErrorTable.cpp.s
+
 src/Lexer/Lexer.obj: src/Lexer/Lexer.cpp.obj
 
 .PHONY : src/Lexer/Lexer.obj
@@ -230,6 +257,60 @@ src/Parser/Parser.cpp.s:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.s
 .PHONY : src/Parser/Parser.cpp.s
 
+src/Symbol/SymbolTable.obj: src/Symbol/SymbolTable.cpp.obj
+
+.PHONY : src/Symbol/SymbolTable.obj
+
+# target to build an object file
+src/Symbol/SymbolTable.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj
+.PHONY : src/Symbol/SymbolTable.cpp.obj
+
+src/Symbol/SymbolTable.i: src/Symbol/SymbolTable.cpp.i
+
+.PHONY : src/Symbol/SymbolTable.i
+
+# target to preprocess a source file
+src/Symbol/SymbolTable.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.i
+.PHONY : src/Symbol/SymbolTable.cpp.i
+
+src/Symbol/SymbolTable.s: src/Symbol/SymbolTable.cpp.s
+
+.PHONY : src/Symbol/SymbolTable.s
+
+# target to generate assembly for a file
+src/Symbol/SymbolTable.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.s
+.PHONY : src/Symbol/SymbolTable.cpp.s
+
+src/Visitor/Visitor.obj: src/Visitor/Visitor.cpp.obj
+
+.PHONY : src/Visitor/Visitor.obj
+
+# target to build an object file
+src/Visitor/Visitor.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj
+.PHONY : src/Visitor/Visitor.cpp.obj
+
+src/Visitor/Visitor.i: src/Visitor/Visitor.cpp.i
+
+.PHONY : src/Visitor/Visitor.i
+
+# target to preprocess a source file
+src/Visitor/Visitor.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.i
+.PHONY : src/Visitor/Visitor.cpp.i
+
+src/Visitor/Visitor.s: src/Visitor/Visitor.cpp.s
+
+.PHONY : src/Visitor/Visitor.s
+
+# target to generate assembly for a file
+src/Visitor/Visitor.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.s
+.PHONY : src/Visitor/Visitor.cpp.s
+
 src/main.obj: src/main.cpp.obj
 
 .PHONY : src/main.obj
@@ -266,6 +347,9 @@ help:
 	@echo ... BUAA_Compiler
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... src/Error/ErrorTable.obj
+	@echo ... src/Error/ErrorTable.i
+	@echo ... src/Error/ErrorTable.s
 	@echo ... src/Lexer/Lexer.obj
 	@echo ... src/Lexer/Lexer.i
 	@echo ... src/Lexer/Lexer.s
@@ -278,6 +362,12 @@ help:
 	@echo ... src/Parser/Parser.obj
 	@echo ... src/Parser/Parser.i
 	@echo ... src/Parser/Parser.s
+	@echo ... src/Symbol/SymbolTable.obj
+	@echo ... src/Symbol/SymbolTable.i
+	@echo ... src/Symbol/SymbolTable.s
+	@echo ... src/Visitor/Visitor.obj
+	@echo ... src/Visitor/Visitor.i
+	@echo ... src/Visitor/Visitor.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s

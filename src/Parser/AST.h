@@ -111,6 +111,7 @@ public:
     UnaryOp* unaryOp;
     UnaryExp* unaryExp;
     DECLARE_OSTREAM(UnaryExp);
+    int getDim();
 };
 
 class Exp;
@@ -122,6 +123,7 @@ public:
     LVal* lVal;
     Number* number;
     DECLARE_OSTREAM(PrimaryExp);
+    int getDim();
 };
 
 class LVal{
@@ -147,6 +149,7 @@ class Exp{
 public:
     AddExp* addExp;
     DECLARE_OSTREAM(Exp);
+    int getDim();
 };
 
 class LAndExp;
@@ -184,6 +187,7 @@ class BlockItem;
 class Block{
 public:
     std::vector<BlockItem*> blockItems;
+    Token *Rbrace;
     DECLARE_OSTREAM(Block);
 };
 
@@ -254,6 +258,7 @@ public:
 
 class ReturnStmt{
 public:
+    Token *returnTK;
     Exp* exp;
     DECLARE_OSTREAM(ReturnStmt);
 };
@@ -332,6 +337,8 @@ public:
     std::vector<ConstExp*> constExps;
     ConstInitVal* constInitVal;
     DECLARE_OSTREAM(ConstDef);
+    bool isArray();
+    bool isInit();
 };
 
 class ConstInitVal{
@@ -339,6 +346,7 @@ public:
     ConstExp* constExp;
     std::vector<ConstInitVal*> constInitVals;
     DECLARE_OSTREAM(ConstInitVal);
+    bool isArray();
 };
 
 class InitVal;
@@ -348,6 +356,8 @@ public:
     std::vector<ConstExp*> constExps;
     InitVal* initval;
     DECLARE_OSTREAM(VarDef);
+    bool isArray();
+    bool isInit();
 };
 
 class InitVal{
@@ -355,6 +365,7 @@ public:
     Exp* exp;
     std::vector<InitVal*> initVals;
     DECLARE_OSTREAM(InitVal);
+    bool isArray();
 };
 
 class MainFuncDef{

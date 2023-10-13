@@ -2,6 +2,7 @@
 // Created by 安达楷 on 2023/9/13.
 //
 #include "Token.h"
+#include "../Error/ErrorTable.h"
 #include <iostream>
 
 //与tokenType一一对应
@@ -169,9 +170,20 @@ Token* TokenList::popExpect(Token::TokenType type) {
         pos ++ ;
         return token;
     }
-    std::cout << "Error in Line " << token->line << "Expect Token is {" << Token::type2str[type]
-    << "} but get Token is {" << *token << "}" << std::endl;
-    exit(1);
+
+    // error handle
+    // i, j, k
+    switch (type) {
+        case Token::SEMICN:
+            ErrorTable::getInstance().addError(new Error(Error::LACK_SEMICN, tokens[pos - 1]->line));
+            break;
+        case Token::RPARENT:
+            ErrorTable::getInstance().addError(new Error(Error::LACK_RIGHT_PARENT, tokens[pos - 1]->line));
+            break;
+        case Token::RBRACK:
+            ErrorTable::getInstance().addError(new Error(Error::LACK_RIGHT_BRACK, tokens[pos - 1]->line));
+            break;
+    }
 }
 
 void TokenList::backTo(int x) {

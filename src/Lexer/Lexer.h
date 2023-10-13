@@ -18,8 +18,8 @@ private:
     int curLine = 1;
     int pos = 0;
     char ch;
-    static std::map<std::string, Token::TokenType> str2type;
 public:
+    static std::map<std::string, Token::TokenType> str2type;
     Lexer(std::string& fileStr_) : fileStr(fileStr_) {}
 
 

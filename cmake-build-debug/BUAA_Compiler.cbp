@@ -80,6 +80,15 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/Error.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/ErrorTable.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/ErrorTable.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
@@ -102,6 +111,21 @@
 			<Option target="BUAA_Compiler"/>
 		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/Symbol.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/SymbolTable.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/SymbolTable.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Visitor/Visitor.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Visitor/Visitor.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/main.cpp">

@@ -121,13 +121,55 @@ CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.s"
 	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Parser\AST.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Parser\AST.cpp.s
 
+CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj: ../src/Error/ErrorTable.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\Error\ErrorTable.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\Error\ErrorTable.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\Error\ErrorTable.cpp > CMakeFiles\BUAA_Compiler.dir\src\Error\ErrorTable.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Error\ErrorTable.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Error\ErrorTable.cpp.s
+
+CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj: ../src/Visitor/Visitor.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\Visitor\Visitor.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\Visitor\Visitor.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\Visitor\Visitor.cpp > CMakeFiles\BUAA_Compiler.dir\src\Visitor\Visitor.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Visitor\Visitor.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Visitor\Visitor.cpp.s
+
+CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj: CMakeFiles/BUAA_Compiler.dir/flags.make
+CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj: ../src/Symbol/SymbolTable.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj"
+	E:\ProgramSoftware\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\BUAA_Compiler.dir\src\Symbol\SymbolTable.cpp.obj -c E:\ProgramCode\Project\BUAA_Compiler\src\Symbol\SymbolTable.cpp
+
+CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.i"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\ProgramCode\Project\BUAA_Compiler\src\Symbol\SymbolTable.cpp > CMakeFiles\BUAA_Compiler.dir\src\Symbol\SymbolTable.cpp.i
+
+CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.s"
+	E:\ProgramSoftware\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\ProgramCode\Project\BUAA_Compiler\src\Symbol\SymbolTable.cpp -o CMakeFiles\BUAA_Compiler.dir\src\Symbol\SymbolTable.cpp.s
+
 # Object files for target BUAA_Compiler
 BUAA_Compiler_OBJECTS = \
 "CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj" \
 "CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj" \
 "CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj" \
 "CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj" \
-"CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj"
+"CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj" \
+"CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj" \
+"CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj" \
+"CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj"
 
 # External object files for target BUAA_Compiler
 BUAA_Compiler_EXTERNAL_OBJECTS =
@@ -137,11 +179,14 @@ BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj
+BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/build.make
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/linklibs.rsp
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/objects1.rsp
 BUAA_Compiler.exe: CMakeFiles/BUAA_Compiler.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable BUAA_Compiler.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=E:\ProgramCode\Project\BUAA_Compiler\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable BUAA_Compiler.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\BUAA_Compiler.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

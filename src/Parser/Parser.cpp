@@ -320,7 +320,7 @@ Block *Parser::parseBlock() {
     while (tokenList.get()->tokenType != Token::RBRACE){
         block->blockItems.push_back(parseBlockItem());
     }
-    tokenList.popExpect(Token::RBRACE);
+    block->Rbrace = tokenList.popExpect(Token::RBRACE);
     return block;
 }
 
@@ -519,7 +519,7 @@ ReturnStmt *Parser::parseReturnStmt() {
     std::cout << "start returnStmt" << std::endl;
 #endif
     auto returnStmt = new ReturnStmt();
-    tokenList.popExpect(Token::RETURNTK);
+    returnStmt->returnTK = tokenList.popExpect(Token::RETURNTK);
     if (tokenList.get()->tokenType != Token::SEMICN) {
         returnStmt->exp = parseExp();
     }

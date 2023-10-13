@@ -8,4 +8,4 @@ set(CMAKE_BUILD_TYPE Debug)
 aux_source_directory(./src DIR_SRC)
 aux_source_directory(./src/Lexer DIR_Lexer)
 
-add_executable(BUAA_Compiler ${DIR_SRC} ${DIR_Lexer} src/Parser/Parser.h src/Parser/Parser.cpp src/Parser/AST.h src/Parser/AST.cpp)
+add_executable(BUAA_Compiler ${DIR_SRC} ${DIR_Lexer} src/Parser/Parser.h src/Parser/Parser.cpp src/Parser/AST.h src/Parser/AST.cpp src/Error/Error.h src/Error/ErrorTable.h src/Error/ErrorTable.cpp src/Visitor/Visitor.h src/Visitor/Visitor.cpp src/Symbol/Symbol.h src/Symbol/SymbolTable.h src/Symbol/SymbolTable.cpp)
