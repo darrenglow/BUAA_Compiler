@@ -1,3 +1,33 @@
-int main(){
-    printf("111");
+int logicNumber = 0;
+const int myConst = 1;
+
+int testLAnd(int n)
+{
+   logicNumber = n;
+   return 1;
+}
+
+int testLOr(int n)
+{
+   logicNumber = n;
+   return 1;
+}
+
+int testReturn0()
+{
+    printf("$");
+}
+
+int testReturn1()
+{
+   int aaa;
+}
+
+int main()
+{
+   int number;
+   number = getint();
+   break;
+
+   return 0;
 }

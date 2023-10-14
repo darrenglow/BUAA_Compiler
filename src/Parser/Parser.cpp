@@ -140,7 +140,12 @@ UnaryExp *Parser::parseUnaryExp() {
     tokenList.getNext(1)->tokenType == Token::LPARENT){
         unaryExp->ident = tokenList.popExpect(Token::IDENFR);
         tokenList.popExpect(Token::LPARENT);
-        if (tokenList.get()->tokenType != Token::RPARENT){
+
+        if (tokenList.get()->tokenType == Token::IDENFR ||
+            tokenList.get()->tokenType == Token::PLUS ||
+            tokenList.get()->tokenType == Token::MINU ||
+            tokenList.get()->tokenType == Token::LPARENT ||
+            tokenList.get()->tokenType == Token::INTCON){
             unaryExp->funcRParams = parseFuncRParams();
         }
         tokenList.popExpect(Token::RPARENT);
@@ -260,7 +265,7 @@ FuncDef *Parser::parseFuncDef() {
     funcDef->funcType = parseFuncType();
     funcDef->ident = tokenList.popExpect(Token::IDENFR);
     tokenList.popExpect(Token::LPARENT);
-    if (tokenList.get()->tokenType != Token::RPARENT){
+    if (tokenList.get()->tokenType == Token::INTTK){
         funcDef->funcFParams = parseFuncFParams();
     }
     tokenList.popExpect((Token::RPARENT));
@@ -379,19 +384,29 @@ Stmt *Parser::parseStmt() {
         //得到当前的pos
         int prePos = tokenList.getPos();
         parseLVal();
-        if (tokenList.getNext(1)->tokenType != Token::GETINTTK){
+
+        if (tokenList.get()->tokenType == Token::ASSIGN) {
+            if (tokenList.getNext(1)->tokenType == Token::GETINTTK){
 #ifdef DEBUG
-            std::cout << "stmt->assignStmt" << std::endl;
+                std::cout << "stmt->inputStmt" << std::endl;
 #endif
-            tokenList.backTo(prePos);
-            stmt->assignStmt = parseAssignStmt();
+                tokenList.backTo(prePos);
+                stmt->inputStmt = parseInputStmt();
+            }
+            else{
+                tokenList.backTo(prePos);
+#ifdef DEBUG
+                std::cout << "stmt->assignStmt" << std::endl;
+#endif
+                stmt->assignStmt = parseAssignStmt();
+            }
         }
-        else{
-            tokenList.backTo(prePos);
+        else {
 #ifdef DEBUG
-            std::cout << "inputstmt" << std::endl;
+            std::cout << "stmt->expStmt" << std::endl;
 #endif
-            stmt->inputStmt = parseInputStmt();
+            tokenList.backTo(prePos);
+            stmt->expStmt = parseExpStmt();
         }
     }
     return stmt;
@@ -583,9 +598,12 @@ InputStmt *Parser::parseInputStmt() {
 
 MainFuncDef *Parser::parseMainFuncDef() {
     auto mainFuncDef = new MainFuncDef();
-    tokenList.popExpect(Token::INTTK);
-    tokenList.popExpect(Token::MAINTK);
+    mainFuncDef->funcType = parseFuncType();
+    mainFuncDef->ident = tokenList.popExpect(Token::MAINTK);
     tokenList.popExpect(Token::LPARENT);
+    if (tokenList.get()->tokenType != Token::RPARENT){
+        mainFuncDef->funcFParams = parseFuncFParams();
+    }
     tokenList.popExpect(Token::RPARENT);
     mainFuncDef->block = parseBlock();
 #ifdef DEBUG

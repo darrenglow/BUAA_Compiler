@@ -2,9 +2,10 @@
 // Created by 安达楷 on 2023/10/4.
 //
 
+#define DEBUG
+
 #include "Visitor.h"
 #include "../Lexer/Lexer.h"
-
 SymbolTable* Visitor::curTable;
 
 void Visitor::visit() {
@@ -20,7 +21,7 @@ void Visitor::visitCompUnit(CompUnit *compUnit){
     for (auto funcDef : compUnit->funcDefs) {
         visitFuncDef(funcDef);
     }
-    visitMainFuncDef(compUnit->mainFuncDef);
+    visitFuncDef(compUnit->mainFuncDef);
 }
 
 void Visitor::visitDecl(Decl *decl) {
@@ -220,20 +221,26 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     // 函数名相同，注意还是要插入的，处理函数体内。
     if (curTable->contain(name, false)) {
         auto error = new Error(Error::DUPLICATE_IDENT, ident->line);
+        ErrorTable::getInstance().addError(error);
         name += "_error_" + std::to_string(++unique);
     }
-
+#ifdef DEBUG
+    std::cout << "Start FuncDef: " << name << std::endl;
+#endif
     // 维护符号表
+    curTable = new SymbolTable(curTable);
     auto retType = funcDef->funcType->funcType->tokenType == Token::VOIDTK ? BasicType::VOID : BasicType::INT;
-    auto funcSymbol = new FuncSymbol(name, retType, funcDef->funcFParams->funcFParams.size());
+    auto funcSymbol = new FuncSymbol(name, retType, funcDef->getFuncFParamNumber());
     if (funcDef->funcFParams != nullptr) {
         for (auto x : funcDef->funcFParams->funcFParams) {
             visitFuncFParam(x, funcSymbol);
         }
     }
-    curTable->add(funcSymbol);
-    curTable = new SymbolTable(curTable);
+    curTable->parent->add(funcSymbol);
 
+#ifdef DEBUG
+    std::cout << name << " FuncFParam ready, " << "have " << funcSymbol->funcFParamSymbols.size() << std::endl;
+#endif
     visitBlock(funcDef->block, false);
 
     BlockItem *lastBlockItem;
@@ -246,7 +253,7 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     // Error g
     // 如果retType不为VOID，且最后一行没有return
     // 错误行号是函数结尾的}所在行
-    if (retType != BasicType::VOID && (lastBlockItem == nullptr ||
+    if (retType != BasicType::VOID && (lastBlockItem == nullptr || lastBlockItem->decl != nullptr ||
             (lastBlockItem->stmt != nullptr && lastBlockItem->stmt->returnStmt == nullptr))) {
         auto error = new Error(Error::LACK_RETURN, funcDef->block->Rbrace->line);
         ErrorTable::getInstance().addError(error);
@@ -258,6 +265,7 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
         (lastBlockItem != nullptr && lastBlockItem->stmt != nullptr &&
         lastBlockItem->stmt->returnStmt != nullptr && lastBlockItem->stmt->returnStmt->exp != nullptr)) {
         auto error = new Error(Error::VOID_MISMATCH_RETURN, lastBlockItem->stmt->returnStmt->returnTK->line);
+        ErrorTable::getInstance().addError(error);
     }
     curTable = curTable->parent;
 }
@@ -274,8 +282,8 @@ void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
 
     // TODO: 维度的具体值的计算
     std::vector<int> dims;
-    dims.push_back(0);  // a[][10]
     if (funcFParam->isArray) {
+        dims.push_back(1);
         for (auto x : funcFParam->constExps) {
             dims.push_back(1);
             visitConstExp(x);
@@ -296,6 +304,9 @@ void Visitor::visitBlock(Block *block, bool toNew) {
     if (toNew) {
         curTable = new SymbolTable(curTable);
     }
+#ifdef DEBUG
+    std::cout << "in visitBlock():" << std::endl;
+#endif
     for (auto blockItem : block->blockItems) {
         if (blockItem->decl != nullptr)
             visitDecl(blockItem->decl);
@@ -309,6 +320,9 @@ void Visitor::visitBlock(Block *block, bool toNew) {
 }
 
 void Visitor::visitStmt(Stmt *stmt) {
+#ifdef DEBUG
+    std::cout << "visit Stmt" << std::endl;
+#endif
     if (stmt->returnStmt) visitReturnStmt(stmt->returnStmt);
     else if (stmt->ifStmt) visitIfStmt(stmt->ifStmt);
     else if (stmt->outputStmt) visitOutputStmt(stmt->outputStmt);
@@ -322,6 +336,9 @@ void Visitor::visitStmt(Stmt *stmt) {
 }
 
 void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
+#ifdef DEBUG
+    std::cout << "in returnStmt" << std::endl;
+#endif
     if (returnStmt->exp) {
         visitExp(returnStmt->exp);
     }
@@ -388,10 +405,11 @@ void Visitor::visitInputStmt(InputStmt *inputStmt) {
     // Error h
     // 改变了const
     if (curTable->contain(name, true)) {
-        auto valueSymbol = dynamic_cast<ValueSymbol*>(curTable->getSymbol(name, true));
-        if (valueSymbol->isConst) {
+        auto valueSymbol = curTable->getSymbol(name, true);
+        if (valueSymbol->isConst()) {
             auto error = new Error(Error::CHANGE_CONST, ident->line);
             ErrorTable::getInstance().addError(error);
+            return;
         }
     }
     visitLVal(inputStmt->lVal);
@@ -416,9 +434,18 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
 }
 
 void Visitor::visitFORStmt(FORStmt *forStmt) {
-    visitForStmt(forStmt->forStmt1);
-    visitCond(forStmt->cond);
-    visitForStmt(forStmt->forStmt2);
+#ifdef DEBUG
+    std::cout << "in visitFORStmt" << std::endl;
+#endif
+    if (forStmt->forStmt1 != nullptr) {
+        visitForStmt(forStmt->forStmt1);
+    }
+    if (forStmt->cond != nullptr) {
+        visitCond(forStmt->cond);
+    }
+    if (forStmt->forStmt2 != nullptr) {
+        visitForStmt(forStmt->forStmt2);
+    }
     inLoop ++ ;
     visitStmt(forStmt->stmt);
     inLoop -- ;
@@ -430,32 +457,46 @@ void Visitor::visitForStmt(ForStmt *forStmt) {
     // Error h:
     // 不能改变常量
     if (curTable->contain(name, true)) {
-        auto valueSymbol = dynamic_cast<ValueSymbol*>(curTable->getSymbol(name, true));
-        if (valueSymbol->isConst) {
+        auto symbol = curTable->getSymbol(name, true);
+        if (symbol->isConst()) {
             auto error = new Error(Error::CHANGE_CONST, ident->line);
             ErrorTable::getInstance().addError(error);
         }
     }
+    visitLVal(forStmt->lVal);
+    visitExp(forStmt->exp);
 }
 
 void Visitor::visitBlockStmt(BlockStmt *blockStmt) {
-    visitBlock(blockStmt->block, false);
+#ifdef DEBUG
+    std::cout << "visit blockStmt" << std::endl;
+#endif
+    visitBlock(blockStmt->block, true);
 }
 
 void Visitor::visitExpStmt(ExpStmt *expStmt) {
-    visitExp(expStmt->exp);
+#ifdef DEBUG
+    std::cout << "visit ExpStmt" << std::endl;
+#endif
+    if (expStmt->exp != nullptr) {
+        visitExp(expStmt->exp);
+    }
 }
 
 void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
+#ifdef DEBUG
+    std::cout << "in visitAssignStmt" << std::endl;
+#endif
     auto ident = assignStmt->lVal->ident;
     auto name = ident->content;
     // Error h:
     // 不能改变常量
     if (curTable->contain(name, true)) {
-        auto valueSymbol = dynamic_cast<ValueSymbol*>(curTable->getSymbol(name, true));
-        if (valueSymbol->isConst) {
+        auto symbol = curTable->getSymbol(name, true);
+        if (symbol->isConst()) {
             auto error = new Error(Error::CHANGE_CONST, ident->line);
             ErrorTable::getInstance().addError(error);
+            return;
         }
     }
     visitLVal(assignStmt->lVal);
@@ -463,7 +504,7 @@ void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
 }
 
 void Visitor::visitMainFuncDef(MainFuncDef *mainFuncDef) {
-    visitBlock(mainFuncDef->block, true);
+    visitBlock(mainFuncDef->block, false);
 }
 
 void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line) {
@@ -471,6 +512,10 @@ void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol,
         // Error d
         // 调用参数个数和定义的参数个数不匹配
         if (funcRParams->exps.size() != funcSymbol->num) {
+#ifdef DEBUG
+            std::cout << "realDim: " << funcRParams->exps.size() << std::endl;
+            std::cout << "formDim: " << funcSymbol->num << std::endl;
+#endif
             auto error = new Error(Error::MISMATCH_PARAM_NUM, line);
             ErrorTable::getInstance().addError(error);
             return;
@@ -479,8 +524,14 @@ void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol,
         // Error e
         // 传入参数的维度和定义参数的维度不匹配
         for (int i = 0; i < funcSymbol->num; ++ i) {
+            visitExp(funcRParams->exps[i]);
             int realDim = funcRParams->exps[i]->getDim();
             int formDim = funcSymbol->funcFParamSymbols[i]->dims.size();
+#ifdef DEBUG
+            std::cout << funcSymbol->name << " has FuncFParam num: " << funcSymbol->funcFParamSymbols.size() << std::endl;
+            std::cout << "realDim: " << realDim << std::endl;
+            std::cout << "formDim: " << formDim << std::endl;
+#endif
             if (realDim != formDim) {
                 auto error = new Error(Error::MISMATCH_PARAM_TYPE, line);
                 ErrorTable::getInstance().addError(error);

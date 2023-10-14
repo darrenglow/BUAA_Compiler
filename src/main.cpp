@@ -11,8 +11,8 @@
 #define ErrorHandle
 
 
-static const std::string prePath = "../Test/";
-//static const std::string prePath = "./";
+//static const std::string prePath = "../Test/";
+static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
 std::ofstream errorOutput(prePath + "error.txt");

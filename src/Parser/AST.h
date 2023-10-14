@@ -39,6 +39,7 @@ public:
     FuncFParams* funcFParams;
     Block* block;
     DECLARE_OSTREAM(FuncDef);
+    int getFuncFParamNumber();
 };
 
 class FuncType{
@@ -368,9 +369,8 @@ public:
     bool isArray();
 };
 
-class MainFuncDef{
+class MainFuncDef : public FuncDef{
 public:
-    Block* block;
     DECLARE_OSTREAM(MainFuncDef);
 };
 #endif //BUAA_COMPILER_AST_H

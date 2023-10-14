@@ -24,6 +24,8 @@ public:
     Symbol(std::string name_, BasicType basicType_=INT)
         :name(name_), basicType(basicType_) {}
     virtual ~Symbol() {}
+    virtual bool isConst() const = 0;
+    virtual int getDim() const = 0;
 };
 
 class FuncFParamSymbol : public Symbol  {
@@ -34,7 +36,12 @@ public:
             : Symbol(name_), valueType(SINGLE) {};
     FuncFParamSymbol(std::string &name_, std::vector<int> dims_)
         : Symbol(name_), dims(dims_), valueType(ARRAY) {};
-
+    bool isConst() const {
+        return false;
+    }
+    int getDim() const {
+        return dims.size();
+    }
 };
 
 class FuncSymbol : public Symbol {
@@ -46,6 +53,12 @@ public:
     void addFuncFParamSymbol(FuncFParamSymbol* funcFParamSymbol) {
         funcFParamSymbols.push_back(funcFParamSymbol);
     }
+    bool isConst() const {
+        return false;
+    }
+    int getDim() const {
+        return -100;
+    }
 };
 
 class ValueSymbol : public Symbol {
@@ -54,16 +67,22 @@ public:
     std::vector<int> dims;   //具体维度
     std::vector<int> initValues; //展开后的一维值
     int initValue;
-    bool isConst;
+    bool isConstValue;
     //形如int a; int a=10; const int a = 10;
     ValueSymbol(std::string &name_, int initValue_=0, bool isConst_=false)
-    : Symbol(name_), valueType(SINGLE), initValue(initValue_), isConst(isConst_) {};
+    : Symbol(name_), valueType(SINGLE), initValue(initValue_), isConstValue(isConst_) {};
     //形如int a[10];
     ValueSymbol(std::string &name_, std::vector<int> dims_, bool isConst_=false)
-    : Symbol(name_), valueType(ARRAY), dims(dims_), isConst(isConst_) {};
+    : Symbol(name_), valueType(ARRAY), dims(dims_), isConstValue(isConst_) {};
     //形如int a[10] = {...}; a[10][10]={...};
     ValueSymbol(std::string &name_, std::vector<int> dims_, std::vector<int> initValues_, bool isConst_=false)
-    : Symbol(name_), valueType(ARRAY), dims(dims_), initValues(initValues_), isConst(isConst_) {};
+    : Symbol(name_), valueType(ARRAY), dims(dims_), initValues(initValues_), isConstValue(isConst_) {};
+    bool isConst() const {
+        return isConstValue;
+    }
+    int getDim() const {
+        return dims.size();
+    }
 };
 
 #endif //BUAA_COMPILER_SYMBOL_H

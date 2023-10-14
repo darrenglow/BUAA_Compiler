@@ -184,6 +184,7 @@ Token* TokenList::popExpect(Token::TokenType type) {
             ErrorTable::getInstance().addError(new Error(Error::LACK_RIGHT_BRACK, tokens[pos - 1]->line));
             break;
     }
+    return nullptr;
 }
 
 void TokenList::backTo(int x) {

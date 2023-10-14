@@ -1,6 +1,7 @@
 //
 // Created by 安达楷 on 2023/9/23.
 //
+#define DEBUG
 
 #include "AST.h"
 #include "../Lexer/Token.h"
@@ -522,37 +523,49 @@ int Exp::getDim() {
         if (!addExp->mulExps.empty()) {
             if (!addExp->mulExps[0]->unaryExps.empty()) {
                 auto tmpUnaryExp = addExp->mulExps[0]->unaryExps[0];
-                return tmpUnaryExp->getDim();
+                int dim = tmpUnaryExp->getDim();
+#ifdef DEBUG
+                std::cout << "in Exp::getDIm, the realDim is: " << dim << std::endl;
+#endif
+                return dim;
             }
         }
     }
     std::cout << "Error in exp::getDim()" << std::endl;
-    return -1;
+    return -100;
 }
 
 int UnaryExp::getDim() {
+#ifdef DEBUG
+    std::cout << "Start UnaryExp::getDim()" << std::endl;
+#endif
     if (this->primaryExp != nullptr) {
-        this->primaryExp->getDim();
+        return this->primaryExp->getDim();
     }
     else if (this->ident != nullptr) {
         // 如果是函数调用，就只会返回int型
-        return 0;
+        // 错了！还真会返回void型
+        auto funcSymbol = dynamic_cast<FuncSymbol*>(Visitor::curTable->getSymbol(this->ident->content, true));
+        return funcSymbol->basicType == BasicType::INT ? 0 : -1;
+
     }
     else if (this->unaryExp != nullptr) {
-        return this->getDim();
+        return this->unaryExp->getDim();
     }
     std::cout << "Error in UnaryExp::getDim" << std::endl;
-    return -1;
+    return -100;
 }
 
 int PrimaryExp::getDim() {
+#ifdef DEBUG
+    std::cout << "start PrimaryExp::getDim" << std::endl;
+#endif
     if (this->lVal != nullptr) {
         int formDim = this->lVal->exps.size();  // 看上去的维度
-
         auto ident = this->lVal->ident;
         auto name = ident->content;
-        auto valueSymbol = dynamic_cast<ValueSymbol*>(Visitor::curTable->getSymbol(name, true));
-        int realDim = (int)(valueSymbol->dims.size()) - formDim;   // 实际传入的维度
+        auto symbol = Visitor::curTable->getSymbol(name, true);
+        int realDim = (int)(symbol->getDim()) - formDim;   // 实际传入的维度
         return realDim;
     }
     else if (this->number != nullptr) {
@@ -562,6 +575,12 @@ int PrimaryExp::getDim() {
         return this->exp->getDim();
     }
     std::cout << "error in PrimaryExp::getDIm" << std::endl;
-    return -1;
+    return -100;
 }
 
+int FuncDef::getFuncFParamNumber() {
+    if (this->funcFParams == nullptr) {
+        return 0;
+    }
+    return this->funcFParams->funcFParams.size();
+}
