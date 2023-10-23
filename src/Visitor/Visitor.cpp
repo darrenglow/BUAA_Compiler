@@ -219,10 +219,12 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     std::string name = ident->content;
     // Error b
     // 函数名相同，注意还是要插入的，处理函数体内。
+    // *助教在讨论区说不处理重名内部的错误了，那就直接跳过。
     if (curTable->contain(name, false)) {
         auto error = new Error(Error::DUPLICATE_IDENT, ident->line);
         ErrorTable::getInstance().addError(error);
-        name += "_error_" + std::to_string(++unique);
+//        name += "_error_" + std::to_string(++unique);
+        return;
     }
 #ifdef DEBUG
     std::cout << "Start FuncDef: " << name << std::endl;
