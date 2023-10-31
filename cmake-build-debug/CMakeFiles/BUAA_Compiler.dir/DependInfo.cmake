@@ -4,13 +4,17 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Error/ErrorTable.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Parser/AST.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/SymbolTable.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj"
-  "E:/ProgramCode/Project/BUAA_Compiler/src/Visitor/Visitor.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Error/ErrorTable.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Fronted/Error/ErrorTable.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Lexer.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Lexer.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Token.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Token.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/AST.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/AST.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/Parser.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/Parser.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCode.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCode.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCodeItem.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCodeItem.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/Symbol.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/Symbol.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/SymbolTable.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/SymbolTable.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Util/Calculate.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/Util/Calculate.cpp.obj"
+  "E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Visitor/Visitor.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/Middle/Visitor/Visitor.cpp.obj"
   "E:/ProgramCode/Project/BUAA_Compiler/src/main.cpp" "E:/ProgramCode/Project/BUAA_Compiler/cmake-build-debug/CMakeFiles/BUAA_Compiler.dir/src/main.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

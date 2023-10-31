@@ -80,52 +80,79 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/Error.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Error/Error.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/ErrorTable.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Error/ErrorTable.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Error/ErrorTable.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Error/ErrorTable.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Lexer.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Lexer.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Lexer.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Token.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Lexer/Token.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Lexer/Token.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/AST.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/AST.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/AST.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/AST.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/Parser.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Parser/Parser.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Fronted/Parser/Parser.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/Symbol.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCode.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/SymbolTable.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCode.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Symbol/SymbolTable.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCodeItem.cpp">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Visitor/Visitor.cpp">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/MiddleCodeItem.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
-		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Visitor/Visitor.h">
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/Symbol.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/Symbol.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/SymbolTable.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Symbol/SymbolTable.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Util/Calculate.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Util/Calculate.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Util/Flatten.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Visitor/Visitor.cpp">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Middle/Visitor/Visitor.h">
+			<Option target="BUAA_Compiler"/>
+		</Unit>
+		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/Util/Debug.h">
 			<Option target="BUAA_Compiler"/>
 		</Unit>
 		<Unit filename="E:/ProgramCode/Project/BUAA_Compiler/src/main.cpp">

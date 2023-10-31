@@ -122,194 +122,302 @@ BUAA_Compiler/fast:
 	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/build
 .PHONY : BUAA_Compiler/fast
 
-src/Error/ErrorTable.obj: src/Error/ErrorTable.cpp.obj
+src/Fronted/Error/ErrorTable.obj: src/Fronted/Error/ErrorTable.cpp.obj
 
-.PHONY : src/Error/ErrorTable.obj
-
-# target to build an object file
-src/Error/ErrorTable.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.obj
-.PHONY : src/Error/ErrorTable.cpp.obj
-
-src/Error/ErrorTable.i: src/Error/ErrorTable.cpp.i
-
-.PHONY : src/Error/ErrorTable.i
-
-# target to preprocess a source file
-src/Error/ErrorTable.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.i
-.PHONY : src/Error/ErrorTable.cpp.i
-
-src/Error/ErrorTable.s: src/Error/ErrorTable.cpp.s
-
-.PHONY : src/Error/ErrorTable.s
-
-# target to generate assembly for a file
-src/Error/ErrorTable.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Error/ErrorTable.cpp.s
-.PHONY : src/Error/ErrorTable.cpp.s
-
-src/Lexer/Lexer.obj: src/Lexer/Lexer.cpp.obj
-
-.PHONY : src/Lexer/Lexer.obj
+.PHONY : src/Fronted/Error/ErrorTable.obj
 
 # target to build an object file
-src/Lexer/Lexer.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.obj
-.PHONY : src/Lexer/Lexer.cpp.obj
+src/Fronted/Error/ErrorTable.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Error/ErrorTable.cpp.obj
+.PHONY : src/Fronted/Error/ErrorTable.cpp.obj
 
-src/Lexer/Lexer.i: src/Lexer/Lexer.cpp.i
+src/Fronted/Error/ErrorTable.i: src/Fronted/Error/ErrorTable.cpp.i
 
-.PHONY : src/Lexer/Lexer.i
+.PHONY : src/Fronted/Error/ErrorTable.i
 
 # target to preprocess a source file
-src/Lexer/Lexer.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.i
-.PHONY : src/Lexer/Lexer.cpp.i
+src/Fronted/Error/ErrorTable.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Error/ErrorTable.cpp.i
+.PHONY : src/Fronted/Error/ErrorTable.cpp.i
 
-src/Lexer/Lexer.s: src/Lexer/Lexer.cpp.s
+src/Fronted/Error/ErrorTable.s: src/Fronted/Error/ErrorTable.cpp.s
 
-.PHONY : src/Lexer/Lexer.s
+.PHONY : src/Fronted/Error/ErrorTable.s
 
 # target to generate assembly for a file
-src/Lexer/Lexer.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Lexer.cpp.s
-.PHONY : src/Lexer/Lexer.cpp.s
+src/Fronted/Error/ErrorTable.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Error/ErrorTable.cpp.s
+.PHONY : src/Fronted/Error/ErrorTable.cpp.s
 
-src/Lexer/Token.obj: src/Lexer/Token.cpp.obj
+src/Fronted/Lexer/Lexer.obj: src/Fronted/Lexer/Lexer.cpp.obj
 
-.PHONY : src/Lexer/Token.obj
+.PHONY : src/Fronted/Lexer/Lexer.obj
 
 # target to build an object file
-src/Lexer/Token.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.obj
-.PHONY : src/Lexer/Token.cpp.obj
+src/Fronted/Lexer/Lexer.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Lexer.cpp.obj
+.PHONY : src/Fronted/Lexer/Lexer.cpp.obj
 
-src/Lexer/Token.i: src/Lexer/Token.cpp.i
+src/Fronted/Lexer/Lexer.i: src/Fronted/Lexer/Lexer.cpp.i
 
-.PHONY : src/Lexer/Token.i
+.PHONY : src/Fronted/Lexer/Lexer.i
 
 # target to preprocess a source file
-src/Lexer/Token.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.i
-.PHONY : src/Lexer/Token.cpp.i
+src/Fronted/Lexer/Lexer.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Lexer.cpp.i
+.PHONY : src/Fronted/Lexer/Lexer.cpp.i
 
-src/Lexer/Token.s: src/Lexer/Token.cpp.s
+src/Fronted/Lexer/Lexer.s: src/Fronted/Lexer/Lexer.cpp.s
 
-.PHONY : src/Lexer/Token.s
+.PHONY : src/Fronted/Lexer/Lexer.s
 
 # target to generate assembly for a file
-src/Lexer/Token.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Lexer/Token.cpp.s
-.PHONY : src/Lexer/Token.cpp.s
+src/Fronted/Lexer/Lexer.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Lexer.cpp.s
+.PHONY : src/Fronted/Lexer/Lexer.cpp.s
 
-src/Parser/AST.obj: src/Parser/AST.cpp.obj
+src/Fronted/Lexer/Token.obj: src/Fronted/Lexer/Token.cpp.obj
 
-.PHONY : src/Parser/AST.obj
+.PHONY : src/Fronted/Lexer/Token.obj
 
 # target to build an object file
-src/Parser/AST.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.obj
-.PHONY : src/Parser/AST.cpp.obj
+src/Fronted/Lexer/Token.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Token.cpp.obj
+.PHONY : src/Fronted/Lexer/Token.cpp.obj
 
-src/Parser/AST.i: src/Parser/AST.cpp.i
+src/Fronted/Lexer/Token.i: src/Fronted/Lexer/Token.cpp.i
 
-.PHONY : src/Parser/AST.i
+.PHONY : src/Fronted/Lexer/Token.i
 
 # target to preprocess a source file
-src/Parser/AST.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.i
-.PHONY : src/Parser/AST.cpp.i
+src/Fronted/Lexer/Token.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Token.cpp.i
+.PHONY : src/Fronted/Lexer/Token.cpp.i
 
-src/Parser/AST.s: src/Parser/AST.cpp.s
+src/Fronted/Lexer/Token.s: src/Fronted/Lexer/Token.cpp.s
 
-.PHONY : src/Parser/AST.s
+.PHONY : src/Fronted/Lexer/Token.s
 
 # target to generate assembly for a file
-src/Parser/AST.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/AST.cpp.s
-.PHONY : src/Parser/AST.cpp.s
+src/Fronted/Lexer/Token.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Lexer/Token.cpp.s
+.PHONY : src/Fronted/Lexer/Token.cpp.s
 
-src/Parser/Parser.obj: src/Parser/Parser.cpp.obj
+src/Fronted/Parser/AST.obj: src/Fronted/Parser/AST.cpp.obj
 
-.PHONY : src/Parser/Parser.obj
+.PHONY : src/Fronted/Parser/AST.obj
 
 # target to build an object file
-src/Parser/Parser.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.obj
-.PHONY : src/Parser/Parser.cpp.obj
+src/Fronted/Parser/AST.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/AST.cpp.obj
+.PHONY : src/Fronted/Parser/AST.cpp.obj
 
-src/Parser/Parser.i: src/Parser/Parser.cpp.i
+src/Fronted/Parser/AST.i: src/Fronted/Parser/AST.cpp.i
 
-.PHONY : src/Parser/Parser.i
+.PHONY : src/Fronted/Parser/AST.i
 
 # target to preprocess a source file
-src/Parser/Parser.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.i
-.PHONY : src/Parser/Parser.cpp.i
+src/Fronted/Parser/AST.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/AST.cpp.i
+.PHONY : src/Fronted/Parser/AST.cpp.i
 
-src/Parser/Parser.s: src/Parser/Parser.cpp.s
+src/Fronted/Parser/AST.s: src/Fronted/Parser/AST.cpp.s
 
-.PHONY : src/Parser/Parser.s
+.PHONY : src/Fronted/Parser/AST.s
 
 # target to generate assembly for a file
-src/Parser/Parser.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Parser/Parser.cpp.s
-.PHONY : src/Parser/Parser.cpp.s
+src/Fronted/Parser/AST.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/AST.cpp.s
+.PHONY : src/Fronted/Parser/AST.cpp.s
 
-src/Symbol/SymbolTable.obj: src/Symbol/SymbolTable.cpp.obj
+src/Fronted/Parser/Parser.obj: src/Fronted/Parser/Parser.cpp.obj
 
-.PHONY : src/Symbol/SymbolTable.obj
+.PHONY : src/Fronted/Parser/Parser.obj
 
 # target to build an object file
-src/Symbol/SymbolTable.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.obj
-.PHONY : src/Symbol/SymbolTable.cpp.obj
+src/Fronted/Parser/Parser.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/Parser.cpp.obj
+.PHONY : src/Fronted/Parser/Parser.cpp.obj
 
-src/Symbol/SymbolTable.i: src/Symbol/SymbolTable.cpp.i
+src/Fronted/Parser/Parser.i: src/Fronted/Parser/Parser.cpp.i
 
-.PHONY : src/Symbol/SymbolTable.i
+.PHONY : src/Fronted/Parser/Parser.i
 
 # target to preprocess a source file
-src/Symbol/SymbolTable.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.i
-.PHONY : src/Symbol/SymbolTable.cpp.i
+src/Fronted/Parser/Parser.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/Parser.cpp.i
+.PHONY : src/Fronted/Parser/Parser.cpp.i
 
-src/Symbol/SymbolTable.s: src/Symbol/SymbolTable.cpp.s
+src/Fronted/Parser/Parser.s: src/Fronted/Parser/Parser.cpp.s
 
-.PHONY : src/Symbol/SymbolTable.s
+.PHONY : src/Fronted/Parser/Parser.s
 
 # target to generate assembly for a file
-src/Symbol/SymbolTable.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Symbol/SymbolTable.cpp.s
-.PHONY : src/Symbol/SymbolTable.cpp.s
+src/Fronted/Parser/Parser.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Fronted/Parser/Parser.cpp.s
+.PHONY : src/Fronted/Parser/Parser.cpp.s
 
-src/Visitor/Visitor.obj: src/Visitor/Visitor.cpp.obj
+src/Middle/MiddleCode.obj: src/Middle/MiddleCode.cpp.obj
 
-.PHONY : src/Visitor/Visitor.obj
+.PHONY : src/Middle/MiddleCode.obj
 
 # target to build an object file
-src/Visitor/Visitor.cpp.obj:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.obj
-.PHONY : src/Visitor/Visitor.cpp.obj
+src/Middle/MiddleCode.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCode.cpp.obj
+.PHONY : src/Middle/MiddleCode.cpp.obj
 
-src/Visitor/Visitor.i: src/Visitor/Visitor.cpp.i
+src/Middle/MiddleCode.i: src/Middle/MiddleCode.cpp.i
 
-.PHONY : src/Visitor/Visitor.i
+.PHONY : src/Middle/MiddleCode.i
 
 # target to preprocess a source file
-src/Visitor/Visitor.cpp.i:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.i
-.PHONY : src/Visitor/Visitor.cpp.i
+src/Middle/MiddleCode.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCode.cpp.i
+.PHONY : src/Middle/MiddleCode.cpp.i
 
-src/Visitor/Visitor.s: src/Visitor/Visitor.cpp.s
+src/Middle/MiddleCode.s: src/Middle/MiddleCode.cpp.s
 
-.PHONY : src/Visitor/Visitor.s
+.PHONY : src/Middle/MiddleCode.s
 
 # target to generate assembly for a file
-src/Visitor/Visitor.cpp.s:
-	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Visitor/Visitor.cpp.s
-.PHONY : src/Visitor/Visitor.cpp.s
+src/Middle/MiddleCode.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCode.cpp.s
+.PHONY : src/Middle/MiddleCode.cpp.s
+
+src/Middle/MiddleCodeItem.obj: src/Middle/MiddleCodeItem.cpp.obj
+
+.PHONY : src/Middle/MiddleCodeItem.obj
+
+# target to build an object file
+src/Middle/MiddleCodeItem.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCodeItem.cpp.obj
+.PHONY : src/Middle/MiddleCodeItem.cpp.obj
+
+src/Middle/MiddleCodeItem.i: src/Middle/MiddleCodeItem.cpp.i
+
+.PHONY : src/Middle/MiddleCodeItem.i
+
+# target to preprocess a source file
+src/Middle/MiddleCodeItem.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCodeItem.cpp.i
+.PHONY : src/Middle/MiddleCodeItem.cpp.i
+
+src/Middle/MiddleCodeItem.s: src/Middle/MiddleCodeItem.cpp.s
+
+.PHONY : src/Middle/MiddleCodeItem.s
+
+# target to generate assembly for a file
+src/Middle/MiddleCodeItem.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/MiddleCodeItem.cpp.s
+.PHONY : src/Middle/MiddleCodeItem.cpp.s
+
+src/Middle/Symbol/Symbol.obj: src/Middle/Symbol/Symbol.cpp.obj
+
+.PHONY : src/Middle/Symbol/Symbol.obj
+
+# target to build an object file
+src/Middle/Symbol/Symbol.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/Symbol.cpp.obj
+.PHONY : src/Middle/Symbol/Symbol.cpp.obj
+
+src/Middle/Symbol/Symbol.i: src/Middle/Symbol/Symbol.cpp.i
+
+.PHONY : src/Middle/Symbol/Symbol.i
+
+# target to preprocess a source file
+src/Middle/Symbol/Symbol.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/Symbol.cpp.i
+.PHONY : src/Middle/Symbol/Symbol.cpp.i
+
+src/Middle/Symbol/Symbol.s: src/Middle/Symbol/Symbol.cpp.s
+
+.PHONY : src/Middle/Symbol/Symbol.s
+
+# target to generate assembly for a file
+src/Middle/Symbol/Symbol.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/Symbol.cpp.s
+.PHONY : src/Middle/Symbol/Symbol.cpp.s
+
+src/Middle/Symbol/SymbolTable.obj: src/Middle/Symbol/SymbolTable.cpp.obj
+
+.PHONY : src/Middle/Symbol/SymbolTable.obj
+
+# target to build an object file
+src/Middle/Symbol/SymbolTable.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/SymbolTable.cpp.obj
+.PHONY : src/Middle/Symbol/SymbolTable.cpp.obj
+
+src/Middle/Symbol/SymbolTable.i: src/Middle/Symbol/SymbolTable.cpp.i
+
+.PHONY : src/Middle/Symbol/SymbolTable.i
+
+# target to preprocess a source file
+src/Middle/Symbol/SymbolTable.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/SymbolTable.cpp.i
+.PHONY : src/Middle/Symbol/SymbolTable.cpp.i
+
+src/Middle/Symbol/SymbolTable.s: src/Middle/Symbol/SymbolTable.cpp.s
+
+.PHONY : src/Middle/Symbol/SymbolTable.s
+
+# target to generate assembly for a file
+src/Middle/Symbol/SymbolTable.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Symbol/SymbolTable.cpp.s
+.PHONY : src/Middle/Symbol/SymbolTable.cpp.s
+
+src/Middle/Util/Calculate.obj: src/Middle/Util/Calculate.cpp.obj
+
+.PHONY : src/Middle/Util/Calculate.obj
+
+# target to build an object file
+src/Middle/Util/Calculate.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Util/Calculate.cpp.obj
+.PHONY : src/Middle/Util/Calculate.cpp.obj
+
+src/Middle/Util/Calculate.i: src/Middle/Util/Calculate.cpp.i
+
+.PHONY : src/Middle/Util/Calculate.i
+
+# target to preprocess a source file
+src/Middle/Util/Calculate.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Util/Calculate.cpp.i
+.PHONY : src/Middle/Util/Calculate.cpp.i
+
+src/Middle/Util/Calculate.s: src/Middle/Util/Calculate.cpp.s
+
+.PHONY : src/Middle/Util/Calculate.s
+
+# target to generate assembly for a file
+src/Middle/Util/Calculate.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Util/Calculate.cpp.s
+.PHONY : src/Middle/Util/Calculate.cpp.s
+
+src/Middle/Visitor/Visitor.obj: src/Middle/Visitor/Visitor.cpp.obj
+
+.PHONY : src/Middle/Visitor/Visitor.obj
+
+# target to build an object file
+src/Middle/Visitor/Visitor.cpp.obj:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Visitor/Visitor.cpp.obj
+.PHONY : src/Middle/Visitor/Visitor.cpp.obj
+
+src/Middle/Visitor/Visitor.i: src/Middle/Visitor/Visitor.cpp.i
+
+.PHONY : src/Middle/Visitor/Visitor.i
+
+# target to preprocess a source file
+src/Middle/Visitor/Visitor.cpp.i:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Visitor/Visitor.cpp.i
+.PHONY : src/Middle/Visitor/Visitor.cpp.i
+
+src/Middle/Visitor/Visitor.s: src/Middle/Visitor/Visitor.cpp.s
+
+.PHONY : src/Middle/Visitor/Visitor.s
+
+# target to generate assembly for a file
+src/Middle/Visitor/Visitor.cpp.s:
+	$(MAKE) -f CMakeFiles\BUAA_Compiler.dir\build.make CMakeFiles/BUAA_Compiler.dir/src/Middle/Visitor/Visitor.cpp.s
+.PHONY : src/Middle/Visitor/Visitor.cpp.s
 
 src/main.obj: src/main.cpp.obj
 
@@ -347,27 +455,39 @@ help:
 	@echo ... BUAA_Compiler
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... src/Error/ErrorTable.obj
-	@echo ... src/Error/ErrorTable.i
-	@echo ... src/Error/ErrorTable.s
-	@echo ... src/Lexer/Lexer.obj
-	@echo ... src/Lexer/Lexer.i
-	@echo ... src/Lexer/Lexer.s
-	@echo ... src/Lexer/Token.obj
-	@echo ... src/Lexer/Token.i
-	@echo ... src/Lexer/Token.s
-	@echo ... src/Parser/AST.obj
-	@echo ... src/Parser/AST.i
-	@echo ... src/Parser/AST.s
-	@echo ... src/Parser/Parser.obj
-	@echo ... src/Parser/Parser.i
-	@echo ... src/Parser/Parser.s
-	@echo ... src/Symbol/SymbolTable.obj
-	@echo ... src/Symbol/SymbolTable.i
-	@echo ... src/Symbol/SymbolTable.s
-	@echo ... src/Visitor/Visitor.obj
-	@echo ... src/Visitor/Visitor.i
-	@echo ... src/Visitor/Visitor.s
+	@echo ... src/Fronted/Error/ErrorTable.obj
+	@echo ... src/Fronted/Error/ErrorTable.i
+	@echo ... src/Fronted/Error/ErrorTable.s
+	@echo ... src/Fronted/Lexer/Lexer.obj
+	@echo ... src/Fronted/Lexer/Lexer.i
+	@echo ... src/Fronted/Lexer/Lexer.s
+	@echo ... src/Fronted/Lexer/Token.obj
+	@echo ... src/Fronted/Lexer/Token.i
+	@echo ... src/Fronted/Lexer/Token.s
+	@echo ... src/Fronted/Parser/AST.obj
+	@echo ... src/Fronted/Parser/AST.i
+	@echo ... src/Fronted/Parser/AST.s
+	@echo ... src/Fronted/Parser/Parser.obj
+	@echo ... src/Fronted/Parser/Parser.i
+	@echo ... src/Fronted/Parser/Parser.s
+	@echo ... src/Middle/MiddleCode.obj
+	@echo ... src/Middle/MiddleCode.i
+	@echo ... src/Middle/MiddleCode.s
+	@echo ... src/Middle/MiddleCodeItem.obj
+	@echo ... src/Middle/MiddleCodeItem.i
+	@echo ... src/Middle/MiddleCodeItem.s
+	@echo ... src/Middle/Symbol/Symbol.obj
+	@echo ... src/Middle/Symbol/Symbol.i
+	@echo ... src/Middle/Symbol/Symbol.s
+	@echo ... src/Middle/Symbol/SymbolTable.obj
+	@echo ... src/Middle/Symbol/SymbolTable.i
+	@echo ... src/Middle/Symbol/SymbolTable.s
+	@echo ... src/Middle/Util/Calculate.obj
+	@echo ... src/Middle/Util/Calculate.i
+	@echo ... src/Middle/Util/Calculate.s
+	@echo ... src/Middle/Visitor/Visitor.obj
+	@echo ... src/Middle/Visitor/Visitor.i
+	@echo ... src/Middle/Visitor/Visitor.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s

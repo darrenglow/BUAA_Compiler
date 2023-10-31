@@ -1,11 +1,17 @@
-int f(int x){
+const int c[10] = {1};
+const int d[10][10] = {{1,2},{3,4}};
+int a;
+int b = 100;
+int e[10] = {1,2,3,4};
+int g[10][10] = {{1,2},{3,4,5};
+
+int f(){
+    //const int a = 10;
+    //const int b[1100] = {1};
+    //const int d[11][11] = {{1, 2}, {3, 4};
     return 0;
 }
-int f(int x,int y){
-}
+
 int main(){
-    f();
-    f(1);
-    f(1,2);
     return 0;
 }

@@ -1,0 +1,757 @@
+//
+// Created by 安达楷 on 2023/10/4.
+//
+
+//#define DEBUG
+
+#include "Visitor.h"
+#include "../../Fronted/Lexer/Lexer.h"
+#include "../MiddleCode.h"
+#include "../Util/Calculate.h"
+#include "../../Util/Debug.h"
+
+
+SymbolTable* Visitor::curTable;
+
+void Visitor::visit() {
+    auto compUnit = ast->root;
+    visitCompUnit(compUnit);
+}
+
+void Visitor::visitCompUnit(CompUnit *compUnit){
+    curTable = new SymbolTable(nullptr);
+    for (auto decl : compUnit->decls) {
+        visitDecl(decl);
+    }
+    for (auto funcDef : compUnit->funcDefs) {
+        visitFuncDef(funcDef);
+    }
+    visitFuncDef(compUnit->mainFuncDef);
+}
+
+void Visitor::visitDecl(Decl *decl) {
+    if (decl->constDecl) {
+        visitConstDecl(decl->constDecl);
+    }
+    else if (decl->varDecl) {
+        visitVarDecl(decl->varDecl);
+    }
+}
+
+void Visitor::visitConstDecl(ConstDecl *constDecl) {
+    for (auto constDef : constDecl->constDefs) {
+        visitConstDef(constDef);
+    }
+}
+
+void Visitor::visitConstDef(ConstDef *constDef) {
+    Token *ident = constDef->ident;
+    std::string name = ident->content;
+    // 如果当前的符号表中有同名的变量，就会报错
+    // b
+    if (curTable->contain(name, false)) {
+        ErrorTable::getInstance().addError(new Error(Error::DUPLICATE_IDENT, ident->line));
+        return;
+    }
+
+    if (!constDef->isArray()) {
+        // 非数组且初始化，形如const int a = 10;
+        // 初始值
+        auto constInitVal = visitConstExp(constDef->constInitVal->constExp);
+        // TODO:添加值 DONE
+        auto valueSymbol = new ValueSymbol(name, constInitVal, true);
+        curTable->add(valueSymbol);
+        if (curBlockLevel == 0) {
+            MiddleCode::getInstance().addGlobalValues(valueSymbol);
+        }
+        else {
+            // TODO: 处理局部常量
+        }
+    }
+    else {
+        // 数组且初始化，形如const int a[10] = {};
+        // TODO:具体维度 Done
+        std::vector<int> dims;  //之后通过constInitVal得到
+        for (auto x : constDef->constExps) {
+            dims.push_back(Calculate::calcConstExp(x));
+        }
+        auto arraySymbol = new ValueSymbol(name, dims, true);
+        curTable->add(arraySymbol);
+
+        if (dims.size() == 1) {
+            // 一维数组
+            auto constExps = flattenConstInitVal(constDef->constInitVal);
+            std::vector<int> initValues;
+            initValues.reserve(constExps.size());
+            for (int i = 0; i < dims[0]; i ++ ) {
+                if (i >= constExps.size())
+                    initValues.push_back(0);
+                else
+                    initValues.push_back(Calculate::calcConstExp(constExps[i]));
+            }
+
+            if (curBlockLevel == 0) {       // 如果是全局变量的话
+                arraySymbol->setInitValues(initValues);
+                MiddleCode::getInstance().addGlobalValues(arraySymbol);
+            }
+            else {      // 如果不是全局变量的话，每个initvalue生成中间代码
+                // TODO: 局部数组
+                ;
+            }
+        }
+        else if (dims.size() == 2) {
+            // 二维数组
+            std::vector<int> initValues;
+            std::vector<int> assignPlace;
+            std::vector<int> flattenValues;
+
+            // 有点堆屎山了。。。
+            auto constExps = flattenConstInitVal(constDef->constInitVal);
+            flattenValues.reserve(constExps.size());
+            for (auto x : constExps) {
+                flattenValues.push_back(Calculate::calcConstExp(x));
+            }
+
+
+            for (int i = 0; i < dims[0]; i ++ ) {
+                if (i >= constDef->constInitVal->constInitVals.size()) {
+                    for (int j = 0; j < dims[1]; j ++ ) {
+                        initValues.push_back(0);
+                    }
+                }
+                else {
+                    auto firstLayer = flattenOneConstInitVal(constDef->constInitVal->constInitVals[i]);
+                    for (int j = 0; j < dims[1] ; j ++ ) {
+                        if (j >= firstLayer.size()) {
+                            initValues.push_back(0);
+                        }
+                        else {
+                            int value = Calculate::calcConstExp(firstLayer[j]);
+                            initValues.push_back(value);
+                            assignPlace.push_back(i * dims[1] + j);
+                        }
+                    }
+                }
+            }
+            if (curBlockLevel == 0) {
+                // 全局数组
+                arraySymbol->setInitValues(initValues);
+                MiddleCode::getInstance().addGlobalValues(arraySymbol);
+            }
+            else {
+                // 局部数组，利用flattenValues和assignPlace来确定要赋值的位置
+                // TODO: 局部数组
+                for (int i = 0; i < assignPlace.size(); i ++ ){
+                    DEBUG_PRINT("insert %d into place %d\n", flattenValues[i], assignPlace[i]);
+                }
+            }
+        }
+    }
+}
+
+void Visitor::visitConstInitVal(ConstInitVal *constInitVal) {
+    ;
+}
+
+int Visitor::visitConstExp(ConstExp *constExp) {
+    return Calculate::calcConstExp(constExp);
+}
+
+void Visitor::visitAddExp(AddExp *addExp) {
+    for (auto mulExp : addExp->mulExps) {
+        visitMulExp(mulExp);
+    }
+}
+
+void Visitor::visitMulExp(MulExp *mulExp) {
+    for (auto x : mulExp->unaryExps) {
+        visitUnaryExp(x);
+    }
+}
+
+void Visitor::visitUnaryExp(UnaryExp *unaryExp) {
+    auto primaryExp = unaryExp->primaryExp;
+    auto ident = unaryExp->ident;
+    auto funcRParams = unaryExp->funcRParams;
+    auto inUnaryExp = unaryExp->unaryExp;
+    if (primaryExp != nullptr) {
+        visitPrimaryExp(primaryExp);
+    }
+    if (inUnaryExp != nullptr) {
+        visitUnaryExp(inUnaryExp);
+    }
+    //函数调用：在所属符号表中查找
+    else if (ident != nullptr) {
+        std::string name = ident->content;
+        // Error c
+        // 未定义
+        if (!curTable->contain(name, true)) {
+            auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
+            ErrorTable::getInstance().addError(error);
+            return;
+        }
+        auto funcSymbol = dynamic_cast<FuncSymbol*>(curTable->getSymbol(name, true));
+        visitFuncRParams(funcRParams, funcSymbol, ident->line);
+    }
+}
+
+void Visitor::visitPrimaryExp(PrimaryExp *primaryExp) {
+    auto exp = primaryExp->exp;
+    auto lVal = primaryExp->lVal;
+    auto number = primaryExp->number;
+    if (exp != nullptr) {
+        visitExp(exp);
+    }
+    else if (lVal != nullptr) {
+        visitLVal(lVal);
+    }
+    else if (number != nullptr) {
+        visitNumber(number);
+    }
+}
+
+void Visitor::visitExp(Exp *exp) {
+    visitAddExp(exp->addExp);
+}
+
+
+void Visitor::visitLVal(LVal *lVal) {
+    auto ident = lVal->ident;
+    std::string name = ident->content;
+    // Error c
+    if (!curTable->contain(name, true)) {
+        auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
+        ErrorTable::getInstance().addError(error);
+    }
+    for (auto x : lVal->exps) {
+        visitExp(x);
+    }
+}
+
+void Visitor::visitVarDecl(VarDecl *varDecl) {
+    for (auto x : varDecl->varDefs) {
+        visitVarDef(x);
+    }
+}
+
+void Visitor::visitVarDef(VarDef *varDef) {
+    auto ident = varDef->ident;
+    std::string name = ident->content;
+    if (curTable->contain(name, false)) {
+        auto error = new Error(Error::DUPLICATE_IDENT, ident->line);
+        ErrorTable::getInstance().addError(error);
+    }
+
+    if (!varDef->isArray()) {
+        //如果不是数组并且没有初始化, int a;
+        if (!varDef->isInit()) {
+            auto symbol = new ValueSymbol(name);
+            curTable->add(symbol);
+
+            if (curBlockLevel == 0) {
+                // 全局变量
+                MiddleCode::getInstance().addGlobalValues(symbol);
+            }
+            else {
+                // TODO:局部变量
+                ;
+            }
+        }
+        //如果不是数组但是初始化了，int a = 10;
+        else {
+            // 全局变量
+            if (curBlockLevel == 0) {
+
+                int value = Calculate::calcExp(varDef->initval->exp);
+                auto symbol = new ValueSymbol(name, value, false);
+                curTable->add(symbol);
+                MiddleCode::getInstance().addGlobalValues(symbol);
+            }
+            else {
+                // TODO: 局部变量，运行时计算，即输出中间表达式
+                ;
+            }
+        }
+    }
+
+    else {
+        // TODO:具体维度 Done
+        std::vector<int> dims;  //之后通过constInitVal得到
+        for (auto x : varDef->constExps) {
+            dims.push_back(Calculate::calcConstExp(x));
+        }
+        auto arraySymbol = new ValueSymbol(name, dims, false);
+        curTable->add(arraySymbol);
+
+        // 一维数组
+        if (dims.size() == 1) {
+            // 如果是一维数组并且未初始化
+            if (!varDef->isInit()) {
+                // 是全局变量且未初始化
+                if (curBlockLevel == 0) {
+                    MiddleCode::getInstance().addGlobalValues(arraySymbol);
+                }
+                else {
+                    // TODO: 局部变量且未初始化
+                    ;
+                }
+            }
+            // 是一维数组并且初始化
+            else {
+                auto exps = flattenInitVal(varDef->initval);
+                std::vector<int> initValues;
+                initValues.reserve(exps.size());
+                for (int i = 0; i < dims[0]; i ++ ) {
+                    if (i >= exps.size())
+                        initValues.push_back(0);
+                    else
+                        initValues.push_back(Calculate::calcExp(exps[i]));
+                }
+                // 全局变量且且初始化
+                if (curBlockLevel == 0) {
+
+                    arraySymbol->setInitValues(initValues);
+                    MiddleCode::getInstance().addGlobalValues(arraySymbol);
+                }
+                else {
+                    // TODO: 局部变量并且初始化
+                    ;
+                }
+            }
+        }
+        // 二维数组
+        else if (dims.size() == 2) {
+            std::vector<int> initValues;
+            std::vector<int> assignPlace;
+            std::vector<int> flattenValues;
+
+            // 二维数组并且未初始化
+            if (!varDef->isInit()) {
+                if (curBlockLevel == 0) {
+                    MiddleCode::getInstance().addGlobalValues(arraySymbol);
+                }
+                else {
+                    // TODO: 局部数组未初始化
+                }
+            }
+            // 二维数组且初始化
+            else {
+                auto exps = flattenInitVal(varDef->initval);
+                flattenValues.reserve(exps.size());
+                for (auto x : exps) {
+                    flattenValues.push_back(Calculate::calcExp(x));
+                }
+
+                for (int i = 0; i < dims[0]; i ++ ) {
+                    if (i >= varDef->initval->initVals.size()) {
+                        for (int j = 0; j < dims[1]; j ++ ) {
+                            initValues.push_back(0);
+                        }
+                    }
+                    else {
+                        auto firstLayer = flattenOneInitVal(varDef->initval->initVals[i]);
+                        for (int j = 0; j < dims[1] ; j ++ ) {
+                            if (j >= firstLayer.size()) {
+                                initValues.push_back(0);
+                            }
+                            else {
+                                int value = Calculate::calcExp(firstLayer[j]);
+                                initValues.push_back(value);
+                                assignPlace.push_back(i * dims[1] + j);
+                            }
+                        }
+                    }
+                }
+                if (curBlockLevel == 0) {
+                    arraySymbol->setInitValues(initValues);
+                    MiddleCode::getInstance().addGlobalValues(arraySymbol);
+                }
+                else {
+                    // 局部数组，利用flattenValues和assignPlace来确定要赋值的位置
+                    // TODO: 局部数组
+                    for (int i = 0; i < assignPlace.size(); i ++ ){
+                        DEBUG_PRINT("insert %d into place %d\n", flattenValues[i], assignPlace[i]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Visitor::visitInitVal(InitVal *initVal) {
+    if (initVal->isArray()) {
+        for (auto x : initVal->initVals) {
+            visitInitVal(x);
+        }
+    }
+    else {
+        visitExp(initVal->exp);
+    }
+}
+
+void Visitor::visitNumber(Number *number) {
+    auto intConst = number->intConst;
+    int x = intConst->val;
+}
+
+void Visitor::visitFuncDef(FuncDef *funcDef) {
+    auto ident = funcDef->ident;
+    std::string name = ident->content;
+    // Error b
+    // 函数名相同，注意还是要插入的，处理函数体内。
+    // *助教在讨论区说不处理重名内部的错误了，那就直接跳过。
+    if (curTable->contain(name, false)) {
+        auto error = new Error(Error::DUPLICATE_IDENT, ident->line);
+        ErrorTable::getInstance().addError(error);
+//        name += "_error_" + std::to_string(++unique);
+        return;
+    }
+
+    auto middleFunc = new Func(name);
+
+    // 维护符号表
+    curTable = new SymbolTable(curTable);
+    auto retType = funcDef->funcType->funcType->tokenType == Token::VOIDTK ? BasicType::VOID : BasicType::INT;
+    auto funcSymbol = new FuncSymbol(name, retType, funcDef->getFuncFParamNumber());
+    if (funcDef->funcFParams != nullptr) {
+        for (auto x : funcDef->funcFParams->funcFParams) {
+            visitFuncFParam(x, funcSymbol);
+        }
+    }
+    curTable->parent->add(funcSymbol);
+
+    auto funcBlock = new BasicBlock(BasicBlock::FUNC);
+    curBlock = funcBlock;
+    visitBlock(funcDef->block, false);
+    middleFunc->setFuncBlock(funcBlock);
+
+    MiddleCode::getInstance().addFuncs(middleFunc);
+    // -------- 后面仅针对错误处理 --------
+    BlockItem *lastBlockItem;
+    if (!funcDef->block->blockItems.empty()) {
+        lastBlockItem = funcDef->block->blockItems.back();
+    }
+    else {
+        lastBlockItem = nullptr;
+    }
+    // Error g
+    // 如果retType不为VOID，且最后一行没有return
+    // 错误行号是函数结尾的}所在行
+    if (retType != BasicType::VOID && (lastBlockItem == nullptr || lastBlockItem->decl != nullptr ||
+            (lastBlockItem->stmt != nullptr && lastBlockItem->stmt->returnStmt == nullptr))) {
+        auto error = new Error(Error::LACK_RETURN, funcDef->block->Rbrace->line);
+        ErrorTable::getInstance().addError(error);
+    }
+    // Error f
+    // 如果retType为VOID，且最后一行有return并且有返回值
+    // 报错行号为return所在行号
+    if (retType == BasicType::VOID &&
+        (lastBlockItem != nullptr && lastBlockItem->stmt != nullptr &&
+        lastBlockItem->stmt->returnStmt != nullptr && lastBlockItem->stmt->returnStmt->exp != nullptr)) {
+        auto error = new Error(Error::VOID_MISMATCH_RETURN, lastBlockItem->stmt->returnStmt->returnTK->line);
+        ErrorTable::getInstance().addError(error);
+    }
+    curTable = curTable->parent;
+}
+
+void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
+    auto ident = funcFParam->ident;
+    std::string name = ident->content;
+    // Error b
+    if (curTable->contain(name, false)) {
+        auto error = new Error(Error::DUPLICATE_IDENT, ident->line);
+        ErrorTable::getInstance().addError(error);
+        return;
+    }
+
+    // TODO: 维度的具体值的计算
+    std::vector<int> dims;
+    if (funcFParam->isArray) {
+        dims.push_back(1);
+        for (auto x : funcFParam->constExps) {
+            dims.push_back(1);
+            visitConstExp(x);
+        }
+        auto funcFParamSymbol = new FuncFParamSymbol(name, dims);
+        curTable->add(funcFParamSymbol);
+        funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
+    }
+    else {
+        auto funcFParamSymbol = new FuncFParamSymbol(name, dims);
+        curTable->add(funcFParamSymbol);
+        funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
+    }
+}
+
+// 如果是函数的{}，那由于需要考虑形参的影响，就不重新建符号表了
+void Visitor::visitBlock(Block *block, bool toNew) {
+    curBlockLevel ++ ;
+    if (toNew) {
+        curTable = new SymbolTable(curTable);
+    }
+    for (auto blockItem : block->blockItems) {
+        if (blockItem->decl != nullptr)
+            visitDecl(blockItem->decl);
+        else if (blockItem->stmt != nullptr) {
+            visitStmt(blockItem->stmt);
+        }
+    }
+    if (toNew) {
+        curTable = curTable->parent;
+    }
+    curBlockLevel -- ;
+}
+
+void Visitor::visitStmt(Stmt *stmt) {
+    if (stmt->returnStmt) visitReturnStmt(stmt->returnStmt);
+    else if (stmt->ifStmt) visitIfStmt(stmt->ifStmt);
+    else if (stmt->outputStmt) visitOutputStmt(stmt->outputStmt);
+    else if (stmt->inputStmt) visitInputStmt(stmt->inputStmt);
+    else if (stmt->continueStmt) visitContinueStmt(stmt->continueStmt);
+    else if (stmt->breakStmt) visitBreakStmt(stmt->breakStmt);
+    else if (stmt->forStmt) visitFORStmt(stmt->forStmt);
+    else if (stmt->blockStmt) visitBlockStmt(stmt->blockStmt);
+    else if (stmt->expStmt) visitExpStmt(stmt->expStmt);
+    else if (stmt->assignStmt) visitAssignStmt(stmt->assignStmt);
+}
+
+void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
+    if (returnStmt->exp) {
+        visitExp(returnStmt->exp);
+    }
+}
+
+void Visitor::visitIfStmt(IfStmt *ifStmt) {
+    visitCond(ifStmt->cond);
+    visitStmt(ifStmt->ifStmt);
+    if (ifStmt->elseStmt) {
+        visitStmt(ifStmt->elseStmt);
+    }
+}
+
+void Visitor::visitCond(Cond *cond) {
+    visitLOrExp(cond->lOrExp);
+}
+
+void Visitor::visitLOrExp(LOrExp *lOrExp) {
+    for (auto lAndExp : lOrExp->lAndExps) {
+        visitLAndExp(lAndExp);
+    }
+}
+
+void Visitor::visitLAndExp(LAndExp *lAndExp) {
+    for (auto eqExp : lAndExp->eqExps) {
+        visitEqExp(eqExp);
+    }
+}
+
+void Visitor::visitEqExp(EqExp *eqExp) {
+    for (auto relExp : eqExp->relExps) {
+        visitRelExp(relExp);
+    }
+}
+
+void Visitor::visitRelExp(RelExp *relExp) {
+    for (auto addExp : relExp->addExps) {
+        visitAddExp(addExp);
+    }
+}
+
+void Visitor::visitOutputStmt(OutputStmt *outputStmt) {
+    for (auto exp : outputStmt->exps) {
+        visitExp(exp);
+    }
+    std::string str = outputStmt->formatString->content;
+    int cnt = 0;
+    for (int i = 0; i < str.size(); i ++ ) {
+        if (str[i] == '%' && i + 1 < str.size() && str[i + 1] == 'd') {
+            cnt ++ ;
+        }
+    }
+    // Error l
+    // 输出字符串中的个数不匹配
+    if (cnt != outputStmt->exps.size()) {
+        auto error = new Error(Error::PRINTF_MISMATCH_NUM, outputStmt->formatString->line);
+        ErrorTable::getInstance().addError(error);
+    }
+}
+
+void Visitor::visitInputStmt(InputStmt *inputStmt) {
+    auto ident = inputStmt->lVal->ident;
+    std::string name = ident->content;
+    // Error h
+    // 改变了const
+    if (curTable->contain(name, true)) {
+        auto valueSymbol = curTable->getSymbol(name, true);
+        if (valueSymbol->isConst()) {
+            auto error = new Error(Error::CHANGE_CONST, ident->line);
+            ErrorTable::getInstance().addError(error);
+            return;
+        }
+    }
+    visitLVal(inputStmt->lVal);
+}
+
+void Visitor::visitContinueStmt(ContinueStmt *continueStmt) {
+    // Error m
+    // 如果continue在循环外
+    if (inLoop == 0) {
+        auto error = new Error(Error::BREAK_CONTINUE_OUT_LOOP, continueStmt->token->line);
+        ErrorTable::getInstance().addError(error);
+    }
+}
+
+void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
+    // Error m
+    // 如果break在循环外
+    if (inLoop == 0) {
+        auto error = new Error(Error::BREAK_CONTINUE_OUT_LOOP, breakStmt->token->line);
+        ErrorTable::getInstance().addError(error);
+    }
+}
+
+void Visitor::visitFORStmt(FORStmt *forStmt) {
+    if (forStmt->forStmt1 != nullptr) {
+        visitForStmt(forStmt->forStmt1);
+    }
+    if (forStmt->cond != nullptr) {
+        visitCond(forStmt->cond);
+    }
+    if (forStmt->forStmt2 != nullptr) {
+        visitForStmt(forStmt->forStmt2);
+    }
+    inLoop ++ ;
+    visitStmt(forStmt->stmt);
+    inLoop -- ;
+}
+
+void Visitor::visitForStmt(ForStmt *forStmt) {
+    auto ident = forStmt->lVal->ident;
+    auto name = ident->content;
+    // Error h:
+    // 不能改变常量
+    if (curTable->contain(name, true)) {
+        auto symbol = curTable->getSymbol(name, true);
+        if (symbol->isConst()) {
+            auto error = new Error(Error::CHANGE_CONST, ident->line);
+            ErrorTable::getInstance().addError(error);
+        }
+    }
+    visitLVal(forStmt->lVal);
+    visitExp(forStmt->exp);
+}
+
+void Visitor::visitBlockStmt(BlockStmt *blockStmt) {
+    visitBlock(blockStmt->block, true);
+}
+
+void Visitor::visitExpStmt(ExpStmt *expStmt) {
+    if (expStmt->exp != nullptr) {
+        visitExp(expStmt->exp);
+    }
+}
+
+void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
+    auto ident = assignStmt->lVal->ident;
+    auto name = ident->content;
+    // Error h:
+    // 不能改变常量
+    if (curTable->contain(name, true)) {
+        auto symbol = curTable->getSymbol(name, true);
+        if (symbol->isConst()) {
+            auto error = new Error(Error::CHANGE_CONST, ident->line);
+            ErrorTable::getInstance().addError(error);
+            return;
+        }
+    }
+    visitLVal(assignStmt->lVal);
+    visitExp(assignStmt->exp);
+}
+
+void Visitor::visitMainFuncDef(MainFuncDef *mainFuncDef) {
+    visitBlock(mainFuncDef->block, false);
+}
+
+void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line) {
+    if (funcRParams != nullptr) {
+        // Error d
+        // 调用参数个数和定义的参数个数不匹配
+        if (funcRParams->exps.size() != funcSymbol->num) {
+            auto error = new Error(Error::MISMATCH_PARAM_NUM, line);
+            ErrorTable::getInstance().addError(error);
+            return;
+        }
+
+        // Error e
+        // 传入参数的维度和定义参数的维度不匹配
+        for (int i = 0; i < funcSymbol->num; ++ i) {
+            visitExp(funcRParams->exps[i]);
+            int realDim = funcRParams->exps[i]->getDim();
+            int formDim = funcSymbol->funcFParamSymbols[i]->dims.size();
+            if (realDim != formDim) {
+                auto error = new Error(Error::MISMATCH_PARAM_TYPE, line);
+                ErrorTable::getInstance().addError(error);
+                return;
+            }
+        }
+    }
+    else {
+        if (funcSymbol->num != 0) {
+            auto error = new Error(Error::MISMATCH_PARAM_NUM, line);
+            ErrorTable::getInstance().addError(error);
+        }
+    }
+}
+
+std::vector<ConstExp*> Visitor::flattenConstInitVal(ConstInitVal *constInitVal) {
+    std::vector<ConstExp*> constExps;
+    if (!constInitVal->constInitVals.empty()) {
+        for (auto x : constInitVal->constInitVals) {
+            if (x->constExp != nullptr) {
+                constExps.push_back(x->constExp);
+            }
+            else {
+                auto v2 = flattenConstInitVal(x);
+                constExps.insert(constExps.end(), v2.begin(), v2.end());
+            }
+        }
+    }
+    return constExps;
+}
+
+std::vector<ConstExp*> Visitor::flattenOneConstInitVal(ConstInitVal *constInitVal) {
+    // constInitVal -> { constInitVal, constInitVal ... }，其中每个constInitVal都只有一个constExp
+    std::vector<ConstExp*> constExps;
+    for (auto x : constInitVal->constInitVals) {
+        if (x->constExp != nullptr) {
+            constExps.push_back(x->constExp);
+        }
+    }
+    return constExps;
+}
+
+std::vector<Exp*> Visitor::flattenInitVal(InitVal *initVal) {
+    std::vector<Exp*> exps;
+    if (!initVal->initVals.empty()) {
+        for (auto x : initVal->initVals) {
+            if (x->exp != nullptr) {
+                exps.push_back(x->exp);
+            }
+            else {
+                auto v2 = flattenInitVal(x);
+                exps.insert(exps.end(), v2.begin(), v2.end());
+            }
+        }
+    }
+    return exps;
+}
+
+std::vector<Exp *> Visitor::flattenOneInitVal(InitVal *initVal) {
+    std::vector<Exp*> exps;
+    for (auto x : initVal->initVals) {
+        if (x->exp != nullptr) {
+            exps.push_back(x->exp);
+        }
+    }
+    return exps;
+}
