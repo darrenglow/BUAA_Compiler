@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include "Symbol/Symbol.h"
+#include "Intermediate/Immediate.h"
 
 enum MiddleCodeType {
     FUNC_BEGIN,
@@ -75,7 +76,30 @@ public:
     OVERRIDE_OUTPUT;
 };
 
-// int a = 1;   int a;
+// int a = 1;
+// int a[10];
+class MiddleDef : public MiddleCodeItem {
+public:
+    enum Type{
+        DEF_VAR,
+        DEF_ARRAY,
+        END_ARRAY
+    };
+    std::string type2str[4] = {"DEF_VAR", "DEF_ARRAY", "END_ARRAY"};
+    Type type;
+    int value;
+    bool isInit;
+    ValueSymbol *valueSymbol;
+    ValueSymbol *srcValueSymbol;
+
+    MiddleDef(Type type_, ValueSymbol *valueSymbol_) : type(type_), valueSymbol(valueSymbol_) {}
+    MiddleDef(Type type_, ValueSymbol *valueSymbol_, int value_) : type(type_), value(value_), valueSymbol(valueSymbol_), isInit(true) {}
+    MiddleDef(Type type_, ValueSymbol *valueSymbol_, Immediate *value_) : type(type_), value(value_->value), valueSymbol(valueSymbol_), isInit(true) {}
+    MiddleDef(Type type_, ValueSymbol *valueSymbol_, ValueSymbol *srcValueSymbol_) : type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_), isInit(true) {}
+    OVERRIDE_OUTPUT;
+};
+
+// a = 1;
 // ASSIGN 1 a
 class MiddleUnaryOp : public MiddleCodeItem {
 public:
@@ -89,6 +113,57 @@ public:
     MiddleUnaryOp(Type type_, ValueSymbol *valueSymbol_, int value_=0) :
         type(type_), valueSymbol(valueSymbol_), value(value_) {}
 
+    OVERRIDE_OUTPUT;
+};
+
+
+
+class MiddleOffset : public MiddleCodeItem {
+public:
+    int offset;
+    ValueSymbol *src;
+    ValueSymbol *ret;
+    MiddleOffset(ValueSymbol *src_, int offset_, ValueSymbol *ret_) :
+        src(src_), offset(offset_), ret(ret_) {}
+    OVERRIDE_OUTPUT;
+};
+
+class MiddleMemoryOp : public MiddleCodeItem {
+public:
+    enum Type{
+        STORE,
+        LOAD
+    };
+    std::string type2str[2] = {"STORE", "LOAD"};
+    Type type;
+    int value;
+    ValueSymbol *sym1;
+    ValueSymbol *sym2;
+    // STORE sym1/value sym2
+    MiddleMemoryOp(Type type_, int value_, ValueSymbol *sym2_) : type(type_), value(value_), sym2(sym2_) {}
+    MiddleMemoryOp(Type type_, ValueSymbol *sym1_, ValueSymbol *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
+    OVERRIDE_OUTPUT;
+};
+
+class MiddleBinaryOp : public MiddleCodeItem {
+public:
+    enum Type{
+        ADD,
+        SUB,
+        MUL,
+        DIV,
+        MOD,
+        ERROR,
+    };
+    std::string type2str[10] = {"ADD", "SUB", "MUL", "DIV", "MOD", "ERROR"};
+    Type type;
+
+    Intermediate *src1;
+    Intermediate *src2;
+    Intermediate *target;
+
+    MiddleBinaryOp(Type type_, Intermediate *src1_, Intermediate *src2_, Intermediate *target_)
+        : type(type_), src1(src1_), src2(src2_), target(target_) {}
     OVERRIDE_OUTPUT;
 };
 

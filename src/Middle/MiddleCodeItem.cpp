@@ -40,8 +40,62 @@ void Func::setFuncBlock(BasicBlock *basicBlock) {
     block = basicBlock;
 }
 
+// Def
+std::ostream & MiddleDef::output(std::ostream &os) const {
+    os << type2str[type] << " ";
+    if (isInit) {
+        if (srcValueSymbol != nullptr) {
+            os << srcValueSymbol->name << " ";
+        }
+        else
+            os << value << " ";
+    }
+    os << valueSymbol->name << std::endl;
+    return os;
+}
 
+
+// UnaryOp
 std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
     os << type2str[type] << " " << value << " " << valueSymbol->name << std::endl;
+    return os;
+}
+
+// Offset
+std::ostream & MiddleOffset::output(std::ostream &os) const {
+    os << "OFFSET " << offset << " " << src->name << " " << ret->name << std::endl;
+    return os;
+}
+
+// MemoryOp
+std::ostream & MiddleMemoryOp::output(std::ostream &os) const {
+    if (sym1 == nullptr)
+        os << type2str[type] << " " << value << " " << sym2->name << std::endl;
+    else
+        os << type2str[type] << " " << sym1->name << " " << sym2->name << std::endl;
+    return os;
+}
+
+// BinaryOp
+std::ostream & MiddleBinaryOp::output(std::ostream &os) const {
+    os << type2str[type] << " ";
+    if (dynamic_cast<Immediate*>(src1) != nullptr) {
+        os << dynamic_cast<Immediate*>(src1)->value << " ";
+    }
+    else {
+        os << dynamic_cast<ValueSymbol*>(src1)->name << " ";
+    }
+    if (dynamic_cast<Immediate*>(src2) != nullptr) {
+        os << dynamic_cast<Immediate*>(src2)->value << " ";
+    }
+    else {
+        os << dynamic_cast<ValueSymbol*>(src2)->name << " ";
+    }
+    if (dynamic_cast<Immediate*>(target) != nullptr) {
+        os << dynamic_cast<Immediate*>(target)->value << std::endl;
+    }
+    else {
+        os << dynamic_cast<ValueSymbol*>(target)->name << std::endl;
+    }
     return os;
 }

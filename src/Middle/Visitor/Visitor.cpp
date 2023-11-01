@@ -9,7 +9,8 @@
 #include "../MiddleCode.h"
 #include "../Util/Calculate.h"
 #include "../../Util/Debug.h"
-
+#include "../../Util/Exception.h"
+#include "../Intermediate/Immediate.h"
 
 SymbolTable* Visitor::curTable;
 
@@ -57,7 +58,7 @@ void Visitor::visitConstDef(ConstDef *constDef) {
     if (!constDef->isArray()) {
         // 非数组且初始化，形如const int a = 10;
         // 初始值
-        auto constInitVal = visitConstExp(constDef->constInitVal->constExp);
+        auto constInitVal = Calculate::calcConstExp(constDef->constInitVal->constExp);
         // TODO:添加值 DONE
         auto valueSymbol = new ValueSymbol(name, constInitVal, true);
         curTable->add(valueSymbol);
@@ -65,7 +66,10 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             MiddleCode::getInstance().addGlobalValues(valueSymbol);
         }
         else {
-            // TODO: 处理局部常量
+            // TODO: 处理局部常量 DONE
+            // const int a = 10;
+            auto assign = new MiddleDef(MiddleDef::DEF_VAR, valueSymbol, constInitVal);
+            curBlock->add(assign);
         }
     }
     else {
@@ -95,8 +99,18 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 MiddleCode::getInstance().addGlobalValues(arraySymbol);
             }
             else {      // 如果不是全局变量的话，每个initvalue生成中间代码
-                // TODO: 局部数组
-                ;
+                // TODO: 局部数组 DONE
+                auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                curBlock->add(defArray);
+                for (int j = 0; j < initValues.size(); j ++ ) {
+                    auto tmp = new ValueSymbol(getTempName());
+                    auto offset = new MiddleOffset(arraySymbol, j * sizeof(int), tmp);
+                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, initValues[j], tmp);
+                    curBlock->add(offset);
+                    curBlock->add(store);
+                }
+                auto endArray = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                curBlock->add(endArray);
             }
         }
         else if (dims.size() == 2) {
@@ -140,10 +154,18 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             }
             else {
                 // 局部数组，利用flattenValues和assignPlace来确定要赋值的位置
-                // TODO: 局部数组
-                for (int i = 0; i < assignPlace.size(); i ++ ){
-                    DEBUG_PRINT("insert %d into place %d\n", flattenValues[i], assignPlace[i]);
+                // TODO: 局部数组 DONE
+                auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                curBlock->add(defArray);
+                for (int j = 0; j < assignPlace.size(); j ++ ) {
+                    auto tmp = new ValueSymbol(getTempName());
+                    auto offset = new MiddleOffset(arraySymbol, assignPlace[j] * sizeof(int), tmp);
+                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, flattenValues[j], tmp);
+                    curBlock->add(offset);
+                    curBlock->add(store);
                 }
+                auto endArray = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                curBlock->add(endArray);
             }
         }
     }
@@ -153,31 +175,70 @@ void Visitor::visitConstInitVal(ConstInitVal *constInitVal) {
     ;
 }
 
-int Visitor::visitConstExp(ConstExp *constExp) {
-    return Calculate::calcConstExp(constExp);
+void Visitor::visitConstExp(ConstExp *constExp) {
+    return;
 }
 
-void Visitor::visitAddExp(AddExp *addExp) {
-    for (auto mulExp : addExp->mulExps) {
-        visitMulExp(mulExp);
+Intermediate *Visitor::visitAddExp(AddExp *addExp) {
+
+    auto res = visitMulExp(addExp->mulExps[0]);
+
+    for (int i = 0; i < addExp->ops.size(); i ++ ) {
+        auto op = addExp->ops[i];
+        auto middleCodeType = op->tokenType==Token::PLUS ? MiddleBinaryOp::ADD : MiddleBinaryOp::SUB;
+
+        auto src1 = res;
+        auto src2 = visitMulExp(addExp->mulExps[i + 1]);
+
+        res = new ValueSymbol(getTempName());
+        auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
+        curBlock->add(middleCode);
     }
+
+    return res;
 }
 
-void Visitor::visitMulExp(MulExp *mulExp) {
-    for (auto x : mulExp->unaryExps) {
-        visitUnaryExp(x);
+Intermediate *Visitor::visitMulExp(MulExp *mulExp) {
+    auto res = visitUnaryExp(mulExp->unaryExps[0]);
+
+    for (int i = 0; i < mulExp->ops.size(); i ++ ) {
+        auto op = mulExp->ops[i];
+        MiddleBinaryOp::Type middleCodeType;
+        switch (op->tokenType) {
+            case Token::MULT:
+                middleCodeType = MiddleBinaryOp::MUL;
+                break;
+            case Token::DIV:
+                middleCodeType = MiddleBinaryOp::DIV;
+                break;
+            case Token::MOD:
+                middleCodeType = MiddleBinaryOp::MOD;
+                break;
+            default:
+                middleCodeType = MiddleBinaryOp::ERROR;
+        }
+
+        auto src1 = res;
+        auto src2 = visitUnaryExp(mulExp->unaryExps[i + 1]);
+
+        res = new ValueSymbol(getTempName());
+        auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
+        curBlock->add(middleCode);
     }
+    return res;
 }
 
-void Visitor::visitUnaryExp(UnaryExp *unaryExp) {
+Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
     auto primaryExp = unaryExp->primaryExp;
     auto ident = unaryExp->ident;
     auto funcRParams = unaryExp->funcRParams;
     auto inUnaryExp = unaryExp->unaryExp;
+
     if (primaryExp != nullptr) {
-        visitPrimaryExp(primaryExp);
+        return visitPrimaryExp(primaryExp);
     }
     if (inUnaryExp != nullptr) {
+        // TODO: unaryExp的符号
         visitUnaryExp(inUnaryExp);
     }
     //函数调用：在所属符号表中查找
@@ -188,44 +249,55 @@ void Visitor::visitUnaryExp(UnaryExp *unaryExp) {
         if (!curTable->contain(name, true)) {
             auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
             ErrorTable::getInstance().addError(error);
-            return;
+            return nullptr;
         }
         auto funcSymbol = dynamic_cast<FuncSymbol*>(curTable->getSymbol(name, true));
         visitFuncRParams(funcRParams, funcSymbol, ident->line);
     }
+    return nullptr;
 }
 
-void Visitor::visitPrimaryExp(PrimaryExp *primaryExp) {
+Intermediate * Visitor::visitPrimaryExp(PrimaryExp *primaryExp) {
     auto exp = primaryExp->exp;
     auto lVal = primaryExp->lVal;
     auto number = primaryExp->number;
+
     if (exp != nullptr) {
-        visitExp(exp);
+        return visitExp(exp);
     }
     else if (lVal != nullptr) {
-        visitLVal(lVal);
+        return visitLVal(lVal);
     }
     else if (number != nullptr) {
-        visitNumber(number);
+        return visitNumber(number);
     }
+    return nullptr;
 }
 
-void Visitor::visitExp(Exp *exp) {
-    visitAddExp(exp->addExp);
+Intermediate *Visitor::visitExp(Exp *exp) {
+    return visitAddExp(exp->addExp);
 }
 
 
-void Visitor::visitLVal(LVal *lVal) {
+Intermediate * Visitor::visitLVal(LVal *lVal) {
     auto ident = lVal->ident;
     std::string name = ident->content;
     // Error c
     if (!curTable->contain(name, true)) {
         auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
         ErrorTable::getInstance().addError(error);
+        return nullptr;
     }
-    for (auto x : lVal->exps) {
-        visitExp(x);
+
+    auto symbol = curTable->getSymbol(name, true);
+    auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
+    auto dim = valueSymbol->getDim();
+
+    if (dim == 0) {
+        return valueSymbol;
     }
+    // TODO: dim为其他情况，注意是exp
+    return nullptr;
 }
 
 void Visitor::visitVarDecl(VarDecl *varDecl) {
@@ -253,27 +325,41 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 MiddleCode::getInstance().addGlobalValues(symbol);
             }
             else {
-                // TODO:局部变量
-                ;
+                // TODO:局部变量 DONE
+                auto def = new MiddleDef(MiddleDef::DEF_VAR, symbol);
+                curBlock->add(def);
             }
         }
         //如果不是数组但是初始化了，int a = 10;
         else {
             // 全局变量
             if (curBlockLevel == 0) {
-
                 int value = Calculate::calcExp(varDef->initval->exp);
                 auto symbol = new ValueSymbol(name, value, false);
                 curTable->add(symbol);
                 MiddleCode::getInstance().addGlobalValues(symbol);
             }
             else {
-                // TODO: 局部变量，运行时计算，即输出中间表达式
-                ;
+                // TODO: 局部变量，运行时计算，即输出中间表达式，在visitExp后输出的可能是值，也可能是valueSymbol
+                auto symbol = new ValueSymbol(name);
+                curTable->add(symbol);
+
+                auto sym = visitExp(varDef->initval->exp);
+                // 如果visitExp的值是立即数
+                if (dynamic_cast<Immediate*>(sym) != nullptr) {
+                    DEBUG_PRINT_DIRECT("[visitVarDef] Immediate");
+                    auto def = new MiddleDef(MiddleDef::DEF_VAR, symbol, dynamic_cast<Immediate*>(sym));
+                    curBlock->add(def);
+                }
+                // 如果是ValueSymbol，即 DEF_VAR b a，将b的值赋给a，但由于b的值还未确定
+                else {
+                    DEBUG_PRINT_DIRECT("[visitVarDef] ValueSymbol");
+                    auto def = new MiddleDef(MiddleDef::DEF_VAR, symbol, dynamic_cast<ValueSymbol*>(sym));
+                    curBlock->add(def);
+                }
             }
         }
     }
-
     else {
         // TODO:具体维度 Done
         std::vector<int> dims;  //之后通过constInitVal得到
@@ -389,9 +475,10 @@ void Visitor::visitInitVal(InitVal *initVal) {
     }
 }
 
-void Visitor::visitNumber(Number *number) {
+Intermediate * Visitor::visitNumber(Number *number) {
     auto intConst = number->intConst;
     int x = intConst->val;
+    return new Immediate(x);
 }
 
 void Visitor::visitFuncDef(FuncDef *funcDef) {
@@ -754,4 +841,13 @@ std::vector<Exp *> Visitor::flattenOneInitVal(InitVal *initVal) {
         }
     }
     return exps;
+}
+
+int Visitor::alloc(int mem) {
+    stackSize += mem;
+    return stackSize;
+}
+
+std::string Visitor::getTempName() {
+    return "T" + std::to_string(tmpVarNumber ++ );
 }

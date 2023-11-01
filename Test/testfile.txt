@@ -1,14 +1,20 @@
 const int c[10] = {1};
 const int d[10][10] = {{1,2},{3,4}};
 int a;
-int b = 100;
+int b = 100 + 200 * 10 / 2;
 int e[10] = {1,2,3,4};
 int g[10][10] = {{1,2},{3,4,5};
 
 int f(){
-    //const int a = 10;
-    //const int b[1100] = {1};
-    //const int d[11][11] = {{1, 2}, {3, 4};
+    const cc = 10;
+    const int aa[10] = {1,2,3,4,5};
+    const int bb[4][4] = {{1}, {2}, {3}};
+    return 1;
+}
+
+int func2(){
+    int a = 10;
+    int b = 3 * a * (3 + 10) % a;
     return 0;
 }
 

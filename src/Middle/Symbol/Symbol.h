@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "../Intermediate/Intermediate.h"
+
 enum BasicType{
     INT,
     VOID
@@ -15,9 +17,10 @@ enum BasicType{
 enum ValueType{
     SINGLE,
     ARRAY,
+    POINTER
 };
 
-class Symbol{
+class Symbol : public Intermediate{
 public:
     std::string name;
     BasicType basicType;    // 默认都是int
@@ -71,13 +74,13 @@ public:
     int blockLevel;         //是在第几个嵌套括号中，全局变量就是0
 
     //形如int a; int a=10; const int a = 10;
-    ValueSymbol(std::string &name_, int initValue_=0, bool isConst_=false)
+    ValueSymbol(std::string name_, int initValue_=0, bool isConst_=false)
     : Symbol(name_), valueType(SINGLE), initValue(initValue_), isConstValue(isConst_) {};
     //形如int a[10];
-    ValueSymbol(std::string &name_, std::vector<int> &dims_, bool isConst_=false)
+    ValueSymbol(std::string name_, std::vector<int> &dims_, bool isConst_=false)
     : Symbol(name_), valueType(ARRAY), dims(dims_), isConstValue(isConst_), initValues({0}) {};
     //形如int a[10] = {...}; a[10][10]={...};
-    ValueSymbol(std::string &name_, std::vector<int> &dims_, std::vector<int> &initValues_, bool isConst_=false)
+    ValueSymbol(std::string name_, std::vector<int> &dims_, std::vector<int> &initValues_, bool isConst_=false)
     : Symbol(name_), valueType(ARRAY), dims(dims_), initValues(initValues_), isConstValue(isConst_) {};
     bool isConst() const {
         return isConstValue;

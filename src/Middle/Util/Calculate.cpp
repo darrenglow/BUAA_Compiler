@@ -6,6 +6,7 @@
 #include "../Visitor/Visitor.h"
 #include "cassert"
 #include "../../Util/Debug.h"
+#include "../../Util/Exception.h"
 
 
 int Calculate::calcExp(Exp *exp) {
@@ -67,6 +68,7 @@ int Calculate::calcMulExp(MulExp *mulExp) {
 int Calculate::calcUnaryExp(UnaryExp *unaryExp) {
     auto primaryExp = unaryExp->primaryExp;
     auto unaryOp = unaryExp->unaryOp;
+    auto ident = unaryExp->ident;   // 函数调用
     int res = 0;
 
     if (primaryExp != nullptr) {
@@ -81,6 +83,7 @@ int Calculate::calcUnaryExp(UnaryExp *unaryExp) {
             res = calcExp(exp);
         else
             std::cout << "Error in calcUnaryExp" << std::endl;
+        return res;
     }
     else if (unaryOp != nullptr) {
         switch (unaryOp->unaryOp->tokenType) {
@@ -96,8 +99,11 @@ int Calculate::calcUnaryExp(UnaryExp *unaryExp) {
             default:
                 std::cout << "Error in calcUnaryExp" << std::endl;
         }
+        return res;
     }
-    return res;
+    else{
+        throw MyError();
+    }
 }
 
 // LVal → Ident {'[' Exp ']'} //1.普通变量 2.一维数组 3.二维数组
@@ -109,7 +115,22 @@ int Calculate::calcLVal(LVal *lVal) {
     auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
     assert(valueSymbol != nullptr);
     // TODO: 变量的值，和从数组中取值。
-    return 0;
+    if (valueSymbol->valueType == ValueType::SINGLE) {
+        return valueSymbol->initValue;
+    }
+    else if (valueSymbol->valueType == ValueType::ARRAY) {
+        // TODO: []中放func可能有问题？
+        if (valueSymbol->dims.size() == 1) {    // 一维
+            int x = calcExp(lVal->exps[0]);
+            return valueSymbol->initValues[x];
+        }
+        else if (valueSymbol->dims.size() == 2) {
+            int x1 = calcExp(lVal->exps[0]);
+            int x2 = calcExp(lVal->exps[1]);
+            return valueSymbol->initValues[x1 * valueSymbol->dims[1] + x2];
+        }
+    }
+    return -1;
 }
 
 

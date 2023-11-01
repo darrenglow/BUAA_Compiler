@@ -20,6 +20,12 @@ public:
     int unique = 0;
     int curBlockLevel = 0;
     BasicBlock *curBlock;
+    int stackSize = 0;
+    int tmpVarNumber = 0;
+
+    std::string getTempName();
+
+    int alloc(int mem);
 
     Visitor(AST* ast_) : ast(ast_) {}
 
@@ -33,21 +39,21 @@ public:
 
     void visitConstDef(ConstDef *constDef);
 
-    int visitConstExp(ConstExp *constExp);
+    void visitConstExp(ConstExp *constExp);
 
-    void visitAddExp(AddExp *addExp);
+    Intermediate * visitAddExp(AddExp *addExp);
 
     void visitConstInitVal(ConstInitVal *constInitVal);
 
-    void visitMulExp(MulExp *mulExp);
+    Intermediate * visitMulExp(MulExp *mulExp);
 
-    void visitUnaryExp(UnaryExp *unaryExp);
+    Intermediate * visitUnaryExp(UnaryExp *unaryExp);
 
-    void visitPrimaryExp(PrimaryExp *primaryExp);
+    Intermediate * visitPrimaryExp(PrimaryExp *primaryExp);
 
-    void visitExp(Exp *exp);
+    Intermediate * visitExp(Exp *exp);
 
-    void visitLVal(LVal *lVal);
+    Intermediate * visitLVal(LVal *lVal);
 
     void visitVarDecl(VarDecl *varDecl);
 
@@ -55,7 +61,7 @@ public:
 
     void visitInitVal(InitVal *initVal);
 
-    void visitNumber(Number *number);
+    Intermediate * visitNumber(Number *number);
 
     void visitFuncDef(FuncDef *funcDef);
 

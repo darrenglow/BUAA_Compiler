@@ -17,9 +17,12 @@
         do { \
             printf(format, __VA_ARGS__); \
         } while(0)
+
+#define DEBUG_PRINT_DIRECT(x) std::cout << x << std::endl
 #else
 // 如果没有定义 DEBUG 宏，则将 DEBUG_PRINT 定义为空
     #define DEBUG_PRINT(message)
+    #define DEBUG_PRINT_DIRECT(message)
 #endif
 
 #endif //BUAA_COMPILER_DEBUG_H
