@@ -13,8 +13,8 @@ int f(){
 }
 
 int func2(){
-    int a = 10;
-    int b = 3 * a * (3 + 10) % a;
+    int a = +-----+10;
+    int b = a * 10 + 111;
     return 0;
 }
 

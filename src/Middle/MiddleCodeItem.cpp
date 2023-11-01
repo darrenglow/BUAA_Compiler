@@ -44,11 +44,14 @@ void Func::setFuncBlock(BasicBlock *basicBlock) {
 std::ostream & MiddleDef::output(std::ostream &os) const {
     os << type2str[type] << " ";
     if (isInit) {
-        if (srcValueSymbol != nullptr) {
-            os << srcValueSymbol->name << " ";
+        if (dynamic_cast<ValueSymbol*>(srcValueSymbol) != nullptr) {
+            os << dynamic_cast<ValueSymbol*>(srcValueSymbol)->name << " ";
         }
-        else
-            os << value << " ";
+        else if (dynamic_cast<Immediate*>(srcValueSymbol) != nullptr)
+            os << dynamic_cast<Immediate*>(srcValueSymbol)->value << " ";
+        else {
+            std::cout << "[MiddleDef output] ERROR" << std::endl;
+        }
     }
     os << valueSymbol->name << std::endl;
     return os;
@@ -57,7 +60,23 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
 
 // UnaryOp
 std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
-    os << type2str[type] << " " << value << " " << valueSymbol->name << std::endl;
+    os << type2str[type] << " ";
+
+    if (dynamic_cast<ValueSymbol*>(srcValueSymbol) != nullptr) {
+        os << dynamic_cast<ValueSymbol*>(srcValueSymbol)->name << " ";
+    }
+    else if (dynamic_cast<Immediate*>(srcValueSymbol) != nullptr)
+        os << dynamic_cast<Immediate*>(srcValueSymbol)->value << " ";
+    else {
+        std::cout << "[MiddleDef output] ERROR" << std::endl;
+    }
+
+    if (dynamic_cast<ValueSymbol*>(valueSymbol) != nullptr) {
+        os << dynamic_cast<ValueSymbol*>(valueSymbol)->name << " " << std::endl;
+    }
+    else {
+        std::cout << "[MiddleUnaryOp output] ERROR" << std::endl;
+    }
     return os;
 }
 

@@ -68,7 +68,7 @@ void Visitor::visitConstDef(ConstDef *constDef) {
         else {
             // TODO: 处理局部常量 DONE
             // const int a = 10;
-            auto assign = new MiddleDef(MiddleDef::DEF_VAR, valueSymbol, constInitVal);
+            auto assign = new MiddleDef(MiddleDef::DEF_VAR, valueSymbol, new Immediate(constInitVal));
             curBlock->add(assign);
         }
     }
@@ -239,7 +239,26 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
     }
     if (inUnaryExp != nullptr) {
         // TODO: unaryExp的符号
-        visitUnaryExp(inUnaryExp);
+        auto src = visitUnaryExp(inUnaryExp);
+        auto op = unaryExp->unaryOp;
+        MiddleUnaryOp::Type middleCodeType;
+        switch (op->unaryOp->tokenType) {
+            case Token::PLUS:
+                middleCodeType = MiddleUnaryOp::POSITIVE;
+                break;
+            case Token::MINU:
+                middleCodeType = MiddleUnaryOp::NEGATIVE;
+                break;
+            case Token::NOT:
+                middleCodeType = MiddleUnaryOp::NOT;
+                break;
+            default:
+                middleCodeType = MiddleUnaryOp::ERROR;
+        }
+        auto res = new ValueSymbol(getTempName());
+        auto middleCode = new MiddleUnaryOp(middleCodeType, res, src);
+        curBlock->add(middleCode);
+        return res;
     }
     //函数调用：在所属符号表中查找
     else if (ident != nullptr) {

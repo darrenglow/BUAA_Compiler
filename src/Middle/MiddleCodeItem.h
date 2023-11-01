@@ -87,31 +87,37 @@ public:
     };
     std::string type2str[4] = {"DEF_VAR", "DEF_ARRAY", "END_ARRAY"};
     Type type;
-    int value;
     bool isInit;
+
     ValueSymbol *valueSymbol;
-    ValueSymbol *srcValueSymbol;
+    Intermediate *srcValueSymbol;   // src可能是立即数，可能是变量名
 
     MiddleDef(Type type_, ValueSymbol *valueSymbol_) : type(type_), valueSymbol(valueSymbol_) {}
-    MiddleDef(Type type_, ValueSymbol *valueSymbol_, int value_) : type(type_), value(value_), valueSymbol(valueSymbol_), isInit(true) {}
-    MiddleDef(Type type_, ValueSymbol *valueSymbol_, Immediate *value_) : type(type_), value(value_->value), valueSymbol(valueSymbol_), isInit(true) {}
-    MiddleDef(Type type_, ValueSymbol *valueSymbol_, ValueSymbol *srcValueSymbol_) : type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_), isInit(true) {}
+    MiddleDef(Type type_, ValueSymbol *valueSymbol_, Intermediate *srcValueSymbol_) : type(type_), srcValueSymbol(srcValueSymbol_), valueSymbol(valueSymbol_), isInit(true) {}
     OVERRIDE_OUTPUT;
 };
 
 // a = 1;
 // ASSIGN 1 a
+// POSITIVE a T1
 class MiddleUnaryOp : public MiddleCodeItem {
 public:
     enum Type{
         ASSIGN,
+        POSITIVE,
+        NEGATIVE,
+        NOT,
+        ERROR,
     };
     Type type;
-    ValueSymbol *valueSymbol;
-    int value;
-    std::string type2str[2] = {"ASSIGN"};
-    MiddleUnaryOp(Type type_, ValueSymbol *valueSymbol_, int value_=0) :
-        type(type_), valueSymbol(valueSymbol_), value(value_) {}
+    Intermediate *valueSymbol;
+    Intermediate *srcValueSymbol;   // srcValueSymbol可能是值，可能是变量
+
+    std::string type2str[8] = {"ASSIGN", "POSITIVE", "NEGATIVE", "NOT", "ERROR"};
+    // op 1 a
+    // op a a
+    MiddleUnaryOp(Type type_, Intermediate *valueSymbol_, Intermediate *srcValueSymbol_) :
+        type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_) {}
 
     OVERRIDE_OUTPUT;
 };
