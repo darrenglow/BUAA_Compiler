@@ -87,11 +87,8 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             auto constExps = flattenConstInitVal(constDef->constInitVal);
             std::vector<int> initValues;
             initValues.reserve(constExps.size());
-            for (int i = 0; i < dims[0]; i ++ ) {
-                if (i >= constExps.size())
-                    initValues.push_back(0);
-                else
-                    initValues.push_back(Calculate::calcConstExp(constExps[i]));
+            for (auto constExp : constExps) {
+                initValues.push_back(Calculate::calcConstExp(constExp));
             }
 
             if (curBlockLevel == 0) {       // 如果是全局变量的话
@@ -102,12 +99,14 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 // TODO: 局部数组 DONE
                 auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
                 curBlock->add(defArray);
-                for (int j = 0; j < initValues.size(); j ++ ) {
+                int offsetCount = 0;
+                for (auto x : initValues) {
                     auto tmp = new ValueSymbol(getTempName());
-                    auto offset = new MiddleOffset(arraySymbol, j * sizeof(int), tmp);
-                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, initValues[j], tmp);
+                    auto offset = new MiddleOffset(arraySymbol, offsetCount * sizeof(int), tmp);
+                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
                     curBlock->add(store);
+                    offsetCount ++ ;
                 }
                 auto endArray = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
                 curBlock->add(endArray);
@@ -116,36 +115,10 @@ void Visitor::visitConstDef(ConstDef *constDef) {
         else if (dims.size() == 2) {
             // 二维数组
             std::vector<int> initValues;
-            std::vector<int> assignPlace;
-            std::vector<int> flattenValues;
-
-            // 有点堆屎山了。。。
             auto constExps = flattenConstInitVal(constDef->constInitVal);
-            flattenValues.reserve(constExps.size());
+            initValues.reserve(constExps.size());
             for (auto x : constExps) {
-                flattenValues.push_back(Calculate::calcConstExp(x));
-            }
-
-
-            for (int i = 0; i < dims[0]; i ++ ) {
-                if (i >= constDef->constInitVal->constInitVals.size()) {
-                    for (int j = 0; j < dims[1]; j ++ ) {
-                        initValues.push_back(0);
-                    }
-                }
-                else {
-                    auto firstLayer = flattenOneConstInitVal(constDef->constInitVal->constInitVals[i]);
-                    for (int j = 0; j < dims[1] ; j ++ ) {
-                        if (j >= firstLayer.size()) {
-                            initValues.push_back(0);
-                        }
-                        else {
-                            int value = Calculate::calcConstExp(firstLayer[j]);
-                            initValues.push_back(value);
-                            assignPlace.push_back(i * dims[1] + j);
-                        }
-                    }
-                }
+                initValues.push_back(Calculate::calcConstExp(x));
             }
             if (curBlockLevel == 0) {
                 // 全局数组
@@ -157,12 +130,14 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 // TODO: 局部数组 DONE
                 auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
                 curBlock->add(defArray);
-                for (int j = 0; j < assignPlace.size(); j ++ ) {
+                int offsetCount = 0;
+                for (auto x : initValues) {
                     auto tmp = new ValueSymbol(getTempName());
-                    auto offset = new MiddleOffset(arraySymbol, assignPlace[j] * sizeof(int), tmp);
-                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, flattenValues[j], tmp);
+                    auto offset = new MiddleOffset(arraySymbol, offsetCount * sizeof(int), tmp);
+                    auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
                     curBlock->add(store);
+                    offsetCount ++ ;
                 }
                 auto endArray = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
                 curBlock->add(endArray);
@@ -194,13 +169,11 @@ Intermediate *Visitor::visitAddExp(AddExp *addExp) {
         auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
         curBlock->add(middleCode);
     }
-
     return res;
 }
 
 Intermediate *Visitor::visitMulExp(MulExp *mulExp) {
     auto res = visitUnaryExp(mulExp->unaryExps[0]);
-
     for (int i = 0; i < mulExp->ops.size(); i ++ ) {
         auto op = mulExp->ops[i];
         MiddleBinaryOp::Type middleCodeType;
@@ -237,8 +210,8 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
     if (primaryExp != nullptr) {
         return visitPrimaryExp(primaryExp);
     }
-    if (inUnaryExp != nullptr) {
-        // TODO: unaryExp的符号
+    else if (inUnaryExp != nullptr) {
+        // TODO: unaryExp的符号 Done
         auto src = visitUnaryExp(inUnaryExp);
         auto op = unaryExp->unaryOp;
         MiddleUnaryOp::Type middleCodeType;
@@ -310,7 +283,10 @@ Intermediate * Visitor::visitLVal(LVal *lVal) {
 
     auto symbol = curTable->getSymbol(name, true);
     auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
-    auto dim = valueSymbol->getDim();
+
+    int dim = -1;
+    if (valueSymbol != nullptr)
+        dim = valueSymbol->getDim();
 
     if (dim == 0) {
         return valueSymbol;
@@ -359,7 +335,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 MiddleCode::getInstance().addGlobalValues(symbol);
             }
             else {
-                // TODO: 局部变量，运行时计算，即输出中间表达式，在visitExp后输出的可能是值，也可能是valueSymbol
+                // TODO: 局部变量，运行时计算，即输出中间表达式，在visitExp后输出的可能是值，也可能是valueSymbol, DONE
                 auto symbol = new ValueSymbol(name);
                 curTable->add(symbol);
 
@@ -394,89 +370,98 @@ void Visitor::visitVarDef(VarDef *varDef) {
             if (!varDef->isInit()) {
                 // 是全局变量且未初始化
                 if (curBlockLevel == 0) {
+                    std::vector<int> initValues(arraySymbol->getFlattenDim(), 0);
+                    arraySymbol->setInitValues(initValues);
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
-                    // TODO: 局部变量且未初始化
-                    ;
+                    // TODO: 局部变量且未初始化 DONE
+                    auto def = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                    curBlock->add(def);
+                    auto endDef = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                    curBlock->add(endDef);
                 }
             }
             // 是一维数组并且初始化
             else {
                 auto exps = flattenInitVal(varDef->initval);
-                std::vector<int> initValues;
-                initValues.reserve(exps.size());
-                for (int i = 0; i < dims[0]; i ++ ) {
-                    if (i >= exps.size())
-                        initValues.push_back(0);
-                    else
-                        initValues.push_back(Calculate::calcExp(exps[i]));
-                }
                 // 全局变量且且初始化
                 if (curBlockLevel == 0) {
-
+                    std::vector<int> initValues;
+                    initValues.reserve(exps.size());
+                    for (int i = 0; i < dims[0]; i ++ ) {
+                        if (i >= exps.size())
+                            initValues.push_back(0);
+                        else
+                            initValues.push_back(Calculate::calcExp(exps[i]));
+                    }
                     arraySymbol->setInitValues(initValues);
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
-                    // TODO: 局部变量并且初始化
-                    ;
+                    // TODO: 局部数组并且初始化 DONE
+                    auto def = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                    curBlock->add(def);
+                    int offsetCount = 0;
+                    for (auto exp : exps) {
+                        auto sym = visitExp(exp);
+                        DEBUG_PRINT_DIRECT("[visitVarDef] Immediate");
+                        auto tmp = new ValueSymbol(getTempName());
+                        auto offset = new MiddleOffset(arraySymbol, offsetCount * sizeof(int), tmp);
+                        auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
+                        curBlock->add(offset);
+                        curBlock->add(store);
+                        offsetCount ++ ;
+                    }
+                    auto endDef = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                    curBlock->add(endDef);
                 }
             }
         }
         // 二维数组
         else if (dims.size() == 2) {
-            std::vector<int> initValues;
-            std::vector<int> assignPlace;
-            std::vector<int> flattenValues;
-
             // 二维数组并且未初始化
             if (!varDef->isInit()) {
                 if (curBlockLevel == 0) {
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
-                    // TODO: 局部数组未初始化
+                    // TODO: 局部数组未初始化 DONE
+                    auto def = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                    curBlock->add(def);
+                    auto endDef = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                    curBlock->add(endDef);
                 }
             }
             // 二维数组且初始化
             else {
                 auto exps = flattenInitVal(varDef->initval);
-                flattenValues.reserve(exps.size());
-                for (auto x : exps) {
-                    flattenValues.push_back(Calculate::calcExp(x));
-                }
-
-                for (int i = 0; i < dims[0]; i ++ ) {
-                    if (i >= varDef->initval->initVals.size()) {
-                        for (int j = 0; j < dims[1]; j ++ ) {
-                            initValues.push_back(0);
-                        }
-                    }
-                    else {
-                        auto firstLayer = flattenOneInitVal(varDef->initval->initVals[i]);
-                        for (int j = 0; j < dims[1] ; j ++ ) {
-                            if (j >= firstLayer.size()) {
-                                initValues.push_back(0);
-                            }
-                            else {
-                                int value = Calculate::calcExp(firstLayer[j]);
-                                initValues.push_back(value);
-                                assignPlace.push_back(i * dims[1] + j);
-                            }
-                        }
-                    }
-                }
+                // 全局二维数组
                 if (curBlockLevel == 0) {
+                    std::vector<int> initValues;
+                    initValues.reserve(exps.size());
+                    for (auto x : exps) {
+                        initValues.push_back(Calculate::calcExp(x));
+                    }
                     arraySymbol->setInitValues(initValues);
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
-                    // 局部数组，利用flattenValues和assignPlace来确定要赋值的位置
                     // TODO: 局部数组
-                    for (int i = 0; i < assignPlace.size(); i ++ ){
-                        DEBUG_PRINT("insert %d into place %d\n", flattenValues[i], assignPlace[i]);
+                    auto def = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
+                    curBlock->add(def);
+                    int offsetCount = 0;
+                    for (auto exp : exps) {
+                        auto sym = visitExp(exp);
+                        auto tmp = new ValueSymbol(getTempName());
+                        auto offset = new MiddleOffset(arraySymbol, offsetCount * sizeof(int), tmp);
+                        auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
+                        curBlock->add(offset);
+                        curBlock->add(store);
+                        offsetCount ++ ;
                     }
+                    auto endDef = new MiddleDef(MiddleDef::END_ARRAY, arraySymbol);
+                    curBlock->add(endDef);
                 }
             }
         }
@@ -528,6 +513,7 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
 
     auto funcBlock = new BasicBlock(BasicBlock::FUNC);
     curBlock = funcBlock;
+
     visitBlock(funcDef->block, false);
     middleFunc->setFuncBlock(funcBlock);
 
@@ -780,6 +766,7 @@ void Visitor::visitMainFuncDef(MainFuncDef *mainFuncDef) {
 
 void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line) {
     if (funcRParams != nullptr) {
+        DEBUG_PRINT_DIRECT("[visitFuncRParams]");
         // Error d
         // 调用参数个数和定义的参数个数不匹配
         if (funcRParams->exps.size() != funcSymbol->num) {

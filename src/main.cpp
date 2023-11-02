@@ -41,13 +41,11 @@ int main()
     parser -> printAST();
 #endif
 #ifdef ErrorHandle
-    ErrorTable::getInstance().printErrors();
-#endif
     if (ErrorTable::getInstance().hasError()) {
         ErrorTable::getInstance().printErrors();
         return 0;
     }
-
+#endif
     //============ MIDDLE =================
 #ifdef MiddleCodeGeneration
     MiddleCode::doMiddleCodeGeneration();

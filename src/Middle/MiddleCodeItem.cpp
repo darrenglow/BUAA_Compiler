@@ -44,14 +44,7 @@ void Func::setFuncBlock(BasicBlock *basicBlock) {
 std::ostream & MiddleDef::output(std::ostream &os) const {
     os << type2str[type] << " ";
     if (isInit) {
-        if (dynamic_cast<ValueSymbol*>(srcValueSymbol) != nullptr) {
-            os << dynamic_cast<ValueSymbol*>(srcValueSymbol)->name << " ";
-        }
-        else if (dynamic_cast<Immediate*>(srcValueSymbol) != nullptr)
-            os << dynamic_cast<Immediate*>(srcValueSymbol)->value << " ";
-        else {
-            std::cout << "[MiddleDef output] ERROR" << std::endl;
-        }
+        os << " " << srcValueSymbol->printMiddleCode() << " ";
     }
     os << valueSymbol->name << std::endl;
     return os;
@@ -61,22 +54,9 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
 // UnaryOp
 std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
     os << type2str[type] << " ";
+    os << srcValueSymbol->printMiddleCode() << " ";
+    os << valueSymbol->printMiddleCode() << std::endl;
 
-    if (dynamic_cast<ValueSymbol*>(srcValueSymbol) != nullptr) {
-        os << dynamic_cast<ValueSymbol*>(srcValueSymbol)->name << " ";
-    }
-    else if (dynamic_cast<Immediate*>(srcValueSymbol) != nullptr)
-        os << dynamic_cast<Immediate*>(srcValueSymbol)->value << " ";
-    else {
-        std::cout << "[MiddleDef output] ERROR" << std::endl;
-    }
-
-    if (dynamic_cast<ValueSymbol*>(valueSymbol) != nullptr) {
-        os << dynamic_cast<ValueSymbol*>(valueSymbol)->name << " " << std::endl;
-    }
-    else {
-        std::cout << "[MiddleUnaryOp output] ERROR" << std::endl;
-    }
     return os;
 }
 
@@ -88,33 +68,17 @@ std::ostream & MiddleOffset::output(std::ostream &os) const {
 
 // MemoryOp
 std::ostream & MiddleMemoryOp::output(std::ostream &os) const {
-    if (sym1 == nullptr)
-        os << type2str[type] << " " << value << " " << sym2->name << std::endl;
-    else
-        os << type2str[type] << " " << sym1->name << " " << sym2->name << std::endl;
+    os << type2str[type] << " ";
+    os << sym1->printMiddleCode() << " ";
+    os << sym2->printMiddleCode() << std::endl;
     return os;
 }
 
 // BinaryOp
 std::ostream & MiddleBinaryOp::output(std::ostream &os) const {
     os << type2str[type] << " ";
-    if (dynamic_cast<Immediate*>(src1) != nullptr) {
-        os << dynamic_cast<Immediate*>(src1)->value << " ";
-    }
-    else {
-        os << dynamic_cast<ValueSymbol*>(src1)->name << " ";
-    }
-    if (dynamic_cast<Immediate*>(src2) != nullptr) {
-        os << dynamic_cast<Immediate*>(src2)->value << " ";
-    }
-    else {
-        os << dynamic_cast<ValueSymbol*>(src2)->name << " ";
-    }
-    if (dynamic_cast<Immediate*>(target) != nullptr) {
-        os << dynamic_cast<Immediate*>(target)->value << std::endl;
-    }
-    else {
-        os << dynamic_cast<ValueSymbol*>(target)->name << std::endl;
-    }
+    os << src1->printMiddleCode() << " ";
+    os << src2->printMiddleCode() << " ";
+    os << target->printMiddleCode() << std::endl;
     return os;
 }

@@ -29,6 +29,7 @@ public:
     virtual ~Symbol() = default;
     virtual bool isConst() const = 0;
     virtual int getDim() const = 0;
+    std::string printMiddleCode();
 };
 
 class FuncFParamSymbol : public Symbol  {

@@ -11,6 +11,7 @@ class Immediate : public Intermediate{
 public:
     explicit Immediate(int value_) : value(value_) {}
     int value;
+    std::string printMiddleCode();
 };
 
 #endif //BUAA_COMPILER_IMMEDIATE_H

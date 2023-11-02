@@ -142,12 +142,10 @@ public:
     };
     std::string type2str[2] = {"STORE", "LOAD"};
     Type type;
-    int value;
-    ValueSymbol *sym1;
-    ValueSymbol *sym2;
+    Intermediate *sym1;
+    Intermediate *sym2;
     // STORE sym1/value sym2
-    MiddleMemoryOp(Type type_, int value_, ValueSymbol *sym2_) : type(type_), value(value_), sym2(sym2_) {}
-    MiddleMemoryOp(Type type_, ValueSymbol *sym1_, ValueSymbol *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
+    MiddleMemoryOp(Type type_, Intermediate *sym1_, ValueSymbol *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
     OVERRIDE_OUTPUT;
 };
 

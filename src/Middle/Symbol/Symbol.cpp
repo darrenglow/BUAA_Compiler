@@ -5,6 +5,10 @@
 
 #include <utility>
 
+std::string Symbol::printMiddleCode() {
+    return name;
+}
+
 int ValueSymbol::getDim() const {
     return dims.size();
 }

@@ -8,5 +8,6 @@
 class Intermediate {
 public:
     virtual ~Intermediate()=default;
+    virtual std::string printMiddleCode() = 0;
 };
 #endif //BUAA_COMPILER_INTERMEDIATE_H
