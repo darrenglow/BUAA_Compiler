@@ -28,6 +28,9 @@ std::ostream & BasicBlock::output(std::ostream &os) const {
     os << "### " << type2str[type] << " END" << std::endl;
     return os;
 }
+Label * BasicBlock::getLabel() {
+    return label;
+}
 
 // Func
 std::ostream & Func::output(std::ostream &os) const {
@@ -44,7 +47,7 @@ void Func::setFuncBlock(BasicBlock *basicBlock) {
 std::ostream & MiddleDef::output(std::ostream &os) const {
     os << type2str[type] << " ";
     if (isInit) {
-        os << " " << srcValueSymbol->printMiddleCode() << " ";
+        os << srcValueSymbol->printMiddleCode() << " ";
     }
     os << valueSymbol->name << std::endl;
     return os;
@@ -80,5 +83,14 @@ std::ostream & MiddleBinaryOp::output(std::ostream &os) const {
     os << src1->printMiddleCode() << " ";
     os << src2->printMiddleCode() << " ";
     os << target->printMiddleCode() << std::endl;
+    return os;
+}
+
+// MiddleJump
+std::ostream & MiddleJump::output(std::ostream &os) const {
+    os << type2str[type] << " ";
+    if (src != nullptr)
+        os << src->printMiddleCode() << " ";
+    os << label->label << std::endl;
     return os;
 }

@@ -53,13 +53,14 @@ public:
         BRANCH
     };
     Type type;
-    Label *label;
+    Label *label;   // FUNC, LOOP, BRANCH
     std::string type2str[5] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
     std::vector<MiddleCodeItem*> middleCodeItems;
 
     explicit BasicBlock(Type type_) : type(type_), label(new Label()) {}
 
     void add(MiddleCodeItem *middleCodeItem);
+    Label * getLabel();
     OVERRIDE_OUTPUT;
 };
 
@@ -140,7 +141,7 @@ public:
         STORE,
         LOAD
     };
-    std::string type2str[2] = {"STORE", "LOAD"};
+    std::string type2str[3] = {"STORE", "LOAD"};
     Type type;
     Intermediate *sym1;
     Intermediate *sym2;
@@ -157,18 +158,42 @@ public:
         MUL,
         DIV,
         MOD,
+        EQ,
+        NE,
+        GT,
+        GE,
+        LT,
+        LE,
         ERROR,
     };
-    std::string type2str[10] = {"ADD", "SUB", "MUL", "DIV", "MOD", "ERROR"};
+    std::string type2str[15] = {"ADD", "SUB", "MUL", "DIV", "MOD", "EQ", "NE", "GT", "GE", "LT", "LE", "ERROR"};
     Type type;
 
     Intermediate *src1;
     Intermediate *src2;
     Intermediate *target;
-
     MiddleBinaryOp(Type type_, Intermediate *src1_, Intermediate *src2_, Intermediate *target_)
         : type(type_), src1(src1_), src2(src2_), target(target_) {}
     OVERRIDE_OUTPUT;
 };
 
+// JUMP_EQZ a label
+class MiddleJump : public MiddleCodeItem {
+public:
+    enum Type {
+        JUMP,
+        JUMP_EQZ,
+        JUMP_NEZ
+    };
+    std::string type2str[10] = {"JUMP", "JUMP_EQZ", "JUMP_NEZ"};
+    Type type;
+    Intermediate *src;
+    Label *label;
+    MiddleJump(Type type_, Label *label_)
+        : type(type_), label(label_) {}
+    MiddleJump(Type type_, Intermediate *src_, Label *label_)
+        : type(type_), src(src_), label(label_) {}
+
+    OVERRIDE_OUTPUT;
+};
 #endif //BUAA_COMPILER_MIDDLECODEITEM_H

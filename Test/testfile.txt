@@ -21,14 +21,21 @@ void testVarDef(){
     const int a8[1] = {1};
     const int a9[2][2] = {{1, 2}, {3, 4}};
 
-    // TODO: 未实现的
-    // int a10 = a4[0];
+    int a10 = a4[0];
+    int a11 = a7[0][1];
+    int a12 = a7[1][1];
+    // int a13 = a4[func1()];
 }
 
-void f2(int x[])
-{
+void testIf() {
+    int a = 10;
+    int b[4] = {1, 2, 3, 4};
+    if (a > 1 && b[1] < 15 || a < 10) {
+        int b = 1;
+    }
     return;
 }
+
 
 int main() {
     int a = b;

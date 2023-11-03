@@ -75,15 +75,15 @@ public:
 
     void visitIfStmt(IfStmt *ifStmt);
 
-    void visitCond(Cond *cond);
+    void visitCond(Cond *cond, Label *trueLabel, Label *falseLabel);
 
-    void visitLOrExp(LOrExp *lOrExp);
+    void visitLOrExp(LOrExp *lOrExp, Label *trueLabel, Label *falseLabel);
 
-    void visitLAndExp(LAndExp *lAndExp);
+    void visitLAndExp(LAndExp *lAndExp, Label *trueLabel, Label *falseLabel);
 
-    void visitEqExp(EqExp *eqExp);
+    Intermediate * visitEqExp(EqExp *eqExp);
 
-    void visitRelExp(RelExp *relExp);
+    Intermediate * visitRelExp(RelExp *relExp);
 
     void visitOutputStmt(OutputStmt *outputStmt);
 

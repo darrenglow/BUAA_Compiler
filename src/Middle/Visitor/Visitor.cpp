@@ -291,7 +291,31 @@ Intermediate * Visitor::visitLVal(LVal *lVal) {
     if (dim == 0) {
         return valueSymbol;
     }
-    // TODO: dim为其他情况，注意是exp
+    // TODO: dim为其他情况，注意是exp，还要考虑如果是函数的调用？
+    else if (dim == 1) {
+        int offsetCount = Calculate::calcExp(lVal->exps[0]);
+        auto tmp = new ValueSymbol(getTempName());
+        auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
+        auto ret = new ValueSymbol(getTempName());
+        auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+        curBlock->add(offset);
+        curBlock->add(load);
+        return ret;
+    }
+    else if (dim == 2) {
+        int row = Calculate::calcExp(lVal->exps[0]);
+        int col = Calculate::calcExp(lVal->exps[1]);
+        int offsetCount = row * valueSymbol->dims[1] + col;
+
+        auto tmp = new ValueSymbol(getTempName());
+        auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
+        auto ret = new ValueSymbol(getTempName());
+        auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+        curBlock->add(offset);
+        curBlock->add(load);
+        return ret;
+    }
+
     return nullptr;
 }
 
@@ -447,7 +471,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
-                    // TODO: 局部数组
+                    // TODO: 局部数组 DONE
                     auto def = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
                     curBlock->add(def);
                     int offsetCount = 0;
@@ -614,39 +638,145 @@ void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
 }
 
 void Visitor::visitIfStmt(IfStmt *ifStmt) {
-    visitCond(ifStmt->cond);
-    visitStmt(ifStmt->ifStmt);
     if (ifStmt->elseStmt) {
+        auto trueBlock = new BasicBlock(BasicBlock::BRANCH);
+        auto falseBlock = new BasicBlock(BasicBlock::BRANCH);
+        auto ifEnd = new Label();
+        visitCond(ifStmt->cond, nullptr, falseBlock->getLabel());
+
+        curBlock->add(trueBlock);
+        curBlock->add(falseBlock);
+
+        auto tmpBlock = curBlock;
+        // ifstmt
+        curBlock = trueBlock;
+        visitStmt(ifStmt->ifStmt);
+        auto jumpToIfEnd = new MiddleJump(MiddleJump::JUMP, ifEnd);
+        curBlock->add(jumpToIfEnd);
+
+        // elseStmt
+        curBlock = falseBlock;
         visitStmt(ifStmt->elseStmt);
+
+        // 生成ifEnd
+        curBlock = tmpBlock;
+        curBlock->add(ifEnd);
+    }
+    else {
+        auto trueBlock = new BasicBlock(BasicBlock::BRANCH);
+        auto ifEnd = new Label();
+        visitCond(ifStmt->cond, nullptr, ifEnd);
+
+        curBlock->add(trueBlock);
+        auto tmpBlock = curBlock;
+        // ifStmt
+        curBlock = trueBlock;
+        visitStmt(ifStmt->ifStmt);
+        // 生成ifEnd
+        curBlock = tmpBlock;
+        curBlock->add(ifEnd);
     }
 }
 
-void Visitor::visitCond(Cond *cond) {
-    visitLOrExp(cond->lOrExp);
+void Visitor::visitCond(Cond *cond, Label *trueLabel, Label *falseLabel) {
+    visitLOrExp(cond->lOrExp, trueLabel, falseLabel);
 }
 
-void Visitor::visitLOrExp(LOrExp *lOrExp) {
+void Visitor::visitLOrExp(LOrExp *lOrExp, Label *trueLabel, Label *falseLabel) {
+    auto orEnd = new Label();
+    DEBUG_PRINT("[visitLOrExp] lOrExp has %d lAddExp\n", lOrExp->lAndExps.size());
     for (auto lAndExp : lOrExp->lAndExps) {
-        visitLAndExp(lAndExp);
+        // 只要其中一个lAndExp是真就跳转到trueLabel
+        if (trueLabel != nullptr) {
+            visitLAndExp(lAndExp, trueLabel, nullptr);
+        }
+        else {
+            visitLAndExp(lAndExp, orEnd, nullptr);
+        }
+    }
+    // 所有条件都检查完了都没有跳转
+    if (falseLabel != nullptr) {
+        auto jumpToFalse = new MiddleJump(MiddleJump::JUMP, falseLabel);
+        curBlock->add(jumpToFalse);
+    }
+    // 生成结束Label
+    if (trueLabel == nullptr) {
+        curBlock->add(orEnd);
     }
 }
 
-void Visitor::visitLAndExp(LAndExp *lAndExp) {
+void Visitor::visitLAndExp(LAndExp *lAndExp, Label *trueLabel, Label *falseLabel) {
+    auto andEnd = new Label();
     for (auto eqExp : lAndExp->eqExps) {
-        visitEqExp(eqExp);
+        // 只要其中一个eqExp为假，就跳转到falseLabel
+        auto ret = visitEqExp(eqExp);
+        if (falseLabel != nullptr) {
+            auto jumpToFalse = new MiddleJump(MiddleJump::JUMP_EQZ, ret, falseLabel);
+            curBlock->add(jumpToFalse);
+        }
+        else {
+            auto jumpToAddEnd = new MiddleJump(MiddleJump::JUMP_EQZ, ret, andEnd);
+            curBlock->add(jumpToAddEnd);
+        }
+
+    }
+    if (trueLabel != nullptr) {
+        auto jumpToTrue = new MiddleJump(MiddleJump::JUMP, trueLabel);
+        curBlock->add(jumpToTrue);
+    }
+    if (falseLabel == nullptr) {
+        curBlock->add(andEnd);
     }
 }
 
-void Visitor::visitEqExp(EqExp *eqExp) {
-    for (auto relExp : eqExp->relExps) {
-        visitRelExp(relExp);
+Intermediate * Visitor::visitEqExp(EqExp *eqExp) {
+    auto res = visitRelExp(eqExp->relExps[0]);
+
+    for (int i = 0; i < eqExp->ops.size(); i ++ ) {
+        auto op = eqExp->ops[i];
+        auto middleCodeType = op->tokenType==Token::EQL ? MiddleBinaryOp::EQ : MiddleBinaryOp::NE;
+
+        auto src1 = res;
+        auto src2 = visitRelExp(eqExp->relExps[i + 1]);
+
+        res = new ValueSymbol(getTempName());
+        auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
+        curBlock->add(middleCode);
     }
+    return res;
 }
 
-void Visitor::visitRelExp(RelExp *relExp) {
-    for (auto addExp : relExp->addExps) {
-        visitAddExp(addExp);
+Intermediate * Visitor::visitRelExp(RelExp *relExp) {
+    auto res = visitAddExp(relExp->addExps[0]);
+
+    for (int i = 0; i < relExp->ops.size(); i ++ ) {
+        MiddleBinaryOp::Type middleCodeType;
+        auto op = relExp->ops[i];
+        switch(op->tokenType) {
+            case Token::GRE:
+                middleCodeType = MiddleBinaryOp::GT;
+                break;
+            case Token::GEQ:
+                middleCodeType = MiddleBinaryOp::GE;
+                break;
+            case Token::LSS:
+                middleCodeType = MiddleBinaryOp::LT;
+                break;
+            case Token::LEQ:
+                middleCodeType = MiddleBinaryOp::LE;
+                break;
+            default:
+                middleCodeType = MiddleBinaryOp::ERROR;
+        }
+
+        auto src1 = res;
+        auto src2 = visitAddExp(relExp->addExps[i + 1]);
+
+        res = new ValueSymbol(getTempName());
+        auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
+        curBlock->add(middleCode);
     }
+    return res;
 }
 
 void Visitor::visitOutputStmt(OutputStmt *outputStmt) {
@@ -707,7 +837,7 @@ void Visitor::visitFORStmt(FORStmt *forStmt) {
         visitForStmt(forStmt->forStmt1);
     }
     if (forStmt->cond != nullptr) {
-        visitCond(forStmt->cond);
+        visitCond(forStmt->cond, nullptr, nullptr);
     }
     if (forStmt->forStmt2 != nullptr) {
         visitForStmt(forStmt->forStmt2);
