@@ -1,46 +1,9 @@
-const int b = 10;
-int a[10];
-
-
-void func1() {}
-
-void func2(int a) {}
-
-int func3() {
-    return 1;
-}
-
-void testVarDef(){
-    int a1;
-    const int a2 = 1 * 10 + 100;
-    int a3 = b;
-    int a4[4] = {1, 2, 3, 4 };
-    int a5[4][4];
-    int a6[4] = {1, 2, 3, 4};
-    int a7[2][2] = {{1, 2},{3, 4}};
-    const int a8[1] = {1};
-    const int a9[2][2] = {{1, 2}, {3, 4}};
-
-    int a10 = a4[0];
-    int a11 = a7[0][1];
-    int a12 = a7[1][1];
-    // int a13 = a4[func1()];
-}
-
-void testIf() {
-    int a = 10;
-    int b[4] = {1, 2, 3, 4};
-    if (a > 1 && b[1] < 15 || a < 10) {
-        int b = 1;
-    }
+void func1(int a){
+    int c = 1;
+    int b = a;
     return;
 }
 
-
-int main() {
-    int a = b;
-    int arr[2][2];
-    f2(1);
-    f1(f2(arr[0]));
+int main(){
     return 0;
 }

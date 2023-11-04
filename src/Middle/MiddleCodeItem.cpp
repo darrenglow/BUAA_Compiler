@@ -34,13 +34,24 @@ Label * BasicBlock::getLabel() {
 
 // Func
 std::ostream & Func::output(std::ostream &os) const {
-    os << "###### BEGIN_" << funcName << " ######" << std::endl;
-    os << *block;
-    os << "###### END_" << funcName << " ######" << std::endl;
+    if (type == DEF_FUNC) {
+        os << "###### BEGIN_" << funcName << " ######" << std::endl;
+        os << *block;
+        os << "###### END_" << funcName << " ######" << std::endl;
+    }
+    else if (type == CALL) {
+        os << "CALL " << funcName << std::endl;
+    }
     return os;
 }
 void Func::setFuncBlock(BasicBlock *basicBlock) {
     block = basicBlock;
+}
+
+// FuncCall
+std::ostream & MiddleFuncCall::output(std::ostream &os) const {
+    os << type2str[type]  << " " << target->printMiddleCode() << std::endl;
+    return os;
 }
 
 // Def
@@ -65,7 +76,7 @@ std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
 
 // Offset
 std::ostream & MiddleOffset::output(std::ostream &os) const {
-    os << "OFFSET " << offset << " " << src->name << " " << ret->name << std::endl;
+    os << "OFFSET " << offset << " " << src->printMiddleCode() << " " << ret->printMiddleCode() << std::endl;
     return os;
 }
 

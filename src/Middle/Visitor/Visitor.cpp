@@ -245,6 +245,9 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
         }
         auto funcSymbol = dynamic_cast<FuncSymbol*>(curTable->getSymbol(name, true));
         visitFuncRParams(funcRParams, funcSymbol, ident->line);
+
+        auto middleCode = new Func(Func::CALL, name);
+        curBlock->add(middleCode);
     }
     return nullptr;
 }
@@ -274,6 +277,7 @@ Intermediate *Visitor::visitExp(Exp *exp) {
 Intermediate * Visitor::visitLVal(LVal *lVal) {
     auto ident = lVal->ident;
     std::string name = ident->content;
+    DEBUG_PRINT_DIRECT(name);
     // Error c
     if (!curTable->contain(name, true)) {
         auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
@@ -282,40 +286,75 @@ Intermediate * Visitor::visitLVal(LVal *lVal) {
     }
 
     auto symbol = curTable->getSymbol(name, true);
+
     auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
+    if (valueSymbol != nullptr) {
+        int dim = -1;
+        if (valueSymbol != nullptr)
+            dim = valueSymbol->getDim();
+        if (dim == 0) {
+            return valueSymbol;
+        }
+            // TODO: dim为其他情况，注意是exp，还要考虑如果是函数的调用？
+        else if (dim == 1) {
+            int offsetCount = Calculate::calcExp(lVal->exps[0]);
+            auto tmp = new ValueSymbol(getTempName());
+            auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
+            auto ret = new ValueSymbol(getTempName());
+            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+            curBlock->add(offset);
+            curBlock->add(load);
+            return ret;
+        }
+        else if (dim == 2) {
+            int row = Calculate::calcExp(lVal->exps[0]);
+            int col = Calculate::calcExp(lVal->exps[1]);
+            int offsetCount = row * valueSymbol->dims[1] + col;
 
-    int dim = -1;
-    if (valueSymbol != nullptr)
-        dim = valueSymbol->getDim();
-
-    if (dim == 0) {
-        return valueSymbol;
+            auto tmp = new ValueSymbol(getTempName());
+            auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
+            auto ret = new ValueSymbol(getTempName());
+            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+            curBlock->add(offset);
+            curBlock->add(load);
+            return ret;
+        }
     }
-    // TODO: dim为其他情况，注意是exp，还要考虑如果是函数的调用？
-    else if (dim == 1) {
-        int offsetCount = Calculate::calcExp(lVal->exps[0]);
-        auto tmp = new ValueSymbol(getTempName());
-        auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
-        auto ret = new ValueSymbol(getTempName());
-        auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
-        curBlock->add(offset);
-        curBlock->add(load);
-        return ret;
-    }
-    else if (dim == 2) {
-        int row = Calculate::calcExp(lVal->exps[0]);
-        int col = Calculate::calcExp(lVal->exps[1]);
-        int offsetCount = row * valueSymbol->dims[1] + col;
+    // 如果是函数的参数，不知道怎么处理比较好，就直接重新处理一编吧
+    else {
+        DEBUG_PRINT_DIRECT("use fparam");
+        auto fParamSymbol = dynamic_cast<FuncFParamSymbol*>(symbol);
+        int dim = -1;
+        if (fParamSymbol != nullptr)
+            dim = fParamSymbol->getDim();
+        if (dim == 0) {
+            DEBUG_PRINT_DIRECT("111");
+            return fParamSymbol;
+        }
+        else if (dim == 1) {
+            int offsetCount = Calculate::calcExp(lVal->exps[0]);
+            auto tmp = new ValueSymbol(getTempName());
+            auto offset = new MiddleOffset(fParamSymbol, offsetCount * sizeof(int), tmp);
+            auto ret = new ValueSymbol(getTempName());
+            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+            curBlock->add(offset);
+            curBlock->add(load);
+            return ret;
+        }
+        else if (dim == 2) {
+            int row = Calculate::calcExp(lVal->exps[0]);
+            int col = Calculate::calcExp(lVal->exps[1]);
+            int offsetCount = row * fParamSymbol->dims[1] + col;
 
-        auto tmp = new ValueSymbol(getTempName());
-        auto offset = new MiddleOffset(valueSymbol, offsetCount * sizeof(int), tmp);
-        auto ret = new ValueSymbol(getTempName());
-        auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
-        curBlock->add(offset);
-        curBlock->add(load);
-        return ret;
+            auto tmp = new ValueSymbol(getTempName());
+            auto offset = new MiddleOffset(fParamSymbol, offsetCount * sizeof(int), tmp);
+            auto ret = new ValueSymbol(getTempName());
+            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+            curBlock->add(offset);
+            curBlock->add(load);
+            return ret;
+        }
     }
-
     return nullptr;
 }
 
@@ -522,8 +561,9 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
         return;
     }
 
-    auto middleFunc = new Func(name);
-
+    auto middleFunc = new Func(Func::DEF_FUNC, name);
+    auto funcBlock = new BasicBlock(BasicBlock::FUNC);
+    curBlock = funcBlock;
     // 维护符号表
     curTable = new SymbolTable(curTable);
     auto retType = funcDef->funcType->funcType->tokenType == Token::VOIDTK ? BasicType::VOID : BasicType::INT;
@@ -535,12 +575,8 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     }
     curTable->parent->add(funcSymbol);
 
-    auto funcBlock = new BasicBlock(BasicBlock::FUNC);
-    curBlock = funcBlock;
-
     visitBlock(funcDef->block, false);
     middleFunc->setFuncBlock(funcBlock);
-
     MiddleCode::getInstance().addFuncs(middleFunc);
     // -------- 后面仅针对错误处理 --------
     BlockItem *lastBlockItem;
@@ -582,21 +618,26 @@ void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
 
     // TODO: 维度的具体值的计算
     std::vector<int> dims;
+    FuncFParamSymbol * funcFParamSymbol = nullptr;
     if (funcFParam->isArray) {
         dims.push_back(1);
         for (auto x : funcFParam->constExps) {
             dims.push_back(1);
             visitConstExp(x);
         }
-        auto funcFParamSymbol = new FuncFParamSymbol(name, dims);
+        funcFParamSymbol = new FuncFParamSymbol(name, dims);
         curTable->add(funcFParamSymbol);
         funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
     }
     else {
-        auto funcFParamSymbol = new FuncFParamSymbol(name, dims);
+        funcFParamSymbol = new FuncFParamSymbol(name, dims);
         curTable->add(funcFParamSymbol);
         funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
     }
+    auto middleCode = new MiddleFuncCall(MiddleFuncCall::PARAM, funcFParamSymbol);
+    auto label = new Label();
+    curBlock->add(middleCode);
+    curBlock->add(label);
 }
 
 // 如果是函数的{}，那由于需要考虑形参的影响，就不重新建符号表了
@@ -633,7 +674,9 @@ void Visitor::visitStmt(Stmt *stmt) {
 
 void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
     if (returnStmt->exp) {
-        visitExp(returnStmt->exp);
+        auto res = visitExp(returnStmt->exp);
+        auto middleCode = new MiddleFuncCall(MiddleFuncCall::RETURN, res);
+        curBlock->add(middleCode);
     }
 }
 
@@ -718,7 +761,6 @@ void Visitor::visitLAndExp(LAndExp *lAndExp, Label *trueLabel, Label *falseLabel
             auto jumpToAddEnd = new MiddleJump(MiddleJump::JUMP_EQZ, ret, andEnd);
             curBlock->add(jumpToAddEnd);
         }
-
     }
     if (trueLabel != nullptr) {
         auto jumpToTrue = new MiddleJump(MiddleJump::JUMP, trueLabel);
@@ -833,18 +875,34 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
 }
 
 void Visitor::visitFORStmt(FORStmt *forStmt) {
+    auto loopBlock = new BasicBlock(BasicBlock::LOOP);
+    auto beginLoop = loopBlock->label;
+    auto endFor = new Label();
+
     if (forStmt->forStmt1 != nullptr) {
         visitForStmt(forStmt->forStmt1);
     }
+
+    curBlock->add(loopBlock);
+    inLoop ++ ;
+    auto tmp = curBlock;
+    curBlock = loopBlock;
+
     if (forStmt->cond != nullptr) {
-        visitCond(forStmt->cond, nullptr, nullptr);
+        visitCond(forStmt->cond, nullptr, endFor);
     }
+    visitStmt(forStmt->stmt);
     if (forStmt->forStmt2 != nullptr) {
         visitForStmt(forStmt->forStmt2);
     }
-    inLoop ++ ;
-    visitStmt(forStmt->stmt);
+
+    auto jumpToBeginLoop = new MiddleJump(MiddleJump::JUMP, beginLoop);
+    curBlock->add(jumpToBeginLoop);
+
     inLoop -- ;
+    curBlock = tmp;
+    // 生成for结束的label
+    curBlock->add(endFor);
 }
 
 void Visitor::visitForStmt(ForStmt *forStmt) {
@@ -859,8 +917,10 @@ void Visitor::visitForStmt(ForStmt *forStmt) {
             ErrorTable::getInstance().addError(error);
         }
     }
-    visitLVal(forStmt->lVal);
-    visitExp(forStmt->exp);
+    auto target = visitLVal(forStmt->lVal);
+    auto src = visitExp(forStmt->exp);
+    auto middleCode = new MiddleUnaryOp(MiddleUnaryOp::ASSIGN, src, target);
+    curBlock->add(middleCode);
 }
 
 void Visitor::visitBlockStmt(BlockStmt *blockStmt) {
@@ -886,8 +946,10 @@ void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
             return;
         }
     }
-    visitLVal(assignStmt->lVal);
-    visitExp(assignStmt->exp);
+    auto src1 = visitLVal(assignStmt->lVal);
+    auto src2 = visitExp(assignStmt->exp);
+    auto middleCode = new MiddleUnaryOp(MiddleUnaryOp::ASSIGN, src2, src1);
+    curBlock->add(middleCode);
 }
 
 void Visitor::visitMainFuncDef(MainFuncDef *mainFuncDef) {
@@ -915,6 +977,32 @@ void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol,
                 auto error = new Error(Error::MISMATCH_PARAM_TYPE, line);
                 ErrorTable::getInstance().addError(error);
                 return;
+            }
+
+            // 如果实参传入的是立即数，则直接传入
+            // TODO: 验证是否会经过这个if
+            auto immediate = dynamic_cast<Immediate*>(visitExp(funcRParams->exps[i]));
+            if (immediate != nullptr) {
+                auto pushValue = new MiddleFuncCall(MiddleFuncCall::PUSH_PARAM, immediate);
+                curBlock->add(pushValue);
+            }
+            // 如果形参的维度是0的话，需要将实参的值拷贝到tmp中
+            else if (formDim == 0) {
+                auto tmp = new ValueSymbol(getTempName());
+                auto rParam = visitExp(funcRParams->exps[i]);
+                auto defTmp = new MiddleDef(MiddleDef::DEF_VAR, tmp, rParam);
+                curBlock->add(defTmp);
+                auto pushTmp = new MiddleFuncCall(MiddleFuncCall::PUSH_PARAM, tmp);
+                curBlock->add(pushTmp);
+            }
+            // 如果形参的维度是1或者2，直接传入值
+            // TODO:这里需要算出地址？
+            else {
+                auto valueSymbol = dynamic_cast<ValueSymbol*>(visitExp(funcRParams->exps[i]));
+                if (valueSymbol != nullptr) {
+                    auto pushValue = new MiddleFuncCall(MiddleFuncCall::PUSH_PARAM, valueSymbol);
+                    curBlock->add(pushValue);
+                }
             }
         }
     }

@@ -54,7 +54,7 @@ public:
     };
     Type type;
     Label *label;   // FUNC, LOOP, BRANCH
-    std::string type2str[5] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
+    std::string type2str[4] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
     std::vector<MiddleCodeItem*> middleCodeItems;
 
     explicit BasicBlock(Type type_) : type(type_), label(new Label()) {}
@@ -66,13 +66,33 @@ public:
 
 class Func : public MiddleCodeItem {
 public:
+    enum Type{
+        DEF_FUNC,
+        CALL
+    };
+
     std::string funcName;
     BasicBlock *block{};
-
-    explicit Func(std::string &funcName_) :
-        funcName(funcName_) {}
+    Type type;
+    explicit Func(Type type_, std::string &funcName_) :
+        type(type_), funcName(funcName_) {}
 
     void setFuncBlock(BasicBlock* block);
+
+    OVERRIDE_OUTPUT;
+};
+class MiddleFuncCall : public MiddleCodeItem {
+public:
+    enum Type{
+        PARAM,
+        PUSH_PARAM,
+        RETURN
+    };
+    std::string type2str[3] = {"PARAM", "PUSH_PARAM", "RETURN"};
+    Type type;
+    Intermediate * target;
+    MiddleFuncCall(Type type_, Intermediate * target_)
+        : type(type_), target(target_) {}
 
     OVERRIDE_OUTPUT;
 };
@@ -86,7 +106,7 @@ public:
         DEF_ARRAY,
         END_ARRAY
     };
-    std::string type2str[4] = {"DEF_VAR", "DEF_ARRAY", "END_ARRAY"};
+    std::string type2str[3] = {"DEF_VAR", "DEF_ARRAY", "END_ARRAY"};
     Type type;
     bool isInit;
 
@@ -114,7 +134,7 @@ public:
     Intermediate *valueSymbol;
     Intermediate *srcValueSymbol;   // srcValueSymbol可能是值，可能是变量
 
-    std::string type2str[8] = {"ASSIGN", "POSITIVE", "NEGATIVE", "NOT", "ERROR"};
+    std::string type2str[5] = {"ASSIGN", "POSITIVE", "NEGATIVE", "NOT", "ERROR"};
     // op 1 a
     // op a a
     MiddleUnaryOp(Type type_, Intermediate *valueSymbol_, Intermediate *srcValueSymbol_) :
@@ -128,9 +148,9 @@ public:
 class MiddleOffset : public MiddleCodeItem {
 public:
     int offset;
-    ValueSymbol *src;
-    ValueSymbol *ret;
-    MiddleOffset(ValueSymbol *src_, int offset_, ValueSymbol *ret_) :
+    Intermediate *src;
+    Intermediate *ret;
+    MiddleOffset(Intermediate *src_, int offset_, Intermediate *ret_) :
         src(src_), offset(offset_), ret(ret_) {}
     OVERRIDE_OUTPUT;
 };
@@ -141,7 +161,7 @@ public:
         STORE,
         LOAD
     };
-    std::string type2str[3] = {"STORE", "LOAD"};
+    std::string type2str[2] = {"STORE", "LOAD"};
     Type type;
     Intermediate *sym1;
     Intermediate *sym2;
@@ -166,7 +186,7 @@ public:
         LE,
         ERROR,
     };
-    std::string type2str[15] = {"ADD", "SUB", "MUL", "DIV", "MOD", "EQ", "NE", "GT", "GE", "LT", "LE", "ERROR"};
+    std::string type2str[12] = {"ADD", "SUB", "MUL", "DIV", "MOD", "EQ", "NE", "GT", "GE", "LT", "LE", "ERROR"};
     Type type;
 
     Intermediate *src1;
@@ -185,7 +205,7 @@ public:
         JUMP_EQZ,
         JUMP_NEZ
     };
-    std::string type2str[10] = {"JUMP", "JUMP_EQZ", "JUMP_NEZ"};
+    std::string type2str[3] = {"JUMP", "JUMP_EQZ", "JUMP_NEZ"};
     Type type;
     Intermediate *src;
     Label *label;
@@ -196,4 +216,5 @@ public:
 
     OVERRIDE_OUTPUT;
 };
+
 #endif //BUAA_COMPILER_MIDDLECODEITEM_H
