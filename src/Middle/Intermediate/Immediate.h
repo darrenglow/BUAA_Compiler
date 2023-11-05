@@ -9,8 +9,15 @@
 
 class Immediate : public Intermediate{
 public:
-    explicit Immediate(int value_) : value(value_) {}
+    enum Type {
+        VALUE,
+        STR
+    };
+    Type type;
     int value;
+    std::string str;
+    Immediate(int value_) : value(value_), type(VALUE) {}
+    Immediate(std::string &str_) : str(str_), type(STR) {}
     std::string printMiddleCode();
 };
 

@@ -147,10 +147,10 @@ public:
 
 class MiddleOffset : public MiddleCodeItem {
 public:
-    int offset;
+    Intermediate *offset;
     Intermediate *src;
     Intermediate *ret;
-    MiddleOffset(Intermediate *src_, int offset_, Intermediate *ret_) :
+    MiddleOffset(Intermediate *src_, Intermediate *offset_, Intermediate *ret_) :
         src(src_), offset(offset_), ret(ret_) {}
     OVERRIDE_OUTPUT;
 };
@@ -166,7 +166,7 @@ public:
     Intermediate *sym1;
     Intermediate *sym2;
     // STORE sym1/value sym2
-    MiddleMemoryOp(Type type_, Intermediate *sym1_, ValueSymbol *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
+    MiddleMemoryOp(Type type_, Intermediate *sym1_, Intermediate *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
     OVERRIDE_OUTPUT;
 };
 
@@ -214,6 +214,20 @@ public:
     MiddleJump(Type type_, Intermediate *src_, Label *label_)
         : type(type_), src(src_), label(label_) {}
 
+    OVERRIDE_OUTPUT;
+};
+
+class MiddleIO : public MiddleCodeItem {
+public:
+    enum Type {
+        GETINT,
+        PRINT_INT,
+        PRINT_STR
+    };
+    std::string type2str[3] = {"GETINT", "PRINT_INT", "PRINT_STR"};
+    Type type;
+    Intermediate * target;
+    MiddleIO(Type type_, Intermediate *target_) : type(type_), target(target_) {}
     OVERRIDE_OUTPUT;
 };
 

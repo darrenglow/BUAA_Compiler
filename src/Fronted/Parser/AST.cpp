@@ -524,9 +524,6 @@ int Exp::getDim() {
             if (!addExp->mulExps[0]->unaryExps.empty()) {
                 auto tmpUnaryExp = addExp->mulExps[0]->unaryExps[0];
                 int dim = tmpUnaryExp->getDim();
-#ifdef DEBUG
-                std::cout << "in Exp::getDIm, the realDim is: " << dim << std::endl;
-#endif
                 return dim;
             }
         }

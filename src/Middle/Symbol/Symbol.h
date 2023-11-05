@@ -48,13 +48,14 @@ public:
     }
 };
 
+class ValueSymbol;
 class FuncSymbol : public Symbol {
 public:
     int num;
-    std::vector<FuncFParamSymbol*> funcFParamSymbols;
+    std::vector<ValueSymbol*> funcFParamSymbols;
     FuncSymbol(std::string &name, BasicType basicType_, int num_)
         : Symbol(name, basicType_), num(num_) {};
-    void addFuncFParamSymbol(FuncFParamSymbol* funcFParamSymbol) {
+    void addFuncFParamSymbol(ValueSymbol* funcFParamSymbol) {
         funcFParamSymbols.push_back(funcFParamSymbol);
     }
     bool isConst() const {

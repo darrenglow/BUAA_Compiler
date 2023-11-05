@@ -6,5 +6,8 @@
 #include "Immediate.h"
 
 std::string Immediate::printMiddleCode() {
-    return std::to_string(value);
+    if (type == VALUE)
+        return std::to_string(value);
+    else
+        return str;
 }

@@ -21,11 +21,13 @@ public:
     int curBlockLevel = 0;
     BasicBlock *curBlock;
     int stackSize = 0;
-    int tmpVarNumber = 0;
+    static int tmpVarNumber;
 
-    std::string getTempName();
+    static std::string getTempName();
 
     int alloc(int mem);
+
+    Intermediate * getOffsetCount(Intermediate * intermediate);
 
     Visitor(AST* ast_) : ast(ast_) {}
 
@@ -53,7 +55,7 @@ public:
 
     Intermediate * visitExp(Exp *exp);
 
-    Intermediate * visitLVal(LVal *lVal);
+    Intermediate * visitLVal(LVal *lVal, bool isLeft=false);
 
     void visitVarDecl(VarDecl *varDecl);
 

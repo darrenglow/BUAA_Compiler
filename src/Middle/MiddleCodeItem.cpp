@@ -3,6 +3,7 @@
 //
 
 #include "MiddleCodeItem.h"
+#include "Visitor/Visitor.h"
 #include <iostream>
 
 std::ostream& operator<<(std::ostream& os, const MiddleCodeItem& obj) {
@@ -76,7 +77,8 @@ std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
 
 // Offset
 std::ostream & MiddleOffset::output(std::ostream &os) const {
-    os << "OFFSET " << offset << " " << src->printMiddleCode() << " " << ret->printMiddleCode() << std::endl;
+    // 如果是立即数的话，就是offset * 4
+    os << "OFFSET " << offset->printMiddleCode() << " " << src->printMiddleCode() << " " << ret->printMiddleCode() << std::endl;
     return os;
 }
 
@@ -103,5 +105,11 @@ std::ostream & MiddleJump::output(std::ostream &os) const {
     if (src != nullptr)
         os << src->printMiddleCode() << " ";
     os << label->label << std::endl;
+    return os;
+}
+
+// MiddleIO
+std::ostream & MiddleIO::output(std::ostream &os) const {
+    os << type2str[type] << " " << target->printMiddleCode() << std::endl;
     return os;
 }

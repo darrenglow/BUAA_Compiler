@@ -1,9 +1,43 @@
-void func1(int a){
-    int c = 1;
-    int b = a;
-    return;
+void testLVal(int a, int b[], int c[][10]){
+    int e = b[a];
+    int d = c[e][a];
+    b[1] = 1;
+    int f[2] = {1, 2};
+    return b[1];
 }
 
-int main(){
+int func1(){
+    return 1;
+}
+
+int func2(int a) {
+    return a;
+}
+
+int func3(int a[]) {
+    int b = a[0];
+    return a[1];
+}
+
+void testCall() {
+   int a = func2(func1());
+   const int b[2] = {1, 2};
+   a = func3(b);
+}
+
+void testGetint(){
+    int a = 0;
+    int b[2] = {1, 2};
+    a = getint();
+    b[0] = getint();
+}
+
+void testPrint(){
+    int a = 10;
+    int b[2] = {1, 2};
+    printf("hel%dlo hhh%d", a, b[0]);
+}
+
+int main() {
     return 0;
 }
