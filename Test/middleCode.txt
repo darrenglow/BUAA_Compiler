@@ -1,132 +1,38 @@
 ######### Middle Code Start #########
 GLOBAL VALUE: 
+VAR a 10
+ARRAY c 1,2,3,4
+VAR b 111
 GLOBAL STRING: 
-str_0: hel
-str_1: lo hhh
+str_0: x is 
 ###########################
-###### BEGIN_testLVal ######
+###### BEGIN_func ######
+###### func_size is 8######
+Func_func:
 ### BLOCK_FUNC BEGIN
 LABEL_1:
-PARAM a
-PARAM b
-PARAM c
-MUL a 4 T0
-OFFSET T0 b T1
-LOAD T1 T2
-DEF_VAR T2 e
-MUL e 10 T3
-ADD T3 a T4
-MUL T4 4 T5
-OFFSET T5 c T6
-LOAD T6 T7
-DEF_VAR T7 d
-OFFSET 4 b T8
-STORE 1 T8
-DEF_ARRAY f
-OFFSET 0 f T9
-STORE 1 T9
-OFFSET 4 f T10
-STORE 2 T10
-END_ARRAY f
-OFFSET 4 b T11
-LOAD T11 T12
-RETURN T12
+PARAM x
+PARAM y
+return x
 ### BLOCK_FUNC END
-###### END_testLVal ######
-
-###### BEGIN_func1 ######
-### BLOCK_FUNC BEGIN
-LABEL_2:
-RETURN 1
-### BLOCK_FUNC END
-###### END_func1 ######
-
-###### BEGIN_func2 ######
-### BLOCK_FUNC BEGIN
-LABEL_3:
-PARAM a
-RETURN a
-### BLOCK_FUNC END
-###### END_func2 ######
-
-###### BEGIN_func3 ######
-### BLOCK_FUNC BEGIN
-LABEL_4:
-PARAM a
-OFFSET 0 a T13
-LOAD T13 T14
-DEF_VAR T14 b
-OFFSET 4 a T15
-LOAD T15 T16
-RETURN T16
-### BLOCK_FUNC END
-###### END_func3 ######
-
-###### BEGIN_testCall ######
-### BLOCK_FUNC BEGIN
-LABEL_5:
-CALL func1
-ASSIGN 1 T17
-DEF_VAR T17 T18
-PUSH_PARAM T18
-CALL func2
-ASSIGN 1 T19
-DEF_VAR T19 a
-
-DEF_ARRAY b
-OFFSET 0 b T20
-STORE 1 T20
-OFFSET 4 b T21
-STORE 2 T21
-END_ARRAY b
-
-
-PUSH_PARAM b
-CALL func3
-ASSIGN 1 T22
-ASSIGN a T22
-### BLOCK_FUNC END
-###### END_testCall ######
-
-###### BEGIN_testGetint ######
-### BLOCK_FUNC BEGIN
-LABEL_6:
-DEF_VAR 0 a
-DEF_ARRAY b
-OFFSET 0 b T23
-STORE 1 T23
-OFFSET 4 b T24
-STORE 2 T24
-END_ARRAY b
-GETINT a
-OFFSET 0 b T25
-GETINT T25
-### BLOCK_FUNC END
-###### END_testGetint ######
-
-###### BEGIN_testPrint ######
-### BLOCK_FUNC BEGIN
-LABEL_7:
-DEF_VAR 10 a
-DEF_ARRAY b
-OFFSET 0 b T26
-STORE 1 T26
-OFFSET 4 b T27
-STORE 2 T27
-END_ARRAY b
-OFFSET 0 b T28
-LOAD T28 T29
-PRINT_STR str_0
-PRINT_INT a
-PRINT_STR str_1
-PRINT_INT T29
-### BLOCK_FUNC END
-###### END_testPrint ######
+###### END_func ######
 
 ###### BEGIN_main ######
+###### func_size is 8######
+Func_main:
 ### BLOCK_FUNC BEGIN
-LABEL_8:
-RETURN 0
+LABEL_2:
+DEF_VAR 1 x[0x4]
+DEF_VAR 1 i[0x8]
+CALL func( x x )
+
+MUL T0 4 T1
+OFFSET T1 c T2
+LOAD T3 T2
+ASSIGN T3 x
+PRINT_STR str_0
+PRINT_INT x
+return 0
 ### BLOCK_FUNC END
 ###### END_main ######
 

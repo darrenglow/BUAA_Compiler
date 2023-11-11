@@ -7,18 +7,20 @@
 #include "Fronted/Error/ErrorTable.h"
 #include "Middle/Visitor/Visitor.h"
 #include "Middle/MiddleCode.h"
-
+#include "Backend/MipsGenerator.h"
 
 //#define LexicalAnalysis
 //#define ParseAnalysis
-//#define ErrorHandle
+#define ErrorHandle
 #define MiddleCodeGeneration
+#define MipsGeneration
 
 static const std::string prePath = "../Test/";
 //static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
-std::ofstream middleCodeOutput(prePath + "middleCode.txt");
 std::ofstream output(prePath + "output.txt");
+std::ofstream middleCodeOutput(prePath + "middleCode.txt");
+std::ofstream mipsOutput(prePath + "mips.txt");
 std::ofstream errorOutput(prePath + "error.txt");
 int main()
 {
@@ -49,6 +51,10 @@ int main()
     //============ MIDDLE =================
 #ifdef MiddleCodeGeneration
     MiddleCode::doMiddleCodeGeneration();
+#endif
+    //============ BACKEND ================
+#ifdef MipsGeneration
+    MipsGenerator::getInstance().doMipsGeneration();
 #endif
     return 0;
 }

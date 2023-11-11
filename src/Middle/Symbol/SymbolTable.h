@@ -11,6 +11,8 @@
 class SymbolTable{
 public:
     std::map<std::string, Symbol*> symbols;
+    int size = 0;
+
     SymbolTable* parent = nullptr;
     SymbolTable()=default;
     explicit SymbolTable(SymbolTable* parent_) : parent(parent_) {}
@@ -22,6 +24,8 @@ public:
     bool contain(const std::string &name, bool up);
 
     Symbol* getSymbol(const std::string &name, bool up);
+
+    int getSize();
 };
 
 #endif //BUAA_COMPILER_SYMBOLTABLE_H

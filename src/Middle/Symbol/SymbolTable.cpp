@@ -10,6 +10,7 @@ bool SymbolTable::hasParent() {
 
 void SymbolTable::add(Symbol *symbol) {
     symbols[symbol->name] = symbol;
+    size += symbol->getSize();
 }
 
 // 是否包括name变量
@@ -29,4 +30,8 @@ Symbol * SymbolTable::getSymbol(const std::string &name, bool up) {
         }
         return nullptr;
     }
+}
+
+int SymbolTable::getSize() {
+    return size;
 }

@@ -19,6 +19,7 @@
         } while(0)
 
 #define DEBUG_PRINT_DIRECT(x) std::cout << x << std::endl
+#define DEBUG_PRINT_HEX(x) std::cout << std::hex <<  x << std::endl
 #else
 // 如果没有定义 DEBUG 宏，则将 DEBUG_PRINT 定义为空
     #define DEBUG_PRINT(message)

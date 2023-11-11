@@ -12,7 +12,7 @@ std::ostream& operator<<(std::ostream& os, const MiddleCodeItem& obj) {
 
 int Label::count = 1;
 std::ostream & Label::output(std::ostream &os) const {
-    os << label << ":" << std::endl;
+    os << label << ":";
     return os;
 }
 
@@ -22,9 +22,9 @@ void BasicBlock::add(MiddleCodeItem *middleCodeItem) {
 }
 std::ostream & BasicBlock::output(std::ostream &os) const {
     os << "### " << type2str[type] << " BEGIN" << std::endl;
-    os << *label;
+    os << *label << std::endl;
     for (auto middleCodeItem : middleCodeItems) {
-        os << *middleCodeItem;
+        os << *middleCodeItem << std::endl;
     }
     os << "### " << type2str[type] << " END" << std::endl;
     return os;
@@ -37,31 +37,53 @@ Label * BasicBlock::getLabel() {
 std::ostream & Func::output(std::ostream &os) const {
     if (type == DEF_FUNC) {
         os << "###### BEGIN_" << funcName << " ######" << std::endl;
+        os << "###### func_size is " << funcSymbolTable->getSize() << "######" << std::endl;
+        os << *label << std::endl;
         os << *block;
         os << "###### END_" << funcName << " ######" << std::endl;
-    }
-    else if (type == CALL) {
-        os << "CALL " << funcName << std::endl;
     }
     return os;
 }
 void Func::setFuncBlock(BasicBlock *basicBlock) {
     block = basicBlock;
 }
+int Func::getSize() {
+    return funcSymbolTable->getSize();
+}
 
-// FuncCall
+// MiddleFuncCall
 std::ostream & MiddleFuncCall::output(std::ostream &os) const {
-    os << type2str[type]  << " " << target->printMiddleCode() << std::endl;
+    os << "CALL " << funcName << "( ";
+    for (auto x : funcRParams) {
+        os << x->printMiddleCode() << " ";
+    }
+    os << ")" << std::endl;
     return os;
 }
+
+// FuncParam
+std::ostream & MiddleFuncParam::output(std::ostream &os) const {
+    os << type2str[type]  << " " << target->printMiddleCode();
+    return os;
+}
+
+// return
+std::ostream & MiddleReturn::output(std::ostream &os) const {
+    os << "return ";
+    if (target != nullptr) {
+        os << target->printMiddleCode();
+    }
+    return os;
+}
+
 
 // Def
 std::ostream & MiddleDef::output(std::ostream &os) const {
     os << type2str[type] << " ";
-    if (isInit) {
+    if (isInit && type == DEF_VAR) {
         os << srcValueSymbol->printMiddleCode() << " ";
     }
-    os << valueSymbol->name << std::endl;
+    os << valueSymbol->name << "[0x" << std::hex << valueSymbol->getAddress() << "]";
     return os;
 }
 
@@ -70,7 +92,7 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
 std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
     os << type2str[type] << " ";
     os << srcValueSymbol->printMiddleCode() << " ";
-    os << valueSymbol->printMiddleCode() << std::endl;
+    os << valueSymbol->printMiddleCode();
 
     return os;
 }
@@ -78,7 +100,7 @@ std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
 // Offset
 std::ostream & MiddleOffset::output(std::ostream &os) const {
     // 如果是立即数的话，就是offset * 4
-    os << "OFFSET " << offset->printMiddleCode() << " " << src->printMiddleCode() << " " << ret->printMiddleCode() << std::endl;
+    os << "OFFSET " << offset->printMiddleCode() << " " << src->printMiddleCode() << " " << ret->printMiddleCode();
     return os;
 }
 
@@ -86,7 +108,7 @@ std::ostream & MiddleOffset::output(std::ostream &os) const {
 std::ostream & MiddleMemoryOp::output(std::ostream &os) const {
     os << type2str[type] << " ";
     os << sym1->printMiddleCode() << " ";
-    os << sym2->printMiddleCode() << std::endl;
+    os << sym2->printMiddleCode();
     return os;
 }
 
@@ -95,7 +117,7 @@ std::ostream & MiddleBinaryOp::output(std::ostream &os) const {
     os << type2str[type] << " ";
     os << src1->printMiddleCode() << " ";
     os << src2->printMiddleCode() << " ";
-    os << target->printMiddleCode() << std::endl;
+    os << target->printMiddleCode();
     return os;
 }
 
@@ -104,12 +126,12 @@ std::ostream & MiddleJump::output(std::ostream &os) const {
     os << type2str[type] << " ";
     if (src != nullptr)
         os << src->printMiddleCode() << " ";
-    os << label->label << std::endl;
+    os << label->label;
     return os;
 }
 
 // MiddleIO
 std::ostream & MiddleIO::output(std::ostream &os) const {
-    os << type2str[type] << " " << target->printMiddleCode() << std::endl;
+    os << type2str[type] << " " << target->printMiddleCode();
     return os;
 }

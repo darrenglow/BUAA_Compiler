@@ -12,19 +12,7 @@
 #include <vector>
 #include "Symbol/Symbol.h"
 #include "Intermediate/Immediate.h"
-
-enum MiddleCodeType {
-    FUNC_BEGIN,
-    FUNC_END,
-
-    DEF_VAL,        // int a = 1;       DEF_VAL         1       int         a
-    DEF_ARR_BEGIN,  // int a[10]={...}  DEF_ARR_BEGIN           int         a
-                    //                  SET_VAL         1       int         a[0]
-    DEF_ARR_END,    //                  DEF_ARR_END             int         a
-    SET_VAL,        // a = 1;           SET_VAL         1       int         a
-                    // a[0] = 1;        SET_VAL         1       int         a[0]
-
-};
+#include "Symbol/SymbolTable.h"
 
 class MiddleCodeItem {
 public:
@@ -37,9 +25,10 @@ class Label : public MiddleCodeItem {
 public:
     static int count;
     std::string label;
-    explicit Label() : label("LABEL_" + std::to_string(count)) {
+    Label() : label("LABEL_" + std::to_string(count)) {
         count ++ ;
     }
+    explicit Label(std::string &label_) : label(label_) {}
     OVERRIDE_OUTPUT;
 };
 
@@ -56,6 +45,7 @@ public:
     Label *label;   // FUNC, LOOP, BRANCH
     std::string type2str[4] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
     std::vector<MiddleCodeItem*> middleCodeItems;
+    std::vector<ValueSymbol*> tempSymbols;  // 临时变量
 
     explicit BasicBlock(Type type_) : type(type_), label(new Label()) {}
 
@@ -68,32 +58,53 @@ class Func : public MiddleCodeItem {
 public:
     enum Type{
         DEF_FUNC,
-        CALL
     };
 
     std::string funcName;
     BasicBlock *block{};
+    SymbolTable * funcSymbolTable = new SymbolTable();
+    Label *label;
     Type type;
-    explicit Func(Type type_, std::string &funcName_) :
-        type(type_), funcName(funcName_) {}
+    bool hasReturn;
+    explicit Func(Type type_, std::string &funcName_) : type(type_), funcName(funcName_) {
+        std::string tmp = "Func_" + funcName;
+        label = new Label(tmp);
+    }
 
     void setFuncBlock(BasicBlock* block);
-
+    int getSize();
     OVERRIDE_OUTPUT;
 };
+
 class MiddleFuncCall : public MiddleCodeItem {
+public:
+    std::string funcName;
+    std::vector<Intermediate*> funcRParams;
+    ValueSymbol *ret;
+    MiddleFuncCall(std::string &funcName_) : funcName(funcName_) {}
+    OVERRIDE_OUTPUT;
+};
+
+class MiddleFuncParam : public MiddleCodeItem {
 public:
     enum Type{
         PARAM,
         PUSH_PARAM,
-        RETURN
     };
-    std::string type2str[3] = {"PARAM", "PUSH_PARAM", "RETURN"};
+    std::string type2str[3] = {"PARAM", "PUSH_PARAM"};
     Type type;
     Intermediate * target;
-    MiddleFuncCall(Type type_, Intermediate * target_)
+    MiddleFuncParam(Type type_, Intermediate * target_)
         : type(type_), target(target_) {}
 
+    OVERRIDE_OUTPUT;
+};
+
+class MiddleReturn : public MiddleCodeItem {
+public:
+    Intermediate * target{};
+    MiddleReturn() {}
+    explicit MiddleReturn(Intermediate* target_) : target(target_) {}
     OVERRIDE_OUTPUT;
 };
 
@@ -142,8 +153,6 @@ public:
 
     OVERRIDE_OUTPUT;
 };
-
-
 
 class MiddleOffset : public MiddleCodeItem {
 public:
@@ -210,7 +219,7 @@ public:
     Intermediate *src;
     Label *label;
     MiddleJump(Type type_, Label *label_)
-        : type(type_), label(label_) {}
+        : type(type_), label(label_), src(nullptr){}
     MiddleJump(Type type_, Intermediate *src_, Label *label_)
         : type(type_), src(src_), label(label_) {}
 

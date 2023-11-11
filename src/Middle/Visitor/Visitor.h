@@ -20,12 +20,14 @@ public:
     int unique = 0;
     int curBlockLevel = 0;
     BasicBlock *curBlock;
-    int stackSize = 0;
+    int curStackSize = 0;
     static int tmpVarNumber;
+    static SymbolTable * curFuncSymbolTable;
+
+    void updateCurStackSize(ValueSymbol* valueSymbol);
+    std::vector<Label*> loopLabels;
 
     static std::string getTempName();
-
-    int alloc(int mem);
 
     Intermediate * getOffsetCount(Intermediate * intermediate);
 
@@ -107,7 +109,7 @@ public:
 
     void visitMainFuncDef(MainFuncDef *mainFuncDef);
 
-    void visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line);
+    void visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line, MiddleFuncCall* funcCall);
 
     std::vector<ConstExp*> flattenConstInitVal(ConstInitVal *constInitVal);
 
