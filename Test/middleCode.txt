@@ -1,37 +1,56 @@
 ######### Middle Code Start #########
 GLOBAL VALUE: 
-VAR a 10
 ARRAY c 1,2,3,4
-VAR b 111
 GLOBAL STRING: 
-str_0: x is 
+str_0: y is 
+str_1: \n
 ###########################
+###### BEGIN_func2 ######
+###### func_size is 4######
+Func_func2:
+### BLOCK_FUNC BEGIN
+LABEL_1:
+PARAM d
+OFFSET 4 d T0
+LOAD T1 T0
+return T1
+### BLOCK_FUNC END
+###### END_func2 ######
+
 ###### BEGIN_func ######
 ###### func_size is 8######
 Func_func:
 ### BLOCK_FUNC BEGIN
-LABEL_1:
-PARAM x
-PARAM y
-return x
+LABEL_2:
+PARAM d
+DEF_VAR 1 a[0x8]
+CALL func2( P_d )
+
+return T2
 ### BLOCK_FUNC END
 ###### END_func ######
 
 ###### BEGIN_main ######
-###### func_size is 8######
+###### func_size is 14######
 Func_main:
 ### BLOCK_FUNC BEGIN
-LABEL_2:
-DEF_VAR 1 x[0x4]
-DEF_VAR 1 i[0x8]
-CALL func( x x )
+LABEL_3:
+DEF_ARRAY x[0x10]
+OFFSET 0 x T3
+STORE 5 T3
+OFFSET 4 x T4
+STORE 6 T4
+OFFSET 8 x T5
+STORE 7 T5
+OFFSET 12 x T6
+STORE 8 T6
+END_ARRAY x[0x10]
+CALL func( P_c )
 
-MUL T0 4 T1
-OFFSET T1 c T2
-LOAD T3 T2
-ASSIGN T3 x
+DEF_VAR T7 y[0x14]
 PRINT_STR str_0
-PRINT_INT x
+PRINT_INT y
+PRINT_STR str_1
 return 0
 ### BLOCK_FUNC END
 ###### END_main ######

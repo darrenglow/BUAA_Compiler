@@ -68,12 +68,13 @@ void Visitor::visitConstDef(ConstDef *constDef) {
         updateCurStackSize(valueSymbol);
         if (curBlockLevel == 0) {
             valueSymbol->setLocal(false);
+            valueSymbol->setAddress(valueSymbol->getAddress() - valueSymbol->getSize());
             MiddleCode::getInstance().addGlobalValues(valueSymbol);
         }
         else {
             // TODO: 处理局部常量 DONE
             // const int a = 10;
-            valueSymbol->setLocal(false);
+//            valueSymbol->setLocal(true);
             auto assign = new MiddleDef(MiddleDef::DEF_VAR, valueSymbol, new Immediate(constInitVal));
             curBlock->add(assign);
         }
@@ -100,12 +101,13 @@ void Visitor::visitConstDef(ConstDef *constDef) {
 
             if (curBlockLevel == 0) {       // 如果是全局变量的话
                 arraySymbol->setLocal(false);
+                arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                 arraySymbol->setInitValues(initValues);
                 MiddleCode::getInstance().addGlobalValues(arraySymbol);
             }
             else {      // 如果不是全局变量的话，每个initvalue生成中间代码
                 // TODO: 局部数组 DONE
-                arraySymbol->setLocal(true);
+//                arraySymbol->setLocal(true);
                 auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
                 curBlock->add(defArray);
                 int offsetCount = 0;
@@ -132,6 +134,8 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             }
             if (curBlockLevel == 0) {
                 // 全局数组
+                arraySymbol->setLocal(false);
+                arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                 arraySymbol->setInitValues(initValues);
                 MiddleCode::getInstance().addGlobalValues(arraySymbol);
             }
@@ -266,9 +270,6 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
             auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
             funcCall->ret = ret;
             curBlock->tempSymbols.push_back(ret);
-//            // TODO: 这里函数的返回值赋值
-//            auto getReturn = new MiddleUnaryOp(MiddleUnaryOp::ASSIGN, ret, new Immediate(1));
-//            curBlock->add(getReturn);
             return ret;
         }
 
@@ -317,16 +318,21 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
     auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
     if (valueSymbol != nullptr) {
         int symbolDim = -1;
-        symbolDim = valueSymbol->getDim();
-        int realDim = lVal->exps.size();
+        symbolDim = valueSymbol->getDim();  // 符号表中该变量的维度
+        int realDim = lVal->exps.size();    // 所使用的维度
 
+        // 形如int a; a;
         if (symbolDim == 0) {
             return valueSymbol;
         }
         else if (symbolDim == 1) {
-            // TODO：这里应该是返回地址
+            // TODO：这里应该是返回地址 DONE
+            // TODO: 要考虑是参数数组的情况
+            // 形如int a[10]; a;
             if (realDim == 0) {
-                return valueSymbol;
+                auto pointerName = "P_" + valueSymbol->name;
+                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, valueSymbol->getAddress(), valueSymbol->isLocal);
+                return pointer;
             }
             else if (realDim == 1) {
                 auto index = visitExp(lVal->exps[0]);
@@ -350,13 +356,25 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
             }
         }
         else if (symbolDim == 2) {
-
-            // TODO: 返回地址
+            // TODO: 返回地址 DONE
             if (realDim == 0) {
-                return valueSymbol;
+                auto pointerName = "P_" + valueSymbol->name;
+                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, valueSymbol->getAddress(), valueSymbol->isLocal);
+                return pointer;
             }
             else if (realDim == 1){
-                return valueSymbol;
+                auto pointerName = "P_" + valueSymbol->name;
+                auto index = Calculate::calcExp(lVal->exps[0]);
+                // 注意！！！由于我的傻逼设置，局部数组的数组头在上面，全局数组的数组头在下面
+                int address = 0;
+                if (valueSymbol->isLocal) {
+                    address = valueSymbol->getAddress() - index * valueSymbol->dims[1] * sizeof(int);
+                }
+                else{
+                    address = valueSymbol->getAddress() + index * valueSymbol->dims[1] * sizeof(int);
+                }
+                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, address, valueSymbol->isLocal);
+                return pointer;
             }
             else if (realDim == 2) {
                 auto row = visitExp(lVal->exps[0]);
@@ -412,7 +430,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                     return tmp;
                 }
                 auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-                auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+                auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, ret, tmp);
                 curBlock->add(offset);
                 curBlock->add(load);
                 return ret;
@@ -425,44 +443,44 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
         return immediateSymbol;
     }
     // 如果是函数的参数，不知道怎么处理比较好，就直接重新处理一编吧
-    else {
-        DEBUG_PRINT_DIRECT("use fparam");
-        auto fParamSymbol = dynamic_cast<FuncFParamSymbol*>(symbol);
-        int dim = -1;
-        if (fParamSymbol != nullptr)
-            dim = fParamSymbol->getDim();
-        if (dim == 0) {
-            DEBUG_PRINT_DIRECT("111");
-            return fParamSymbol;
-        }
-        else if (dim == 1) {
-            int offsetCount = Calculate::calcExp(lVal->exps[0]);
-            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-            curBlock->tempSymbols.push_back(tmp);
-            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
-            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-            curBlock->tempSymbols.push_back(ret);
-            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
-            curBlock->add(offset);
-            curBlock->add(load);
-            return ret;
-        }
-        else if (dim == 2) {
-            int row = Calculate::calcExp(lVal->exps[0]);
-            int col = Calculate::calcExp(lVal->exps[1]);
-            int offsetCount = row * fParamSymbol->dims[1] + col;
-
-            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-            curBlock->tempSymbols.push_back(tmp);
-            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
-            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-            curBlock->tempSymbols.push_back(ret);
-            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
-            curBlock->add(offset);
-            curBlock->add(load);
-            return ret;
-        }
-    }
+//    else {
+//        DEBUG_PRINT_DIRECT("use fparam");
+//        auto fParamSymbol = dynamic_cast<FuncFParamSymbol*>(symbol);
+//        int dim = -1;
+//        if (fParamSymbol != nullptr)
+//            dim = fParamSymbol->getDim();
+//        if (dim == 0) {
+//            DEBUG_PRINT_DIRECT("111");
+//            return fParamSymbol;
+//        }
+//        else if (dim == 1) {
+//            int offsetCount = Calculate::calcExp(lVal->exps[0]);
+//            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//            curBlock->tempSymbols.push_back(tmp);
+//            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
+//            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
+//            curBlock->tempSymbols.push_back(ret);
+//            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+//            curBlock->add(offset);
+//            curBlock->add(load);
+//            return ret;
+//        }
+//        else if (dim == 2) {
+//            int row = Calculate::calcExp(lVal->exps[0]);
+//            int col = Calculate::calcExp(lVal->exps[1]);
+//            int offsetCount = row * fParamSymbol->dims[1] + col;
+//
+//            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//            curBlock->tempSymbols.push_back(tmp);
+//            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
+//            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
+//            curBlock->tempSymbols.push_back(ret);
+//            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
+//            curBlock->add(offset);
+//            curBlock->add(load);
+//            return ret;
+//        }
+//    }
     return nullptr;
 }
 
@@ -490,6 +508,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
             if (curBlockLevel == 0) {
                 // 全局变量
                 symbol->setLocal(false);
+                symbol->setAddress(symbol->getAddress() - symbol->getSize());
                 MiddleCode::getInstance().addGlobalValues(symbol);
             }
             else {
@@ -509,6 +528,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 curFuncSymbolTable->add(symbol);
                 updateCurStackSize(symbol);
                 symbol->setLocal(false);
+                symbol->setAddress(symbol->getAddress() - symbol->getSize());
                 MiddleCode::getInstance().addGlobalValues(symbol);
             }
             else {
@@ -551,6 +571,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 // 是全局变量且未初始化
                 if (curBlockLevel == 0) {
                     arraySymbol->setLocal(false);
+                    arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                     std::vector<int> initValues(arraySymbol->getFlattenDim(), 0);
                     arraySymbol->setInitValues(initValues);
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
@@ -570,6 +591,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 // 全局变量且且初始化
                 if (curBlockLevel == 0) {
                     arraySymbol->setLocal(false);
+                    arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                     std::vector<int> initValues;
                     initValues.reserve(exps.size());
                     for (int i = 0; i < dims[0]; i ++ ) {
@@ -608,6 +630,8 @@ void Visitor::visitVarDef(VarDef *varDef) {
             // 二维数组并且未初始化
             if (!varDef->isInit()) {
                 if (curBlockLevel == 0) {
+                    arraySymbol->setLocal(false);
+                    arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
                 }
                 else {
@@ -623,6 +647,8 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 auto exps = flattenInitVal(varDef->initval);
                 // 全局二维数组
                 if (curBlockLevel == 0) {
+                    arraySymbol->setLocal(false);
+                    arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                     std::vector<int> initValues;
                     initValues.reserve(exps.size());
                     for (auto x : exps) {
@@ -764,7 +790,7 @@ void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
         for (auto x : funcFParam->constExps) {
             dims.push_back(Calculate::calcConstExp(x));
         }
-        funcFParamSymbol = new ValueSymbol(POINTER, name, dims);
+        funcFParamSymbol = new ValueSymbol(ValueType::FUNCFPARAM, name, dims);
         curTable->add(funcFParamSymbol);
 
         // 添加进入该函数的符号表中，计算在符号表中的偏移
@@ -1187,14 +1213,10 @@ void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol,
             else if (formDim == 0) {
                 funcCall->funcRParams.push_back(expTmp);
             }
-            // 如果形参的维度是1或者2，直接传入值
-            // TODO:这里需要算出地址？
+            // 如果形参的维度是1或者2，传入指针
             else {
                 auto valueSymbol = dynamic_cast<ValueSymbol*>(expTmp);
-                if (valueSymbol != nullptr) {
-                    auto pushValue = new MiddleFuncParam(MiddleFuncParam::PUSH_PARAM, valueSymbol);
-                    curBlock->add(pushValue);
-                }
+                funcCall->funcRParams.push_back(valueSymbol);
             }
         }
     }

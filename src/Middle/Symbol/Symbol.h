@@ -17,7 +17,8 @@ enum BasicType{
 enum ValueType{
     SINGLE,
     ARRAY,
-    POINTER,
+    POINTER,    // 函数的实参如果是指针的话，就设置为POINTER
+    FUNCFPARAM, // 函数的形参
     TEMP
 };
 
@@ -32,19 +33,6 @@ public:
     virtual int getDim() const = 0;
     virtual int getSize() const = 0;
     std::string printMiddleCode();
-};
-
-class FuncFParamSymbol : public Symbol  {
-public:
-    std::vector<int> dims;
-    ValueType valueType;
-    FuncFParamSymbol(std::string &name_)
-            : Symbol(name_), valueType(SINGLE) {};
-    FuncFParamSymbol(std::string &name_, std::vector<int> &dims_)
-        : Symbol(name_), dims(dims_), valueType(ARRAY) {};
-    bool isConst() const;
-    int getDim() const;
-    int getSize() const;
 };
 
 class ValueSymbol;
@@ -73,6 +61,9 @@ public:
     int blockLevel;         //是在第几个嵌套括号中，全局变量就是0
     int address;
     bool isLocal=true;
+    // 主要用于指针，记录其偏移地址，和是否是全局的
+    ValueSymbol(ValueType valueType_, std::string &name_, int address_, bool isLocal_, bool isConst_=true)
+        : Symbol(name_), valueType(valueType_), isLocal(isLocal_), address(address_) {}
     // 主要是用于临时变量的初始化
     ValueSymbol(std::string name_, ValueType valueType_, int initValue_=0, bool isConst_=false)
         : Symbol(name_), valueType(valueType_), initValue(initValue_), isConstValue(isConst_) {};
@@ -100,6 +91,7 @@ public:
     void setLocal(bool local);
     int getSize() const override;
     int getAddress();
+    void setToPointer();
 };
 
 // 生成mips时，发现会给常数分配一个寄存器，所以新建这个类

@@ -50,16 +50,8 @@ int ValueSymbol::getAddress() {
     return address;
 }
 
-bool FuncFParamSymbol::isConst() const {
-    return false;
-}
-
-int FuncFParamSymbol::getSize() const {
-    return 4;
-}
-
-int FuncFParamSymbol::getDim() const {
-    return dims.size();
+void ValueSymbol::setToPointer() {
+    valueType = ValueType::POINTER;
 }
 
 int FuncSymbol::getDim() const {

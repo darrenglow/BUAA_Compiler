@@ -49,7 +49,6 @@ void MipsGenerator::translateGlobalStrings(const std::vector<std::string>& strin
 void MipsGenerator::translateGlobalValues(const std::vector<ValueSymbol *>& valueSymbols) {
     for (auto symbol : valueSymbols) {
         if (symbol->valueType == ARRAY) {
-            symbol->setAddress(symbol->getAddress() - symbol->getSize());
             auto code = new GlobalArray(symbol);
             this->add(code);
             auto address = Register::registerValues[$gp] + symbol->getAddress();
@@ -57,7 +56,6 @@ void MipsGenerator::translateGlobalValues(const std::vector<ValueSymbol *>& valu
             heapTop = address + symbol->getSize();  //主要是取最后一个symbol的地址和大小
         }
         else if (symbol->valueType == SINGLE) {
-            symbol->setAddress(symbol->getAddress()-4);
             this->add(new GlobalValue(symbol));
             auto address = Register::registerValues[$gp] + symbol->getAddress();
             globalSymbolAddress.insert({symbol, address});
@@ -256,24 +254,38 @@ void MipsGenerator::translateMiddleOffset(MiddleOffset *middleOffset) {
     auto reg = RegisterAlloc::getInstance().allocRegister(target, false);
     // 如果offset是立即数
     if (dynamic_cast<Immediate*>(offset)) {
-        if (base->isLocal) {
-            this->add(new RRI(RRI::addiu, reg, RegType::$sp, -base->getAddress() + dynamic_cast<Immediate*>(offset)->value));
+        // 如果数组是函数的形参
+        if (base->valueType == FUNCFPARAM) {
+            auto baseReg = RegisterAlloc::getInstance().allocRegister(base);    // 此时会将数组的绝对地址放入寄存器baseReg中
+            this->add(new RRI(RRI::addiu, reg, baseReg, dynamic_cast<Immediate*>(offset)->value));
         }
-        // 是全局变量的话
         else {
-            this->add(new RRI(RRI::addiu, reg, RegType::$gp, base->getAddress() + dynamic_cast<Immediate*>(offset)->value));
+            if (base->isLocal) {
+                this->add(new RRI(RRI::addiu, reg, RegType::$sp, -base->getAddress() + dynamic_cast<Immediate*>(offset)->value));
+            }
+                // 是全局变量的话
+            else {
+                this->add(new RRI(RRI::addiu, reg, RegType::$gp, base->getAddress() + dynamic_cast<Immediate*>(offset)->value));
+            }
         }
     }
     // 如果offset是变量
     else {
         auto offReg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(offset));
-        if (base->isLocal) {
-            this->add(new RRI(RRI::addi, reg, RegType::$sp, -base->getAddress()));
+        // 如果数组是函数的形参
+        if (base->valueType == FUNCFPARAM) {
+            auto baseReg = RegisterAlloc::getInstance().allocRegister(base);    // 此时会将数组的绝对地址放入寄存器baseReg中
+            this->add(new RRR(RRR::addu, reg, baseReg, offReg));
         }
         else {
-            this->add(new RRI(RRI::addi, reg, RegType::$gp, base->getAddress()));
+            if (base->isLocal) {
+                this->add(new RRI(RRI::addi, reg, RegType::$sp, -base->getAddress()));
+            }
+            else {
+                this->add(new RRI(RRI::addi, reg, RegType::$gp, base->getAddress()));
+            }
+            this->add(new RRR(RRR::addu, reg, reg, offReg));
         }
-        this->add(new RRR(RRR::addu, reg, reg, offReg));
     }
 }
 
@@ -397,21 +409,25 @@ void MipsGenerator::translateMiddleFuncCall(MiddleFuncCall *middleFuncCall) {
     this->add(new Notation("# end clear Register"));
     // 保存$ra到0($sp)处
     this->add(new M(M::sw, $ra, 0, $sp));
-    // 移动$sp的位置
-    this->add(new RRI(RRI::addiu, $sp, $sp, -curStackSize - 4));
+    // 先暂时计算被调用函数栈底地址$a0，因为sp可能会在算地址时还会用到，不能直接移动。
+    this->add(new RRI(RRI::addiu, $a0, $sp, -curStackSize - 4));
     // 将实参压入栈中
     int offset = 4;
     for (auto param : middleFuncCall->funcRParams) {
         if (dynamic_cast<Immediate*>(param)) {
             this->add(new RI(RI::li, $v0, dynamic_cast<Immediate*>(param)->value));
-            this->add(new M(M::sw, $v0, -offset, $sp));
+            this->add(new M(M::sw, $v0, -offset, $a0));
         }
+        // 如果valuesymbol是POINTER类型的话，reg中存的就是POINTER指向的在内存中的地址
         else if (dynamic_cast<ValueSymbol*>(param)) {
             auto reg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(param));
-            this->add(new M(M::sw, reg, -offset, $sp));
+            this->add(new M(M::sw, reg, -offset, $a0));
         }
         offset += 4;
     }
+
+    // 移动$sp
+    this->add(new RR(RR::move, $sp, $a0));
     // 调用函数
     auto labelStr = "Func_" + middleFuncCall->funcName;
     auto label = new Label(labelStr);

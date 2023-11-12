@@ -20,12 +20,27 @@ RegType RegisterAlloc::allocRegister(Symbol *symbol, bool fromMemory) {
     if (fromMemory) {
         if (dynamic_cast<ValueSymbol*>(symbol)) {
             auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
-            if (valueSymbol->isLocal) {
-                MipsGenerator::getInstance().add(new M(M::lw, reg, -valueSymbol->getAddress(), $sp));
+            // reg中存pointer指向的地址
+            if (valueSymbol->valueType == ValueType::POINTER) {
+                auto offset = valueSymbol->getAddress();   // 偏移的地址
+
+                if (valueSymbol->isLocal) {
+                    MipsGenerator::getInstance().add(new RRI(RRI::addiu, reg, $sp, -offset));
+                }
+                else {
+                    std::cout << offset << "####" << std::endl;
+                    MipsGenerator::getInstance().add(new RRI(RRI::addiu, reg, $gp, offset));
+                }
             }
             else {
-                MipsGenerator::getInstance().add(new M(M::lw, reg, valueSymbol->getAddress(), $gp));
+                if (valueSymbol->isLocal) {
+                    MipsGenerator::getInstance().add(new M(M::lw, reg, -valueSymbol->getAddress(), $sp));
+                }
+                else {
+                    MipsGenerator::getInstance().add(new M(M::lw, reg, valueSymbol->getAddress(), $gp));
+                }
             }
+
         }
         else if (dynamic_cast<NumSymbol*>(symbol)) {
             auto numSymbol = dynamic_cast<NumSymbol*>(symbol);
