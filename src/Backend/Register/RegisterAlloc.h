@@ -47,9 +47,17 @@ public:
 
     RegType findRegister(Symbol *symbol);
 
-    void clearRegister();
+    void saveRegisters();
 
     void pushBackToMem(RegType reg, ValueSymbol *valueSymbol);
+
+    void clearAllRegister();
+
+    void forceSymbolToRegister(ValueSymbol *valueSymbol, RegType reg);
+
+    void clearRegister(RegType reg);
+
+    RegType allocRegisterAvoid(RegType reg, Symbol *symbol, bool fromMemory=true);
 
 private:
     RegisterAlloc()=default;

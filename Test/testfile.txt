@@ -1,19 +1,11 @@
-int c[2][2] = {{1,2},{3,4}};
-
-int func2(int d[]) {
-    return d[1];
+const int const1 = 1, const2 = -100;
+int change1;
+int gets1(int var1,int var2){
+   const1 = 999;
+   change1 = var1 + var2          return (change1);
 }
-
-int func(int d[]){
-    int a = 1;
-    return func2(d);
-}
-
-int main() {
-    int x[2][2] = {{5,6},{7,8}};
-    // 传入的是c的偏移，是0，global
-    // 压入栈的时候，是将计算得到绝对地址压入参数栈中的
-    int y = func(c[1]);
-    printf("y is %d\n", y);
-    return 0;
+int main(){
+   change1 = 10;
+   printf("Hello World$");
+   return 0;
 }

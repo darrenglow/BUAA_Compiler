@@ -50,8 +50,16 @@ int ValueSymbol::getAddress() {
     return address;
 }
 
-void ValueSymbol::setToPointer() {
-    valueType = ValueType::POINTER;
+void ValueSymbol::setArrayElement() {
+    isArrayElement = true;
+}
+
+Intermediate * ValueSymbol::getPAddress() {
+    return pAddress;
+}
+
+void ValueSymbol::setFParam() {
+    isFParam = true;
 }
 
 int FuncSymbol::getDim() const {

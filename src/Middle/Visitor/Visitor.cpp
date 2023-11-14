@@ -113,7 +113,7 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 int offsetCount = 0;
                 for (auto x : initValues) {
                     auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                    curBlock->tempSymbols.push_back(tmp);
+                    curFunc->tempSymbols.push_back(tmp);
                     auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                     auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
@@ -147,7 +147,7 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 int offsetCount = 0;
                 for (auto x : initValues) {
                     auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                    curBlock->tempSymbols.push_back(tmp);
+                    curFunc->tempSymbols.push_back(tmp);
                     auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                     auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
@@ -181,7 +181,7 @@ Intermediate *Visitor::visitAddExp(AddExp *addExp) {
         auto src2 = visitMulExp(addExp->mulExps[i + 1]);
 
         res = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
+        curFunc->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
         auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
         curBlock->add(middleCode);
     }
@@ -211,7 +211,7 @@ Intermediate *Visitor::visitMulExp(MulExp *mulExp) {
         auto src2 = visitUnaryExp(mulExp->unaryExps[i + 1]);
 
         res = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
+        curFunc->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
         auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
         curBlock->add(middleCode);
     }
@@ -246,7 +246,7 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
                 middleCodeType = MiddleUnaryOp::ERROR;
         }
         auto res = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
+        curFunc->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
         auto middleCode = new MiddleUnaryOp(middleCodeType, res, src);
         curBlock->add(middleCode);
         return res;
@@ -269,11 +269,9 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
         if (funcSymbol->basicType == INT) {
             auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
             funcCall->ret = ret;
-            curBlock->tempSymbols.push_back(ret);
+            curFunc->tempSymbols.push_back(ret);
             return ret;
         }
-
-
     }
     return nullptr;
 }
@@ -327,11 +325,14 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
         }
         else if (symbolDim == 1) {
             // TODO：这里应该是返回地址 DONE
-            // TODO: 要考虑是参数数组的情况
+            // TODO: 要考虑是参数数组的情况。DONE
             // 形如int a[10]; a;
             if (realDim == 0) {
                 auto pointerName = "P_" + valueSymbol->name;
-                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, valueSymbol->getAddress(), valueSymbol->isLocal);
+                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName,new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+                if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+                    pointer->setFParam();
+                }
                 return pointer;
             }
             else if (realDim == 1) {
@@ -339,7 +340,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                 Intermediate *offsetCount = getOffsetCount(index);
 
                 auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curBlock->tempSymbols.push_back(tmp);
+                curFunc->tempSymbols.push_back(tmp);
 
                 auto offset = new MiddleOffset(valueSymbol, offsetCount, tmp);
                 // 如果是在等式左边的话，直接返回了
@@ -348,7 +349,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                     return tmp;
                 }
                 auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curBlock->tempSymbols.push_back(ret);
+                curFunc->tempSymbols.push_back(ret);
                 auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, ret, tmp);
                 curBlock->add(offset);
                 curBlock->add(load);
@@ -359,22 +360,83 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
             // TODO: 返回地址 DONE
             if (realDim == 0) {
                 auto pointerName = "P_" + valueSymbol->name;
-                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, valueSymbol->getAddress(), valueSymbol->isLocal);
+                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+                if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+                    pointer->setFParam();
+                }
                 return pointer;
             }
+            // int a[2][2]; func(a[1]);
+            // TODO: 可能会出现a[2][2], 传参使用a[x], a[1]的情况
+            // !!! 参数数组的话，添加middleoffset
             else if (realDim == 1){
                 auto pointerName = "P_" + valueSymbol->name;
-                auto index = Calculate::calcExp(lVal->exps[0]);
-                // 注意！！！由于我的傻逼设置，局部数组的数组头在上面，全局数组的数组头在下面
-                int address = 0;
-                if (valueSymbol->isLocal) {
-                    address = valueSymbol->getAddress() - index * valueSymbol->dims[1] * sizeof(int);
+                auto index = visitExp(lVal->exps[0]);
+
+                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+                curFunc->tempSymbols.push_back(tmp);
+                if (dynamic_cast<Immediate*>(index)){
+                    auto offsetCode = new MiddleOffset(valueSymbol, new Immediate(dynamic_cast<Immediate*>(index)->value * valueSymbol->dims[1] * sizeof(int)), tmp);
+                    DEBUG_PRINT_DIRECT("!!!!!!!!!!!!");
+                    DEBUG_PRINT_DIRECT(dynamic_cast<Immediate*>(index)->value * valueSymbol->dims[1] * sizeof(int));
+                    curBlock->add(offsetCode);
+                    // tmp得到的是绝对地址
+                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+                    if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+                        pointer->setFParam();
+                    }
+                    return pointer;
                 }
-                else{
-                    address = valueSymbol->getAddress() + index * valueSymbol->dims[1] * sizeof(int);
+                else {
+                    auto mulCode = new MiddleBinaryOp(MiddleBinaryOp::MUL, dynamic_cast<ValueSymbol*>(index), new Immediate(valueSymbol->dims[1] * sizeof(int)), tmp);
+                    auto offsetCode = new MiddleOffset(valueSymbol, tmp, tmp);
+                    curBlock->add(mulCode);
+                    curBlock->add(offsetCode);
+                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+                    if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+                        pointer->setFParam();
+                    }
+                    return pointer;
                 }
-                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, address, valueSymbol->isLocal);
-                return pointer;
+                // 如果是a[1]的传参
+//                if (dynamic_cast<Immediate*>(index)) {
+//                    int offset = dynamic_cast<Immediate*>(index)->value * valueSymbol->dims[1] * sizeof(int);
+//                    DEBUG_PRINT("index value is %d, offset is %d, valueSymbol off is %d\n", dynamic_cast<Immediate*>(index)->value, offset, valueSymbol->getAddress());
+//                    if (valueSymbol->isLocal) {
+//                        auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, new Immediate(valueSymbol->getAddress() - offset), valueSymbol->isLocal);
+//                        if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+//                            pointer->setFParam();
+//                        }
+//                        return pointer;
+//                    }
+//                    else {
+//                        auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, new Immediate(valueSymbol->getAddress() + offset), valueSymbol->isLocal);
+//                        if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+//                            pointer->setFParam();
+//                        }
+//                        return pointer;
+//                    }
+//                }
+//                // 如果是a[x]的传参
+//                else {
+//                    auto tmp = new ValueSymbol(getTempName(), TEMP);
+//                    auto address = new ValueSymbol(getTempName(), TEMP);
+//                    curFunc->tempSymbols.push_back(tmp);
+//                    curFunc->tempSymbols.push_back(address);
+//                    curBlock->add(new MiddleBinaryOp(MiddleBinaryOp::MUL, index, new Immediate(valueSymbol->dims[1] * sizeof(int)), tmp));
+//                    // 注意！！！由于我的傻逼设置，局部数组的数组头在上面，全局数组的数组头在下面
+//                    if (valueSymbol->isLocal) {
+//                        curBlock->add(new MiddleBinaryOp(MiddleBinaryOp::SUB, new Immediate(valueSymbol->getAddress()), tmp, address));
+//                    }
+//                    else{
+//                        curBlock->add(new MiddleBinaryOp(MiddleBinaryOp::ADD, new Immediate(valueSymbol->getAddress()), tmp, address));
+//                    }
+//                    auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, address, valueSymbol->isLocal);
+//                    if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+//                        pointer->setFParam();
+//                    }
+//                    return pointer;
+//                }
             }
             else if (realDim == 2) {
                 auto row = visitExp(lVal->exps[0]);
@@ -391,7 +453,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                     }
                     else {
                         auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curBlock->tempSymbols.push_back(tmp);
+                        curFunc->tempSymbols.push_back(tmp);
                         auto add = new MiddleBinaryOp(MiddleBinaryOp::ADD, new Immediate(index1), col, tmp);
                         curBlock->add(add);
                         offsetNum = tmp;
@@ -399,20 +461,20 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                 }
                 else if (dynamic_cast<ValueSymbol*>(row)) {
                     auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                    curBlock->tempSymbols.push_back(tmp);
+                    curFunc->tempSymbols.push_back(tmp);
                     auto mul = new MiddleBinaryOp(MiddleBinaryOp::MUL, row, new Immediate(valueSymbol->dims[1]), tmp);
                     curBlock->add(mul);
                     if (dynamic_cast<Immediate*>(col)) {
                         int index2 = dynamic_cast<Immediate*>(col)->value;
                         auto tmp2 = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curBlock->tempSymbols.push_back(tmp);
+                        curFunc->tempSymbols.push_back(tmp);
                         auto add = new MiddleBinaryOp(MiddleBinaryOp::ADD, tmp, new Immediate(index2), tmp2);
                         curBlock->add(add);
                         offsetNum = tmp2;
                     }
                     else {
                         auto tmp2 = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curBlock->tempSymbols.push_back(tmp);
+                        curFunc->tempSymbols.push_back(tmp);
                         auto add = new MiddleBinaryOp(MiddleBinaryOp::ADD, tmp, col, tmp2);
                         curBlock->add(add);
                         offsetNum = tmp2;
@@ -422,7 +484,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                 auto offsetCount = getOffsetCount(offsetNum);
 
                 auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curBlock->tempSymbols.push_back(tmp);
+                curFunc->tempSymbols.push_back(tmp);
                 auto offset = new MiddleOffset(valueSymbol, offsetCount, tmp);
                 // 等式左边的话直接返回
                 if (isLeft) {
@@ -430,6 +492,7 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                     return tmp;
                 }
                 auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
+                curFunc->tempSymbols.push_back(ret);
                 auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, ret, tmp);
                 curBlock->add(offset);
                 curBlock->add(load);
@@ -456,10 +519,10 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
 //        else if (dim == 1) {
 //            int offsetCount = Calculate::calcExp(lVal->exps[0]);
 //            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-//            curBlock->tempSymbols.push_back(tmp);
+//            curFunc->tempSymbols.push_back(tmp);
 //            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
 //            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-//            curBlock->tempSymbols.push_back(ret);
+//            curFunc->tempSymbols.push_back(ret);
 //            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
 //            curBlock->add(offset);
 //            curBlock->add(load);
@@ -471,10 +534,10 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
 //            int offsetCount = row * fParamSymbol->dims[1] + col;
 //
 //            auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-//            curBlock->tempSymbols.push_back(tmp);
+//            curFunc->tempSymbols.push_back(tmp);
 //            auto offset = new MiddleOffset(fParamSymbol, new Immediate(offsetCount * sizeof(int)), tmp);
 //            auto ret = new ValueSymbol(getTempName(), ValueType::TEMP);
-//            curBlock->tempSymbols.push_back(ret);
+//            curFunc->tempSymbols.push_back(ret);
 //            auto load = new MiddleMemoryOp(MiddleMemoryOp::LOAD, tmp, ret);
 //            curBlock->add(offset);
 //            curBlock->add(load);
@@ -613,7 +676,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                         auto sym = visitExp(exp);
                         DEBUG_PRINT_DIRECT("[visitVarDef] Immediate");
                         auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curBlock->tempSymbols.push_back(tmp);
+                        curFunc->tempSymbols.push_back(tmp);
                         auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                         auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
                         curBlock->add(offset);
@@ -630,6 +693,8 @@ void Visitor::visitVarDef(VarDef *varDef) {
             // 二维数组并且未初始化
             if (!varDef->isInit()) {
                 if (curBlockLevel == 0) {
+                    std::vector<int> initValues(dims[0]*dims[1], 0);
+                    arraySymbol->setInitValues(initValues);
                     arraySymbol->setLocal(false);
                     arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
                     MiddleCode::getInstance().addGlobalValues(arraySymbol);
@@ -665,7 +730,7 @@ void Visitor::visitVarDef(VarDef *varDef) {
                     for (auto exp : exps) {
                         auto sym = visitExp(exp);
                         auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curBlock->tempSymbols.push_back(tmp);
+                        curFunc->tempSymbols.push_back(tmp);
                         auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                         auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
                         curBlock->add(offset);
@@ -712,6 +777,8 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
 
     auto middleFunc = new Func(Func::DEF_FUNC, name);
     curFuncSymbolTable = middleFunc->funcSymbolTable;
+    curFunc = middleFunc;
+
     curStackSize = 0;
 
     auto funcBlock = new BasicBlock(BasicBlock::FUNC);
@@ -801,7 +868,8 @@ void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
         funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
     }
     else {
-        funcFParamSymbol = new ValueSymbol(name, dims);
+        // 参数的普通变量
+        funcFParamSymbol = new ValueSymbol(ValueType::SINGLE, name, dims);
         curTable->add(funcFParamSymbol);
         curFuncSymbolTable->add(funcFParamSymbol);
         updateCurStackSize(funcFParamSymbol);
@@ -848,6 +916,10 @@ void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
     if (returnStmt->exp) {
         auto res = visitExp(returnStmt->exp);
         auto middleCode = new MiddleReturn(res);
+        curBlock->add(middleCode);
+    }
+    else {
+        auto middleCode = new MiddleReturn();
         curBlock->add(middleCode);
     }
 }
@@ -954,7 +1026,7 @@ Intermediate * Visitor::visitEqExp(EqExp *eqExp) {
         auto src2 = visitRelExp(eqExp->relExps[i + 1]);
 
         res = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
+        curFunc->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
         auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
         curBlock->add(middleCode);
     }
@@ -988,7 +1060,7 @@ Intermediate * Visitor::visitRelExp(RelExp *relExp) {
         auto src2 = visitAddExp(relExp->addExps[i + 1]);
 
         res = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
+        curFunc->tempSymbols.push_back(dynamic_cast<ValueSymbol*>(res));
         auto middleCode = new MiddleBinaryOp(middleCodeType, src1, src2, res);
         curBlock->add(middleCode);
     }
@@ -1058,7 +1130,11 @@ void Visitor::visitInputStmt(InputStmt *inputStmt) {
         }
     }
     auto tmp = visitLVal(inputStmt->lVal, true);
-    auto input = new MiddleIO(MiddleIO::GETINT, tmp);
+    auto input = new MiddleIO(MiddleIO::GETINT, dynamic_cast<ValueSymbol*>(tmp));
+    // 如果tmp是TEMP的话，只有可能是通过数组形式赋值的
+    if (dynamic_cast<ValueSymbol*>(tmp)->valueType == TEMP) {
+        dynamic_cast<ValueSymbol*>(tmp)->setArrayElement();
+    }
     curBlock->add(input);
 }
 
@@ -1068,9 +1144,10 @@ void Visitor::visitContinueStmt(ContinueStmt *continueStmt) {
     if (inLoop == 0) {
         auto error = new Error(Error::BREAK_CONTINUE_OUT_LOOP, continueStmt->token->line);
         ErrorTable::getInstance().addError(error);
+        return;
     }
-    // 跳转到loopLabels.size()/2-1下标的label
-    auto label = loopLabels[loopLabels.size()/2 -1];
+    // 跳转到loopLabels.size()-2下标的label
+    auto label = loopLabels[loopLabels.size() - 2];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
 }
 
@@ -1080,16 +1157,27 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
     if (inLoop == 0) {
         auto error = new Error(Error::BREAK_CONTINUE_OUT_LOOP, breakStmt->token->line);
         ErrorTable::getInstance().addError(error);
+        return;
     }
-    auto label = loopLabels[loopLabels.size()/2];
+    auto label = loopLabels[loopLabels.size() - 1];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
 }
+
+// forStmt1
+
+// cond
+// stmt
+// forStmt2
 
 void Visitor::visitFORStmt(FORStmt *forStmt) {
     auto loopBlock = new BasicBlock(BasicBlock::LOOP);
     auto beginLoop = loopBlock->label;
     auto endFor = new Label();
     auto forStmt2Label = new Label();
+    // 如果forStmt2，让continue可以直接跳转到beginloop
+    if (forStmt->forStmt2 == nullptr) {
+        forStmt2Label = beginLoop;
+    }
 
     if (forStmt->forStmt1 != nullptr) {
         visitForStmt(forStmt->forStmt1);
@@ -1106,6 +1194,11 @@ void Visitor::visitFORStmt(FORStmt *forStmt) {
         visitCond(forStmt->cond, nullptr, endFor);
     }
     visitStmt(forStmt->stmt);
+
+    // !!! 这里！，一定要加上一条跳转到stmt2的语句，不然寄存器分配时会出现问题。
+    auto jumpToStmt2 = new MiddleJump(MiddleJump::JUMP, forStmt2Label);
+    curBlock->add(jumpToStmt2);
+
     if (forStmt->forStmt2 != nullptr) {
         curBlock->add(forStmt2Label);
         visitForStmt(forStmt->forStmt2);
@@ -1163,11 +1256,15 @@ void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
             return;
         }
     }
-
-    auto src1 = visitLVal(assignStmt->lVal, true);
     auto src2 = visitExp(assignStmt->exp);
+    auto src1 = visitLVal(assignStmt->lVal, true);
+
     auto symbol = curTable->getSymbol(name, true);
-    if (dynamic_cast<ValueSymbol*>(symbol)->valueType == ARRAY) {
+    if (src1 ==nullptr || src2 == nullptr || symbol==nullptr) {
+        return;
+    }
+    // 如果是数组类型，或者是FUNCFPARAM（仅针对参数数组）
+    if (dynamic_cast<ValueSymbol*>(symbol)->valueType == ARRAY || dynamic_cast<ValueSymbol*>(symbol)->valueType == FUNCFPARAM) {
         auto middleCode = new MiddleMemoryOp(MiddleMemoryOp::STORE, src2, src1);
         curBlock->add(middleCode);
     }
@@ -1292,7 +1389,7 @@ Intermediate * Visitor::getOffsetCount(Intermediate *intermediate) {
     }
     else {
         auto offsetCount = new ValueSymbol(getTempName(), ValueType::TEMP);
-        curBlock->tempSymbols.push_back(offsetCount);
+        curFunc->tempSymbols.push_back(offsetCount);
         auto mul = new MiddleBinaryOp(MiddleBinaryOp::MUL, intermediate, new Immediate(4), offsetCount);
         curBlock->add(mul);
         return offsetCount;

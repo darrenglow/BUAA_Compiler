@@ -1,0 +1,48 @@
+//存在Decl
+const int a = 1;
+const int b = 1,c = 1,d = 1;
+int e = 1;
+int f = 1,g = 1,h = 1;
+int i;
+int j,k,l;
+const int o = 1,p = 1;
+//不存在FuncDel
+int main(){
+	printf("20373291\n");
+	//基本表达� 
+	i = a;
+	j = 2;
+	k =  b * (a + 2);
+	printf("i = %d j = %d k = %d\n",i,j,k);
+	//单目运算� 
+	i = +-+h;
+	printf("i = %d\n",i);
+	if(!0){
+		printf("!0 = 1\n");
+	}
+	//乘除模表达式
+	i = 2 * 2;
+	i = 2 / 2;
+	i = 2 % 2;
+	//加减表达�
+	h = i;
+	h = a + i;
+	h = a - i;                                
+	//关系表达� 
+	if(h){
+		printf("This is h\n");
+	}
+	if(1 < 2){
+		printf("1 < 2\n");
+	}
+	if(2 > 1){
+		printf("2 > 1\n");
+	}
+	if(1 <= 1){
+		printf("1 <= 1\n");
+	}
+	if(1 >= 1){
+		printf("1 >= 1\n");
+	}
+	return 0;
+}

@@ -12,11 +12,11 @@
 //#define LexicalAnalysis
 //#define ParseAnalysis
 #define ErrorHandle
-#define MiddleCodeGeneration
+//#define MiddleCodeGeneration
 #define MipsGeneration
 
-static const std::string prePath = "../Test/";
-//static const std::string prePath = "./";
+//static const std::string prePath = "../Test/";
+static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
 std::ofstream middleCodeOutput(prePath + "middleCode.txt");

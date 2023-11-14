@@ -23,6 +23,7 @@ public:
     int curStackSize = 0;
     static int tmpVarNumber;
     static SymbolTable * curFuncSymbolTable;
+    Func *curFunc;
 
     void updateCurStackSize(ValueSymbol* valueSymbol);
     std::vector<Label*> loopLabels;

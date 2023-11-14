@@ -22,7 +22,7 @@ public:
     std::vector<Instruction*> mips;
 
     int curStackSize = 0;
-    int heapTop = 0;  //用于计算字符串的起始地址
+    int heapTop = 0x10008000;  //用于计算字符串的起始地址
     Func* currentFunc;
 
     // 全局变量的地址表示直接使用立即数的形式
@@ -59,7 +59,7 @@ private:
 
     void translateMiddleIO(MiddleIO *middleIO);
 
-    void processTempSymbols(std::vector<ValueSymbol *> tempSymbols);
+    void processTempSymbols(std::vector<ValueSymbol *> &tempSymbols);
 
     int calculateStringMemorySize(const std::basic_string<char> &basicString);
 

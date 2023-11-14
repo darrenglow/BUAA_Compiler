@@ -45,7 +45,6 @@ public:
     Label *label;   // FUNC, LOOP, BRANCH
     std::string type2str[4] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
     std::vector<MiddleCodeItem*> middleCodeItems;
-    std::vector<ValueSymbol*> tempSymbols;  // 临时变量
 
     explicit BasicBlock(Type type_) : type(type_), label(new Label()) {}
 
@@ -63,6 +62,7 @@ public:
     std::string funcName;
     BasicBlock *block{};
     SymbolTable * funcSymbolTable = new SymbolTable();
+    std::vector<ValueSymbol*> tempSymbols;  // 临时变量
     Label *label;
     Type type;
     bool hasReturn;

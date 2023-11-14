@@ -18,7 +18,7 @@ enum ValueType{
     SINGLE,
     ARRAY,
     POINTER,    // 函数的实参如果是指针的话，就设置为POINTER
-    FUNCFPARAM, // 函数的形参
+    FUNCFPARAM, // 函数的形参，数组
     TEMP
 };
 
@@ -61,9 +61,15 @@ public:
     int blockLevel;         //是在第几个嵌套括号中，全局变量就是0
     int address;
     bool isLocal=true;
+    bool isFParam=false;    // 针对指针，判断其是否是函数的参数
+    Intermediate *pAddress; // 针对传参时的指针，如果是二维数组的话a[2][2]，可能传入的是a[x]，这时其地址就要动态计算
+    bool isAbsoluteAddress=false;  //仅针对func(int a[][2])调用func2(a[1])的特殊情况。
+    bool isArrayElement=false;   // 仅针对a[2] = getint()这样的情况。
     // 主要用于指针，记录其偏移地址，和是否是全局的
-    ValueSymbol(ValueType valueType_, std::string &name_, int address_, bool isLocal_, bool isConst_=true)
-        : Symbol(name_), valueType(valueType_), isLocal(isLocal_), address(address_) {}
+    ValueSymbol(ValueType valueType_, std::string &name_, Intermediate *pAddress_, bool isLocal_, bool isConst_=true)
+        : Symbol(name_), valueType(valueType_), isLocal(isLocal_), pAddress(pAddress_) {}
+    ValueSymbol(bool isAbsolute_, ValueType valueType_, std::string &name_, Intermediate *pAddress_, bool isLocal_, bool isConst_=true)
+            : Symbol(name_), valueType(valueType_), isLocal(isLocal_), pAddress(pAddress_), isAbsoluteAddress(isAbsolute_) {}
     // 主要是用于临时变量的初始化
     ValueSymbol(std::string name_, ValueType valueType_, int initValue_=0, bool isConst_=false)
         : Symbol(name_), valueType(valueType_), initValue(initValue_), isConstValue(isConst_) {};
@@ -91,7 +97,9 @@ public:
     void setLocal(bool local);
     int getSize() const override;
     int getAddress();
-    void setToPointer();
+    Intermediate* getPAddress();
+    void setFParam();
+    void setArrayElement();
 };
 
 // 生成mips时，发现会给常数分配一个寄存器，所以新建这个类

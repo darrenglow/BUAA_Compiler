@@ -1,0 +1,11 @@
+/**
+ * CompUnit â† {Decl} {FuncDef} MainFuncDef
+ */
+// ä¸å­˜åœ Decl
+// ä¸å­˜åœ FuncDef
+int main()
+{
+    printf("19241091\n");
+    printf("==================testfile4 end==================");
+    return 0;
+}
