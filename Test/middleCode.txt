@@ -1,0 +1,309 @@
+######### Middle Code Start #########
+GLOBAL VALUE: 
+VAR simple_const_a 1
+ARRAY arr_1d_a 2,3,4,5,6
+ARRAY arr_2d_a 7,8,9,10
+ARRAY arr_2d_b 44,55,66,77,88,99
+VAR simple_cosnt_b 11
+ARRAY arr_1d_b 11,22,33,44,55,66,77,88,99
+VAR simple_var_c 327
+VAR simple_var_d 0
+ARRAY arr_1d_c 896,1
+ARRAY arr_1d_d 0,0,0,0,0,0,0,0,0,0
+ARRAY arr_2d_c 0,0,0,0,0,0,0,0,0
+ARRAY arr_2d_d 3,56,45,16
+ARRAY arr_2d_e 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+GLOBAL STRING: 
+str_0: Successfully call a function with 3 types of paras.\n
+str_1: \nJust get a number [
+str_2: ] (greater than 100).\n
+str_3: \nJust get a number [
+str_4: ] (smaller than or equal to 100).\n
+str_5: GLOBAL simple_var_c: 
+str_6: \n
+str_7: lucky number: 
+str_8: \n
+str_9: (
+str_10: )
+str_11: \n
+str_12: The ones digit of the lucky number is greater than 7.\n
+###########################
+###### BEGIN_empty_func ######
+###### func_size is 0######
+Func_empty_func:
+### BLOCK_FUNC BEGIN
+LABEL_1:
+return 
+### BLOCK_FUNC END
+###### END_empty_func ######
+
+###### BEGIN_para_only ######
+###### func_size is 12######
+Func_para_only:
+### BLOCK_FUNC BEGIN
+LABEL_2:
+PARAM a
+PARAM b
+PARAM c
+PRINT_STR str_0
+return 
+### BLOCK_FUNC END
+###### END_para_only ######
+
+###### BEGIN_put_stu_id ######
+###### func_size is 0######
+Func_put_stu_id:
+### BLOCK_FUNC BEGIN
+LABEL_3:
+return 
+### BLOCK_FUNC END
+###### END_put_stu_id ######
+
+###### BEGIN_sum_arr_1d ######
+###### func_size is 16######
+Func_sum_arr_1d:
+### BLOCK_FUNC BEGIN
+LABEL_4:
+PARAM arr
+PARAM length
+DEF_VAR 0 i[0xc]
+DEF_VAR 0 sum[0x10]
+### BLOCK_LOOP BEGIN
+LABEL_5:
+SUB length 1 T0
+LE i T0 T1
+JUMP_EQZ T1 LABEL_9
+JUMP LABEL_8
+LABEL_9:
+JUMP LABEL_6
+LABEL_8:
+MUL i 4 T2
+OFFSET T2 arr T3
+LOAD T4 T3
+ADD sum T4 T5
+ASSIGN T5 sum
+ADD i 1 T6
+ASSIGN T6 i
+JUMP LABEL_5
+JUMP LABEL_5
+### BLOCK_LOOP END
+
+LABEL_6:
+return sum
+### BLOCK_FUNC END
+###### END_sum_arr_1d ######
+
+###### BEGIN_get_then_print ######
+###### func_size is 28######
+Func_get_then_print:
+### BLOCK_FUNC BEGIN
+LABEL_10:
+DEF_ARRAY const_tmp[0x8]
+OFFSET 0 const_tmp T7
+STORE 66 T7
+OFFSET 4 const_tmp T8
+STORE 88 T8
+END_ARRAY const_tmp[0x8]
+DEF_VAR tmp[0xc]
+DEF_VAR ans[0x10]
+DEF_ARRAY ret[0x28]
+END_ARRAY ret[0x28]
+GETINT tmp
+GT tmp 100 T9
+JUMP_EQZ T9 LABEL_15
+JUMP LABEL_14
+LABEL_15:
+JUMP LABEL_12
+LABEL_14:
+### BLOCK_BRANCH BEGIN
+LABEL_11:
+PRINT_STR str_1
+PRINT_INT tmp
+PRINT_STR str_2
+JUMP LABEL_13
+### BLOCK_BRANCH END
+
+### BLOCK_BRANCH BEGIN
+LABEL_12:
+PRINT_STR str_3
+PRINT_INT tmp
+PRINT_STR str_4
+### BLOCK_BRANCH END
+
+LABEL_13:
+OFFSET 0 ret T10
+STORE tmp T10
+OFFSET 0 const_tmp T11
+LOAD T12 T11
+DIV T12 2 T13
+ADD tmp T13 T14
+OFFSET 4 ret T15
+STORE T14 T15
+OFFSET 0 const_tmp T16
+LOAD T17 T16
+OFFSET 4 const_tmp T18
+LOAD T19 T18
+MUL T17 T19 T20
+OFFSET 8 ret T21
+STORE T20 T21
+OFFSET 0 ret T22
+CALL sum_arr_1d( P_ret 3 )
+
+ASSIGN T23 ans
+return ans
+### BLOCK_FUNC END
+###### END_get_then_print ######
+
+###### BEGIN_put_global_simple_var_c ######
+###### func_size is 0######
+Func_put_global_simple_var_c:
+### BLOCK_FUNC BEGIN
+LABEL_16:
+PRINT_STR str_5
+PRINT_INT simple_var_c
+PRINT_STR str_6
+return 
+### BLOCK_FUNC END
+###### END_put_global_simple_var_c ######
+
+###### BEGIN_main ######
+###### func_size is 38######
+Func_main:
+### BLOCK_FUNC BEGIN
+LABEL_17:
+DEF_VAR n[0x4]
+DEF_ARRAY ans[0x2c]
+END_ARRAY ans[0x2c]
+DEF_VAR 10 t[0x30]
+CALL put_stu_id( )
+
+CALL empty_func( )
+
+OFFSET 0 arr_1d_b T24
+LOAD T25 T24
+OFFSET 8 arr_1d_a T26
+LOAD T27 T26
+DIV T25 T27 T28
+ASSIGN T28 simple_var_d
+CALL para_only( simple_var_d P_arr_1d_c P_arr_2d_d )
+
+### BLOCK_LOOP BEGIN
+LABEL_18:
+JUMP_EQZ t LABEL_22
+JUMP LABEL_21
+LABEL_22:
+JUMP LABEL_19
+LABEL_21:
+SUB t 1 T29
+ASSIGN T29 t
+CALL get_then_print( )
+
+MOD T30 10 T31
+ADD T31 10 T32
+ASSIGN T32 n
+GE n 10 T33
+JUMP_EQZ T33 LABEL_26
+JUMP LABEL_25
+LABEL_26:
+JUMP LABEL_24
+LABEL_25:
+### BLOCK_BRANCH BEGIN
+LABEL_23:
+SUB n 10 T34
+ASSIGN T34 n
+### BLOCK_BRANCH END
+
+LABEL_24:
+PRINT_STR str_7
+PRINT_INT n
+PRINT_STR str_8
+DEF_VAR 0 simple_var_c[0x34]
+DEF_VAR 0 index[0x38]
+### BLOCK_LOOP BEGIN
+LABEL_27:
+LT simple_var_c 8 T35
+JUMP_EQZ T35 LABEL_31
+JUMP LABEL_30
+LABEL_31:
+JUMP LABEL_28
+LABEL_30:
+EQ simple_var_c 2 T36
+JUMP_EQZ T36 LABEL_36
+JUMP LABEL_35
+LABEL_36:
+JUMP LABEL_33
+LABEL_35:
+### BLOCK_BRANCH BEGIN
+LABEL_32:
+ADD simple_var_c 1 T37
+ASSIGN T37 simple_var_c
+JUMP LABEL_27
+JUMP LABEL_34
+### BLOCK_BRANCH END
+
+### BLOCK_BRANCH BEGIN
+LABEL_33:
+ADD n 1 T38
+LE T38 simple_var_c T39
+JUMP_EQZ T39 LABEL_40
+JUMP LABEL_39
+LABEL_40:
+JUMP LABEL_38
+LABEL_39:
+### BLOCK_BRANCH BEGIN
+LABEL_37:
+JUMP LABEL_28
+### BLOCK_BRANCH END
+
+LABEL_38:
+### BLOCK_BRANCH END
+
+LABEL_34:
+MUL simple_var_c 4 T40
+OFFSET T40 arr_1d_b T41
+LOAD T42 T41
+PRINT_STR str_9
+PRINT_INT simple_var_c
+PRINT_STR str_10
+PRINT_INT T42
+PRINT_STR str_11
+MUL simple_var_c 4 T43
+OFFSET T43 arr_1d_b T44
+LOAD T45 T44
+MUL index 4 T46
+OFFSET T46 ans T47
+STORE T45 T47
+ADD index 1 T48
+ASSIGN T48 index
+ADD simple_var_c 1 T49
+ASSIGN T49 simple_var_c
+JUMP LABEL_27
+JUMP LABEL_27
+### BLOCK_LOOP END
+
+LABEL_28:
+ADD n 1 T50
+NE T50 simple_var_c T51
+JUMP_EQZ T51 LABEL_44
+JUMP LABEL_43
+LABEL_44:
+JUMP LABEL_42
+LABEL_43:
+### BLOCK_BRANCH BEGIN
+LABEL_41:
+PRINT_STR str_12
+### BLOCK_BRANCH END
+
+LABEL_42:
+JUMP LABEL_18
+JUMP LABEL_18
+### BLOCK_LOOP END
+
+LABEL_19:
+CALL put_global_simple_var_c( )
+
+return 0
+### BLOCK_FUNC END
+###### END_main ######
+
+######### Middle Code End #########

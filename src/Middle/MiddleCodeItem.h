@@ -65,7 +65,7 @@ public:
     std::vector<ValueSymbol*> tempSymbols;  // 临时变量
     Label *label;
     Type type;
-    bool hasReturn;
+    bool hasReturn{};
     explicit Func(Type type_, std::string &funcName_) : type(type_), funcName(funcName_) {
         std::string tmp = "Func_" + funcName;
         label = new Label(tmp);
@@ -80,8 +80,8 @@ class MiddleFuncCall : public MiddleCodeItem {
 public:
     std::string funcName;
     std::vector<Intermediate*> funcRParams;
-    ValueSymbol *ret;
-    MiddleFuncCall(std::string &funcName_) : funcName(funcName_) {}
+    ValueSymbol *ret{};
+    explicit MiddleFuncCall(std::string &funcName_) : funcName(funcName_) {}
     OVERRIDE_OUTPUT;
 };
 
@@ -103,7 +103,7 @@ public:
 class MiddleReturn : public MiddleCodeItem {
 public:
     Intermediate * target{};
-    MiddleReturn() {}
+    MiddleReturn() = default;
     explicit MiddleReturn(Intermediate* target_) : target(target_) {}
     OVERRIDE_OUTPUT;
 };
@@ -119,10 +119,10 @@ public:
     };
     std::string type2str[3] = {"DEF_VAR", "DEF_ARRAY", "END_ARRAY"};
     Type type;
-    bool isInit;
+    bool isInit{};
 
     ValueSymbol *valueSymbol;
-    Intermediate *srcValueSymbol;   // src可能是立即数，可能是变量名
+    Intermediate *srcValueSymbol{};   // src可能是立即数，可能是变量名
 
     MiddleDef(Type type_, ValueSymbol *valueSymbol_) : type(type_), valueSymbol(valueSymbol_) {}
     MiddleDef(Type type_, ValueSymbol *valueSymbol_, Intermediate *srcValueSymbol_) : type(type_), srcValueSymbol(srcValueSymbol_), valueSymbol(valueSymbol_), isInit(true) {}

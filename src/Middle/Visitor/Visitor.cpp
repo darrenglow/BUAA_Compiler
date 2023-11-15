@@ -12,12 +12,18 @@
 #include "../../Util/Exception.h"
 #include "../Intermediate/Immediate.h"
 
+#include "../../Optimization/Config.h"
+#include "../Optimization/NoChangeValue.h"
 SymbolTable* Visitor::curTable;
 SymbolTable* Visitor::curFuncSymbolTable;
 
 void Visitor::visit() {
     auto compUnit = ast->root;
     visitCompUnit(compUnit);
+#ifdef NO_CHANGE_VALUE
+    // 翻译完所有中间代码后，将其中变量都没变的替换为值
+    NoChangeValue::getInstance().replace(funcs);
+#endif
 }
 
 void Visitor::visitCompUnit(CompUnit *compUnit){
@@ -294,6 +300,13 @@ Intermediate * Visitor::visitPrimaryExp(PrimaryExp *primaryExp) {
 }
 
 Intermediate *Visitor::visitExp(Exp *exp) {
+#ifdef CONSTANT_CALCULATE
+    // 尝试计算
+    try {
+        int x = Calculate::calcExp(exp);
+        return new Immediate(x);
+    } catch (MyError&) {}
+#endif
     return visitAddExp(exp->addExp);
 }
 
@@ -301,7 +314,6 @@ Intermediate *Visitor::visitExp(Exp *exp) {
 Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
     auto ident = lVal->ident;
     std::string name = ident->content;
-
     // Error c
     if (!curTable->contain(name, true)) {
         auto error = new Error(Error::UNDEFINED_IDENT, ident->line);
@@ -321,6 +333,11 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
 
         // 形如int a; a;
         if (symbolDim == 0) {
+#ifdef NO_CHANGE_VALUE
+            if (isLeft) {
+                NoChangeValue::getInstance().remove(valueSymbol);
+            }
+#endif
             return valueSymbol;
         }
         else if (symbolDim == 1) {
@@ -570,6 +587,9 @@ void Visitor::visitVarDef(VarDef *varDef) {
             updateCurStackSize(symbol);
             if (curBlockLevel == 0) {
                 // 全局变量
+#ifdef NO_CHANGE_VALUE
+                NoChangeValue::getInstance().add(symbol, 0);
+#endif
                 symbol->setLocal(false);
                 symbol->setAddress(symbol->getAddress() - symbol->getSize());
                 MiddleCode::getInstance().addGlobalValues(symbol);
@@ -587,6 +607,9 @@ void Visitor::visitVarDef(VarDef *varDef) {
             if (curBlockLevel == 0) {
                 int value = Calculate::calcExp(varDef->initval->exp);
                 auto symbol = new ValueSymbol(name, value, false);
+#ifdef NO_CHANGE_VALUE
+                NoChangeValue::getInstance().add(symbol, value);
+#endif
                 curTable->add(symbol);
                 curFuncSymbolTable->add(symbol);
                 updateCurStackSize(symbol);
@@ -601,10 +624,14 @@ void Visitor::visitVarDef(VarDef *varDef) {
                 curFuncSymbolTable->add(symbol);
                 updateCurStackSize(symbol);
                 symbol->setLocal(true);
+
                 auto sym = visitExp(varDef->initval->exp);
                 // 如果visitExp的值是立即数
                 if (dynamic_cast<Immediate*>(sym) != nullptr) {
                     DEBUG_PRINT_DIRECT("[visitVarDef] Immediate");
+#ifdef NO_CHANGE_VALUE
+                    NoChangeValue::getInstance().add(symbol, dynamic_cast<Immediate *>(sym)->value);
+#endif
                     auto def = new MiddleDef(MiddleDef::DEF_VAR, symbol, dynamic_cast<Immediate*>(sym));
                     curBlock->add(def);
                 }
@@ -778,6 +805,7 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     auto middleFunc = new Func(Func::DEF_FUNC, name);
     curFuncSymbolTable = middleFunc->funcSymbolTable;
     curFunc = middleFunc;
+    funcs.push_back(curFunc);
 
     curStackSize = 0;
 
@@ -1227,8 +1255,9 @@ void Visitor::visitForStmt(ForStmt *forStmt) {
             ErrorTable::getInstance().addError(error);
         }
     }
-    auto target = visitLVal(forStmt->lVal);
+    auto target = visitLVal(forStmt->lVal, true);
     auto src = visitExp(forStmt->exp);
+
     auto middleCode = new MiddleUnaryOp(MiddleUnaryOp::ASSIGN, target, src);
     curBlock->add(middleCode);
 }

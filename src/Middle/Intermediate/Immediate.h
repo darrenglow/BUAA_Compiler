@@ -14,11 +14,11 @@ public:
         STR
     };
     Type type;
-    int value;
+    int value{};
     std::string str;
-    Immediate(int value_) : value(value_), type(VALUE) {}
-    Immediate(std::string &str_) : str(str_), type(STR) {}
-    std::string printMiddleCode();
+    explicit Immediate(int value_) : value(value_), type(VALUE) {}
+    explicit Immediate(std::string &str_) : str(str_), type(STR) {}
+    std::string printMiddleCode() override;
 };
 
 #endif //BUAA_COMPILER_IMMEDIATE_H

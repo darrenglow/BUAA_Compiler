@@ -9,59 +9,68 @@
 #include "../../Util/Exception.h"
 
 
-int Calculate::calcExp(Exp *exp) {
-    return calcAddExp(exp->addExp);
+int Calculate::calcExp(Exp *exp){
+    try {
+        return calcAddExp(exp->addExp);
+    } catch(MyError&) {throw;};
+
 }
 
 int Calculate::calcConstExp(ConstExp *constExp) {
-    return calcAddExp(constExp->addExp);
+    try {
+        return calcAddExp(constExp->addExp);
+    } catch(MyError&) {throw;};
 }
 
 int Calculate::calcAddExp(AddExp *addExp) {
-    auto mulExp = addExp->mulExps[0];
-    int res = calcMulExp(mulExp);
-    for (int i = 1; i < addExp->mulExps.size(); i ++ ) {
-        auto op = addExp->ops[i - 1];
-        auto mulExp2 = addExp->mulExps[i];
-        int x2 = calcMulExp(mulExp2);
+    try {
+        auto mulExp = addExp->mulExps[0];
+        int res = calcMulExp(mulExp);
+        for (int i = 1; i < addExp->mulExps.size(); i ++ ) {
+            auto op = addExp->ops[i - 1];
+            auto mulExp2 = addExp->mulExps[i];
+            int x2 = calcMulExp(mulExp2);
 
-        switch (op->tokenType) {
-            case Token::PLUS:
-                res += x2;
-                break;
-            case Token::MINU:
-                res -= x2;
-                break;
-            default:
-                std::cout << "Error in calcAddExp" << std::endl;
+            switch (op->tokenType) {
+                case Token::PLUS:
+                    res += x2;
+                    break;
+                case Token::MINU:
+                    res -= x2;
+                    break;
+                default:
+                    std::cout << "Error in calcAddExp" << std::endl;
+            }
         }
-    }
-    return res;
+        return res;
+    }catch (MyError&) {throw;}
 }
 
 int Calculate::calcMulExp(MulExp *mulExp) {
-    auto unaryExp = mulExp->unaryExps[0];
-    int res = calcUnaryExp(unaryExp);
-    for (int i = 1; i < mulExp->unaryExps.size(); i ++ ) {
-        auto op = mulExp->ops[i - 1];
-        auto unaryExp2 = mulExp->unaryExps[i];
-        int x2 = calcUnaryExp(unaryExp2);
+    try {
+        auto unaryExp = mulExp->unaryExps[0];
+        int res = calcUnaryExp(unaryExp);
+        for (int i = 1; i < mulExp->unaryExps.size(); i ++ ) {
+            auto op = mulExp->ops[i - 1];
+            auto unaryExp2 = mulExp->unaryExps[i];
+            int x2 = calcUnaryExp(unaryExp2);
 
-        switch (op->tokenType) {
-            case Token::MULT:
-                res *= x2;
-                break;
-            case Token::DIV:
-                res /= x2;
-                break;
-            case Token::MOD:
-                res %= x2;
-                break;
-            default:
-                std::cout << "Error in calcMulExp" << std::endl;
+            switch (op->tokenType) {
+                case Token::MULT:
+                    res *= x2;
+                    break;
+                case Token::DIV:
+                    res /= x2;
+                    break;
+                case Token::MOD:
+                    res %= x2;
+                    break;
+                default:
+                    std::cout << "Error in calcMulExp" << std::endl;
+            }
         }
-    }
-    return res;
+        return res;
+    }catch (MyError&){throw;}
 }
 
 // 这里不考虑函数调用，只考虑表达式
@@ -78,11 +87,15 @@ int Calculate::calcUnaryExp(UnaryExp *unaryExp) {
         if (number != nullptr)
             res = number->intConst->val;
         else if (lVal != nullptr)
-            res = calcLVal(lVal);
+            try {
+                res = calcLVal(lVal);
+            }catch(MyError&){throw;}
         else if (exp != nullptr)
-            res = calcExp(exp);
+            try {
+                res = calcExp(exp);
+            }catch(MyError&){throw;}
         else
-            std::cout << "Error in calcUnaryExp" << std::endl;
+            throw MyError();
         return res;
     }
     else if (unaryOp != nullptr) {
@@ -114,7 +127,11 @@ int Calculate::calcLVal(LVal *lVal) {
     assert(symbol != nullptr);
     auto valueSymbol = dynamic_cast<ValueSymbol*>(symbol);
     assert(valueSymbol != nullptr);
-    // TODO: 变量的值，和从数组中取值。
+
+    if (!valueSymbol->isConst())
+        throw MyError();
+
+        // TODO: 变量的值，和从数组中取值。
     if (valueSymbol->valueType == ValueType::SINGLE) {
         return valueSymbol->initValue;
     }

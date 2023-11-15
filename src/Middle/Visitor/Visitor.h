@@ -24,6 +24,7 @@ public:
     static int tmpVarNumber;
     static SymbolTable * curFuncSymbolTable;
     Func *curFunc;
+    std::vector<Func*> funcs;   // 在NoChangeValue中使用，遍历所有的中间代码
 
     void updateCurStackSize(ValueSymbol* valueSymbol);
     std::vector<Label*> loopLabels;

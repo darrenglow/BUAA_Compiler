@@ -1,10 +1,11 @@
 import os
 import subprocess
+import time
 
 pwd = os.getcwd()
 
-target_dir = os.path.join(pwd, '..\\cmake-build-debug')
-test_dir = os.path.join(pwd, "2021")  # 2022-test-1105
+target_dir = os.path.join(pwd, '.\\cmake-build-debug')
+test_dir = os.path.join(pwd, ".\\Test\\2023")
 
 compile_path = os.path.join(target_dir, 'BUAA_Compiler.exe')
 mips_path    = os.path.join(target_dir, 'mips.txt')
@@ -40,21 +41,21 @@ for root, dirs, files in os.walk(test_dir):
         os.system('echo f | xcopy /y ' + testfile_src + ' ' + testfile_dst + ' > log.txt')
         os.system('echo f | xcopy /y ' + input_src    + ' ' + input_dst    + ' > log.txt')
         os.system('echo f | xcopy /y ' + output_src   + ' ' + output_dst   + ' > log.txt')
-    #
+        fcheck = open(output_dst, mode='r')
+        ans_list = fcheck.read().replace('\r\n', '\n').split('\n')
+        fcheck.close()
+
     #     # 在cmake-build-debug目录下运行Compiler.exe，得到mips.txt
         subprocess.run(compile_path, cwd=target_dir, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #
     #     # 利用mars输入测试input.txt并得到结果
         fin = open(input_dst, mode='r')
-        sp = subprocess.Popen("java -jar Mars4Compiler.jar mips.txt", cwd=target_dir, stdin=fin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sp = subprocess.Popen("java -jar mars.jar mips.txt", cwd=target_dir, stdin=fin, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         res_list = bytes.decode(sp.communicate()[0]).replace('\r\n', '\n').split('\n')[2:]
         sp.kill()
         fin.close()
     #
     #     # 与output.txt对比检验
-        fcheck = open(output_dst, mode='r')
-        ans_list = fcheck.read().replace('\r\n', '\n').split('\n')
-        fcheck.close()
         line_num = min(len(ans_list), len(res_list))
         if abs(len(ans_list) - len(res_list)) > 1:
             print('[warning] line num diff too much! ans-res :', str(len(ans_list)) + '-' + str(len(res_list)), end=' ')
@@ -65,4 +66,8 @@ for root, dirs, files in os.walk(test_dir):
                 wrong_line.append(lno + 1)
                 flag = False
                 # break
-        print('pass' if flag else 'wrong at line ' + str(wrong_line))
+        if flag:
+            print('pass')
+        else:
+            print(res_list)
+            print(ans_list)

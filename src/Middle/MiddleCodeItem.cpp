@@ -80,8 +80,8 @@ std::ostream & MiddleReturn::output(std::ostream &os) const {
 // Def
 std::ostream & MiddleDef::output(std::ostream &os) const {
     os << type2str[type] << " ";
-    if (isInit && type == DEF_VAR) {
-        os << srcValueSymbol->printMiddleCode() << " ";
+    if (isInit && type == DEF_VAR && srcValueSymbol != nullptr) {
+        //os << srcValueSymbol->printMiddleCode() << " ";
     }
     os << valueSymbol->name << "[0x" << std::hex << valueSymbol->getAddress() << "]";
     return os;
