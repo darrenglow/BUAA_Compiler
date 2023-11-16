@@ -93,6 +93,7 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             dims.push_back(Calculate::calcConstExp(x));
         }
         auto arraySymbol = new ValueSymbol(name, dims, true);
+
         curTable->add(arraySymbol);
         curFuncSymbolTable->add(arraySymbol);
         updateCurStackSize(arraySymbol);
@@ -104,11 +105,10 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             for (auto constExp : constExps) {
                 initValues.push_back(Calculate::calcConstExp(constExp));
             }
-
+            arraySymbol->setInitValues(initValues);
             if (curBlockLevel == 0) {       // 如果是全局变量的话
                 arraySymbol->setLocal(false);
                 arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
-                arraySymbol->setInitValues(initValues);
                 MiddleCode::getInstance().addGlobalValues(arraySymbol);
             }
             else {      // 如果不是全局变量的话，每个initvalue生成中间代码
@@ -138,15 +138,14 @@ void Visitor::visitConstDef(ConstDef *constDef) {
             for (auto x : constExps) {
                 initValues.push_back(Calculate::calcConstExp(x));
             }
+            arraySymbol->setInitValues(initValues);
             if (curBlockLevel == 0) {
                 // 全局数组
                 arraySymbol->setLocal(false);
                 arraySymbol->setAddress(arraySymbol->getAddress() - arraySymbol->getSize());
-                arraySymbol->setInitValues(initValues);
                 MiddleCode::getInstance().addGlobalValues(arraySymbol);
             }
             else {
-                // 局部数组，利用flattenValues和assignPlace来确定要赋值的位置
                 // TODO: 局部数组 DONE
                 auto defArray = new MiddleDef(MiddleDef::DEF_ARRAY, arraySymbol);
                 curBlock->add(defArray);

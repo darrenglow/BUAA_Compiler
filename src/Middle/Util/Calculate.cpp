@@ -136,9 +136,9 @@ int Calculate::calcLVal(LVal *lVal) {
         return valueSymbol->initValue;
     }
     else if (valueSymbol->valueType == ValueType::ARRAY) {
-        // TODO: []中放func可能有问题？
         if (valueSymbol->dims.size() == 1) {    // 一维
             int x = calcExp(lVal->exps[0]);
+            std::cout << "x" << x << " " << valueSymbol->initValues[x] << std::endl;
             return valueSymbol->initValues[x];
         }
         else if (valueSymbol->dims.size() == 2) {
