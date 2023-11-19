@@ -19,7 +19,7 @@ public:
     static SymbolTable * curTable;
     int unique = 0;
     int curBlockLevel = 0;
-    BasicBlock *curBlock;
+    BasicBlock *curBlock{};
     int curStackSize = 0;
     static int tmpVarNumber;
     static SymbolTable * curFuncSymbolTable;
@@ -27,7 +27,7 @@ public:
     std::vector<Func*> funcs;   // 在NoChangeValue中使用，遍历所有的中间代码
 
     void updateCurStackSize(ValueSymbol* valueSymbol);
-    std::vector<Label*> loopLabels;
+    std::vector<BasicBlock*> loopBlocks;    // 确定continue /break跳转位置
 
     static std::string getTempName();
 
@@ -73,7 +73,7 @@ public:
 
     void visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol);
 
-    void visitBlock(Block *block, bool toNew);
+    BasicBlock* visitBlock(Block *block, bool toNew, std::string &name);
 
     void visitStmt(Stmt *stmt);
 
@@ -81,11 +81,11 @@ public:
 
     void visitIfStmt(IfStmt *ifStmt);
 
-    void visitCond(Cond *cond, Label *trueLabel, Label *falseLabel);
+    void visitCond(Cond *cond, BasicBlock *trueLabel, BasicBlock *falseLabel);
 
-    void visitLOrExp(LOrExp *lOrExp, Label *trueLabel, Label *falseLabel);
+    void visitLOrExp(LOrExp *lOrExp, BasicBlock *trueLabel, BasicBlock *falseLabel);
 
-    void visitLAndExp(LAndExp *lAndExp, Label *trueLabel, Label *falseLabel);
+    void visitLAndExp(LAndExp *lAndExp, BasicBlock *trueLabel, BasicBlock *falseLabel);
 
     Intermediate * visitEqExp(EqExp *eqExp);
 

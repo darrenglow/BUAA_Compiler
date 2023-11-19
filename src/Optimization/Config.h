@@ -1,3 +1,11 @@
 // 中端优化
 #define CONSTANT_CALCULATE
 #define NO_CHANGE_VALUE
+// 删除无用的跳转语句
+#define MERGE_JUMP
+// 生成流图
+#define DATA_FLOW
+// 删除无用代码
+#define UNTHROUGH_BASICBLOCK
+// 到达定义分析
+// 活跃变量分析

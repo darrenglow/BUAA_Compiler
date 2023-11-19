@@ -37,19 +37,26 @@ class BasicBlock : public MiddleCodeItem {
 public:
     enum Type{
         FUNC,
-        BLOCK,
-        LOOP,
-        BRANCH
+        BLOCK
     };
     Type type;
     Label *label;   // FUNC, LOOP, BRANCH
-    std::string type2str[4] = {"BLOCK_FUNC", "BLOCK_BLOCK", "BLOCK_LOOP", "BLOCK_BRANCH"};
+    std::string type2str[2] = {"BLOCK_FUNC", "BLOCK"};
     std::vector<MiddleCodeItem*> middleCodeItems;
+    int basicBlockID;
+    static int blockID;
 
-    explicit BasicBlock(Type type_) : type(type_), label(new Label()) {}
+    std::vector<BasicBlock*> follows;
+    std::vector<BasicBlock*> prevs;
+
+    BasicBlock(Type type_, std::string &name) : type(type_), label(new Label(name)) { basicBlockID = blockID ++ ; }
+    explicit BasicBlock(Type type_) : type(type_), label(new Label()) { basicBlockID = blockID ++ ;}
 
     void add(MiddleCodeItem *middleCodeItem);
+
     Label * getLabel();
+    void setNext(BasicBlock *next);
+
     OVERRIDE_OUTPUT;
 };
 
@@ -60,11 +67,13 @@ public:
     };
 
     std::string funcName;
-    BasicBlock *block{};
+    BasicBlock *block{};    // 这个block就只是作为函数跳转到的入口了
+    std::vector<BasicBlock*> basicBlocks;
     SymbolTable * funcSymbolTable = new SymbolTable();
     std::vector<ValueSymbol*> tempSymbols;  // 临时变量
     Label *label;
     Type type;
+    BasicBlock *root;   // 数据流分析中的起始
     bool hasReturn{};
     explicit Func(Type type_, std::string &funcName_) : type(type_), funcName(funcName_) {
         std::string tmp = "Func_" + funcName;
@@ -73,6 +82,7 @@ public:
 
     void setFuncBlock(BasicBlock* block);
     int getSize();
+    void addBlock(BasicBlock* block);
     OVERRIDE_OUTPUT;
 };
 
@@ -212,17 +222,20 @@ public:
     enum Type {
         JUMP,
         JUMP_EQZ,
-        JUMP_NEZ
+        JUMP_NEZ,
     };
     std::string type2str[3] = {"JUMP", "JUMP_EQZ", "JUMP_NEZ"};
     Type type;
     Intermediate *src;
-    Label *label;
-    MiddleJump(Type type_, Label *label_)
-        : type(type_), label(label_), src(nullptr){}
-    MiddleJump(Type type_, Intermediate *src_, Label *label_)
-        : type(type_), src(src_), label(label_) {}
-
+    BasicBlock *target;
+    BasicBlock *anotherTarget{}; // 针对`visitCond`方便建立数据流
+    MiddleJump(Type type_, BasicBlock* target_)
+        : type(type_), target(target_), src(nullptr){}
+    MiddleJump(Type type_, Intermediate *src_, BasicBlock *target_)
+        : type(type_), src(src_), target(target_) {}
+    //针对visitCond中的basicBLock，方便后面搭建数据流
+    MiddleJump(Type type_, Intermediate *src_, BasicBlock *target_, BasicBlock *anotherTarget_)
+        : type(type_), src(src_), target(target_), anotherTarget(anotherTarget_) {}
     OVERRIDE_OUTPUT;
 };
 

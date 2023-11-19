@@ -149,12 +149,20 @@ public:
 class L : public Instruction {
 public:
     enum Type {
-        j, jal
+        j
     };
-    std::string type2str[2] = {"j", "jal"};
+    std::string type2str[2] = {"j"};
     Type type;
+    BasicBlock *target;
+    L(Type type_, BasicBlock *target_) : type(type_), target(target_) {}
+    OVERRIDE_OUTPUT;
+};
+
+
+class JAL : public Instruction {
+public:
     Label *label;
-    L(Type type_, Label *label_) : type(type_), label(label_) {}
+    explicit JAL(Label *label_) : label(label_) {}
     OVERRIDE_OUTPUT;
 };
 
@@ -168,9 +176,9 @@ public:
     };
     std::string type2str[2] = {"bnez", "beqz"};
     Type type;
-    Label *label;
+    BasicBlock *target;
     RegType rd;
-    RL(Type type_, RegType rd_, Label*label_) : type(type_), rd(rd_), label(label_) {}
+    RL(Type type_, RegType rd_, BasicBlock*target_) : type(type_), rd(rd_), target(target_) {}
     OVERRIDE_OUTPUT;
 };
 

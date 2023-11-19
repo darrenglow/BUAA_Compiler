@@ -84,13 +84,16 @@ void MipsGenerator::translateFunc(Func *func) {
     this->add(new MipsLabel(func->label));
     curStackSize = func->getSize();
     processTempSymbols(func->tempSymbols);
-    translateBlock(func->block);
+    for (auto basicBlock : func->basicBlocks) {
+        translateBlock(basicBlock);
+    }
 }
 
 void MipsGenerator::translateBlock(BasicBlock *block) {
-    if (block->type != BasicBlock::FUNC) {
-        RegisterAlloc::getInstance().saveRegisters();
-    }
+    // 每个block开始的时候就清空所有的寄存器
+    this->add(new Notation("### BLOCK [" + std::to_string(block->basicBlockID) + "] BEGIN"));
+    RegisterAlloc::getInstance().clearAllRegister();
+
     auto code = new MipsLabel(block->label);
     this->add(code);
     for (auto x : block->middleCodeItems) {
@@ -136,12 +139,7 @@ void MipsGenerator::translateBlock(BasicBlock *block) {
             translateMiddleReturn(dynamic_cast<MiddleReturn*>(x));
         }
     }
-    if (block->type != BasicBlock::FUNC) {
-        RegisterAlloc::getInstance().saveRegisters();
-    }
-    else {
-        RegisterAlloc::getInstance().clearAllRegister();
-    }
+    this->add(new Notation("### BLOCK [" + std::to_string(block->basicBlockID) + "] END"));
 }
 
 void MipsGenerator::translateMiddleDef(MiddleDef *middleDef) {
@@ -342,10 +340,10 @@ void MipsGenerator::translateMiddleMemoryOp(MiddleMemoryOp *middleMemoryOp) {
 
 void MipsGenerator::translateMiddleJump(MiddleJump *middleJump) {
     auto type = middleJump->type;
-    auto label = middleJump->label;
+    auto label = middleJump->target;
     auto src = middleJump->src;
     RegType rd = RegType::none;
-    // 跳转前先保存所有寄存器
+
     RegisterAlloc::getInstance().saveRegisters();
 
     if (dynamic_cast<Immediate*>(src)) {
@@ -467,7 +465,7 @@ void MipsGenerator::translateMiddleFuncCall(MiddleFuncCall *middleFuncCall) {
     // 调用函数
     auto labelStr = "Func_" + middleFuncCall->funcName;
     auto label = new Label(labelStr);
-    this->add(new L(L::jal, label));
+    this->add(new JAL(label));
     // 清空所有寄存器
     RegisterAlloc::getInstance().clearAllRegister();
     // 回栈

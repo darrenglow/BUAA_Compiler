@@ -14,6 +14,8 @@
 
 #include "../../Optimization/Config.h"
 #include "../Optimization/NoChangeValue.h"
+#include "../Optimization/DataFlow.h"
+
 SymbolTable* Visitor::curTable;
 SymbolTable* Visitor::curFuncSymbolTable;
 
@@ -23,6 +25,15 @@ void Visitor::visit() {
 #ifdef NO_CHANGE_VALUE
     // 翻译完所有中间代码后，将其中变量都没变的替换为值
     NoChangeValue::getInstance().replace(funcs);
+#endif
+#ifdef MERGE_JUMP
+    for (auto func : funcs) {
+        DataFlow::mergeJump(func->basicBlocks);
+    }
+#endif
+#ifdef DATA_FLOW
+    auto dataFlow = new DataFlow(funcs);
+    dataFlow->buildGraph();
 #endif
 }
 
@@ -808,8 +819,9 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
 
     curStackSize = 0;
 
-    auto funcBlock = new BasicBlock(BasicBlock::FUNC);
-    curBlock = funcBlock;
+//    auto funcBlock = new BasicBlock(BasicBlock::FUNC);
+//    curBlock = funcBlock;
+
     // 维护符号表
     curTable = new SymbolTable(curTable);
     auto retType = funcDef->funcType->funcType->tokenType == Token::VOIDTK ? BasicType::VOID : BasicType::INT;
@@ -824,8 +836,6 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     }
     curTable->parent->add(funcSymbol);
 
-    visitBlock(funcDef->block, false);
-
     BlockItem *lastBlockItem;
     if (!funcDef->block->blockItems.empty()) {
         lastBlockItem = funcDef->block->blockItems.back();
@@ -833,14 +843,6 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
     else {
         lastBlockItem = nullptr;
     }
-    // 如果是void的函数也需要有返回return;
-    if (retType == BasicType::VOID && (lastBlockItem == nullptr || lastBlockItem->decl != nullptr ||
-        (lastBlockItem->stmt != nullptr && lastBlockItem->stmt->returnStmt == nullptr))) {
-        curBlock->add(new MiddleReturn());
-    }
-    middleFunc->setFuncBlock(funcBlock);
-    MiddleCode::getInstance().addFuncs(middleFunc);
-
     // Error g
     // 如果retType不为VOID，且最后一行没有return
     // 错误行号是函数结尾的}所在行
@@ -858,6 +860,22 @@ void Visitor::visitFuncDef(FuncDef *funcDef) {
         auto error = new Error(Error::VOID_MISMATCH_RETURN, lastBlockItem->stmt->returnStmt->returnTK->line);
         ErrorTable::getInstance().addError(error);
     }
+
+    // 如果是void的函数也需要有返回return;
+    if (retType == BasicType::VOID && (lastBlockItem == nullptr || lastBlockItem->decl != nullptr ||
+        (lastBlockItem->stmt != nullptr && lastBlockItem->stmt->returnStmt == nullptr))) {
+        auto returnStmt = new ReturnStmt();
+        returnStmt->returnTK = new Token(Token::RETURNTK, "return", funcDef->block->Rbrace->line);
+        auto blockItem = new BlockItem();
+        auto stmt = new Stmt();
+        stmt->returnStmt = returnStmt;
+        blockItem->stmt = stmt;
+        funcDef->block->blockItems.push_back(blockItem);
+    }
+
+    auto funcBlock = visitBlock(funcDef->block, false, name);
+    middleFunc->setFuncBlock(funcBlock);
+    MiddleCode::getInstance().addFuncs(middleFunc);
     curTable = curTable->parent;
 }
 
@@ -903,16 +921,30 @@ void Visitor::visitFuncFParam(FuncFParam *funcFParam, FuncSymbol *funcSymbol) {
         funcFParamSymbol->setLocal(true);
         funcSymbol->addFuncFParamSymbol(funcFParamSymbol);
     }
-    auto middleCode = new MiddleFuncParam(MiddleFuncParam::PARAM, funcFParamSymbol);
-    curBlock->add(middleCode);
 }
 
-// 如果是函数的{}，那由于需要考虑形参的影响，就不重新建符号表了
-void Visitor::visitBlock(Block *block, bool toNew) {
+// 如果是函数的{}，toNew为False，那由于需要考虑形参的影响，就不重新建符号表了
+BasicBlock* Visitor::visitBlock(Block *block, bool toNew, std::string &name) {
     curBlockLevel ++ ;
+
+    BasicBlock *basicBlock = nullptr;
+    if (!toNew) {
+        basicBlock = new BasicBlock(BasicBlock::FUNC, name);
+    }
+    else {
+        curFunc->addBlock(curBlock);
+        basicBlock = new BasicBlock(BasicBlock::BLOCK);
+    }
+    if (curBlock != nullptr) {
+        curBlock->add(new MiddleJump(MiddleJump::JUMP, basicBlock));
+    }
+    curBlock = basicBlock;
+
+    // 如果toNew为True，表示Block的类型是普通的基本块，需要重新建表
     if (toNew) {
         curTable = new SymbolTable(curTable);
     }
+
     for (auto blockItem : block->blockItems) {
         if (blockItem->decl != nullptr)
             visitDecl(blockItem->decl);
@@ -920,10 +952,20 @@ void Visitor::visitBlock(Block *block, bool toNew) {
             visitStmt(blockItem->stmt);
         }
     }
+    auto nextBlock = new BasicBlock(BasicBlock::BLOCK);
+    // 如果此时，curBlock最后一个已经是return或者jump了，就不加跳转到下一个block了，设置当前的基本块跳转到下一个基本块，或者当前的为空
+    auto lastMiddleCode = !curBlock->middleCodeItems.empty() ? curBlock->middleCodeItems.back() : nullptr;
+    if (curBlock == nullptr || !(dynamic_cast<MiddleJump*>(lastMiddleCode) == nullptr && dynamic_cast<MiddleReturn*>(lastMiddleCode) != nullptr)) {
+        curBlock->add(new MiddleJump(MiddleJump::JUMP, nextBlock));
+    }
+    curFunc->addBlock(curBlock);
+    curBlock = nextBlock;
     if (toNew) {
         curTable = curTable->parent;
     }
+
     curBlockLevel -- ;
+    return basicBlock;
 }
 
 void Visitor::visitStmt(Stmt *stmt) {
@@ -952,93 +994,97 @@ void Visitor::visitReturnStmt(ReturnStmt *returnStmt) {
 }
 
 void Visitor::visitIfStmt(IfStmt *ifStmt) {
+    auto trueBlock = new BasicBlock(BasicBlock::BLOCK);
+    auto falseBlock = new BasicBlock(BasicBlock::BLOCK);
+    auto ifEnd = new BasicBlock(BasicBlock::BLOCK);
+    visitCond(ifStmt->cond, trueBlock, ifStmt->elseStmt==nullptr ? ifEnd : falseBlock);
+
     if (ifStmt->elseStmt) {
-        auto trueBlock = new BasicBlock(BasicBlock::BRANCH);
-        auto falseBlock = new BasicBlock(BasicBlock::BRANCH);
-        auto ifEnd = new Label();
-        visitCond(ifStmt->cond, nullptr, falseBlock->getLabel());
-
-        curBlock->add(trueBlock);
-        curBlock->add(falseBlock);
-
-        auto tmpBlock = curBlock;
-        // ifstmt
-        curBlock = trueBlock;
+//        curFunc->addBlock(curBlock);
+//        curBlock = trueBlock;
         visitStmt(ifStmt->ifStmt);
-        auto jumpToIfEnd = new MiddleJump(MiddleJump::JUMP, ifEnd);
-        curBlock->add(jumpToIfEnd);
-
-        // elseStmt
+        curBlock->add(new MiddleJump(MiddleJump::JUMP, ifEnd));
+        curFunc->addBlock(curBlock);
         curBlock = falseBlock;
         visitStmt(ifStmt->elseStmt);
-
-        // 生成ifEnd
-        curBlock = tmpBlock;
-        curBlock->add(ifEnd);
+        curBlock->add(new MiddleJump(MiddleJump::JUMP, ifEnd));
     }
     else {
-        auto trueBlock = new BasicBlock(BasicBlock::BRANCH);
-        auto ifEnd = new Label();
-        visitCond(ifStmt->cond, nullptr, ifEnd);
-
-        curBlock->add(trueBlock);
-        auto tmpBlock = curBlock;
-        // ifStmt
-        curBlock = trueBlock;
+//         由于`visitCond()`中已经将curBlock设置为了trueBLock了
+//        curFunc->addBlock(curBlock);
+//        curBlock = trueBlock;
         visitStmt(ifStmt->ifStmt);
-        // 生成ifEnd
-        curBlock = tmpBlock;
-        curBlock->add(ifEnd);
+        curBlock->add(new MiddleJump(MiddleJump::JUMP, ifEnd));
     }
+    curFunc->addBlock(curBlock);
+    curBlock = ifEnd;
 }
 
-void Visitor::visitCond(Cond *cond, Label *trueLabel, Label *falseLabel) {
-    visitLOrExp(cond->lOrExp, trueLabel, falseLabel);
+void Visitor::visitCond(Cond *cond, BasicBlock* trueBlock, BasicBlock *falseBlock) {
+    if (cond == nullptr) {
+        curFunc->addBlock(curBlock);
+        curBlock = trueBlock;
+        return;
+    }
+    visitLOrExp(cond->lOrExp, trueBlock, falseBlock);
 }
 
-void Visitor::visitLOrExp(LOrExp *lOrExp, Label *trueLabel, Label *falseLabel) {
-    auto orEnd = new Label();
-    DEBUG_PRINT("[visitLOrExp] lOrExp has %d lAddExp\n", lOrExp->lAndExps.size());
-    for (auto lAndExp : lOrExp->lAndExps) {
+void Visitor::visitLOrExp(LOrExp *lOrExp, BasicBlock *trueBlock, BasicBlock *falseBlock) {
+    for (int i = 0; i < lOrExp->lAndExps.size(); i ++ ) {
         // 只要其中一个lAndExp是真就跳转到trueLabel
-        if (trueLabel != nullptr) {
-            visitLAndExp(lAndExp, trueLabel, nullptr);
+        auto lAndExp = lOrExp->lAndExps[i];
+        if (i != lOrExp->lAndExps.size() - 1) {
+            auto andEnd = new BasicBlock(BasicBlock::BLOCK);
+            visitLAndExp(lAndExp, trueBlock, andEnd);
+            curFunc->addBlock(curBlock);
+            curBlock = andEnd;
         }
         else {
-            visitLAndExp(lAndExp, orEnd, nullptr);
+            visitLAndExp(lAndExp, trueBlock, falseBlock);
+            curFunc->addBlock(curBlock);
+            curBlock = trueBlock;
         }
-    }
-    // 所有条件都检查完了都没有跳转
-    if (falseLabel != nullptr) {
-        auto jumpToFalse = new MiddleJump(MiddleJump::JUMP, falseLabel);
-        curBlock->add(jumpToFalse);
-    }
-    // 生成结束Label
-    if (trueLabel == nullptr) {
-        curBlock->add(orEnd);
     }
 }
 
-void Visitor::visitLAndExp(LAndExp *lAndExp, Label *trueLabel, Label *falseLabel) {
-    auto andEnd = new Label();
-    for (auto eqExp : lAndExp->eqExps) {
+void Visitor::visitLAndExp(LAndExp *lAndExp, BasicBlock *trueBlock, BasicBlock *falseBlock) {
+    for (int i = 0; i < lAndExp->eqExps.size(); i ++) {
         // 只要其中一个eqExp为假，就跳转到falseLabel
+        auto eqExp = lAndExp->eqExps[i];
         auto ret = visitEqExp(eqExp);
-        if (falseLabel != nullptr) {
-            auto jumpToFalse = new MiddleJump(MiddleJump::JUMP_EQZ, ret, falseLabel);
-            curBlock->add(jumpToFalse);
+        if (i != lAndExp->eqExps.size() - 1) {
+            auto temp = new BasicBlock(BasicBlock::BLOCK);
+            if (dynamic_cast<Immediate*>(ret)) {
+                if (dynamic_cast<Immediate*>(ret)->value == 0) {
+                    curBlock->add(new MiddleJump(MiddleJump::JUMP, falseBlock));
+                    return;
+                }
+                else {
+                    curBlock->add(new MiddleJump(MiddleJump::JUMP, temp));
+                    curFunc->addBlock(curBlock);
+                    curBlock = temp;
+                }
+            }
+            else {
+                // 后面在翻译的时候，如果是JUMP_EQZ，那么他的后继基本块有两个
+                curBlock->add(new MiddleJump(MiddleJump::JUMP_EQZ, ret, falseBlock, temp));
+                curBlock->add(new MiddleJump(MiddleJump::JUMP, temp));
+                curFunc->addBlock(curBlock);
+                curBlock = temp;
+            }
         }
         else {
-            auto jumpToAddEnd = new MiddleJump(MiddleJump::JUMP_EQZ, ret, andEnd);
-            curBlock->add(jumpToAddEnd);
+            if (dynamic_cast<Immediate*>(ret)) {
+                if (dynamic_cast<Immediate*>(ret)->value == 0) {
+                    curBlock->add(new MiddleJump(MiddleJump::JUMP, falseBlock));
+                } else {
+                    curBlock->add(new MiddleJump(MiddleJump::JUMP, trueBlock));
+                }
+            } else {
+                curBlock->add(new MiddleJump(MiddleJump::JUMP_EQZ, ret, falseBlock, trueBlock));
+                curBlock->add(new MiddleJump(MiddleJump::JUMP, trueBlock));
+            }
         }
-    }
-    if (trueLabel != nullptr) {
-        auto jumpToTrue = new MiddleJump(MiddleJump::JUMP, trueLabel);
-        curBlock->add(jumpToTrue);
-    }
-    if (falseLabel == nullptr) {
-        curBlock->add(andEnd);
     }
 }
 
@@ -1174,7 +1220,7 @@ void Visitor::visitContinueStmt(ContinueStmt *continueStmt) {
         return;
     }
     // 跳转到loopLabels.size()-2下标的label
-    auto label = loopLabels[loopLabels.size() - 2];
+    auto label = loopBlocks[loopBlocks.size() - 2];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
 }
 
@@ -1186,7 +1232,7 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
         ErrorTable::getInstance().addError(error);
         return;
     }
-    auto label = loopLabels[loopLabels.size() - 1];
+    auto label = loopBlocks[loopBlocks.size() - 1];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
 }
 
@@ -1197,52 +1243,41 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
 // forStmt2
 
 void Visitor::visitFORStmt(FORStmt *forStmt) {
-    auto loopBlock = new BasicBlock(BasicBlock::LOOP);
-    auto beginLoop = loopBlock->label;
-    auto endFor = new Label();
-    auto forStmt2Label = new Label();
-    // 如果forStmt2，让continue可以直接跳转到beginloop
-    if (forStmt->forStmt2 == nullptr) {
-        forStmt2Label = beginLoop;
-    }
+    auto cond = new BasicBlock(BasicBlock::BLOCK);
+    auto loopBlock = new BasicBlock(BasicBlock::BLOCK);
+    auto stepBlock = new BasicBlock(BasicBlock::BLOCK);
+    auto endFor = new BasicBlock(BasicBlock::BLOCK);
 
-    if (forStmt->forStmt1 != nullptr) {
-        visitForStmt(forStmt->forStmt1);
-    }
+    visitForStmt(forStmt->forStmt1);
+    curBlock->add(new MiddleJump(MiddleJump::JUMP, cond));
 
-    curBlock->add(loopBlock);
-    loopLabels.push_back(forStmt2Label);
-    loopLabels.push_back(endFor);
+    loopBlocks.push_back(stepBlock);
+    loopBlocks.push_back(endFor);
     inLoop ++ ;
-    auto tmp = curBlock;
-    curBlock = loopBlock;
 
-    if (forStmt->cond != nullptr) {
-        visitCond(forStmt->cond, nullptr, endFor);
-    }
+    curFunc->addBlock(curBlock);
+    curBlock = cond;
+    visitCond(forStmt->cond, loopBlock, endFor);
+//    curFunc->addBlock(curBlock);
+//    curBlock = loopBlock;
     visitStmt(forStmt->stmt);
-
-    // !!! 这里！，一定要加上一条跳转到stmt2的语句，不然寄存器分配时会出现问题。
-    auto jumpToStmt2 = new MiddleJump(MiddleJump::JUMP, forStmt2Label);
-    curBlock->add(jumpToStmt2);
-
-    if (forStmt->forStmt2 != nullptr) {
-        curBlock->add(forStmt2Label);
-        visitForStmt(forStmt->forStmt2);
-    }
-
-    auto jumpToBeginLoop = new MiddleJump(MiddleJump::JUMP, beginLoop);
-    curBlock->add(jumpToBeginLoop);
-
+    curBlock->add(new MiddleJump(MiddleJump::JUMP, stepBlock));
+    curFunc->addBlock(curBlock);
+    curBlock = stepBlock;
+    visitForStmt(forStmt->forStmt2);
     inLoop -- ;
-    loopLabels.pop_back();
-    loopLabels.pop_back();
-    curBlock = tmp;
-    // 生成for结束的label
-    curBlock->add(endFor);
+    loopBlocks.pop_back();
+    loopBlocks.pop_back();
+    curBlock->add(new MiddleJump(MiddleJump::JUMP, cond));
+
+    curFunc->addBlock(curBlock);
+    curBlock = endFor;
 }
 
 void Visitor::visitForStmt(ForStmt *forStmt) {
+    if (forStmt == nullptr)
+        return;
+
     auto ident = forStmt->lVal->ident;
     auto name = ident->content;
     // Error h:
@@ -1262,7 +1297,8 @@ void Visitor::visitForStmt(ForStmt *forStmt) {
 }
 
 void Visitor::visitBlockStmt(BlockStmt *blockStmt) {
-    visitBlock(blockStmt->block, true);
+    std::string tmp = "123";
+    visitBlock(blockStmt->block, true, tmp);
 }
 
 void Visitor::visitExpStmt(ExpStmt *expStmt) {
@@ -1303,7 +1339,7 @@ void Visitor::visitAssignStmt(AssignStmt *assignStmt) {
 }
 
 void Visitor::visitMainFuncDef(MainFuncDef *mainFuncDef) {
-    visitBlock(mainFuncDef->block, false);
+    visitBlock(mainFuncDef->block, false, (std::string &) "main");
 }
 
 void Visitor::visitFuncRParams(FuncRParams *funcRParams, FuncSymbol* funcSymbol, int line, MiddleFuncCall* funcCall) {

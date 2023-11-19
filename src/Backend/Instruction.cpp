@@ -76,12 +76,17 @@ std::ostream & RRI::output(std::ostream &os) const {
 }
 
 std::ostream & L::output(std::ostream &os) const {
-    os << type2str[type] << " " << label->label;
+    os << type2str[type] << " " << target->label->label;
+    return os;
+}
+
+std::ostream & JAL::output(std::ostream &os) const {
+    os << "jal " << label->label;
     return os;
 }
 
 std::ostream & RL::output(std::ostream &os) const {
-    os << type2str[type] << " " << Register::type2str[rd] << " " << label->label;
+    os << type2str[type] << " " << Register::type2str[rd] << " " << target->label->label;
     return os;
 }
 
