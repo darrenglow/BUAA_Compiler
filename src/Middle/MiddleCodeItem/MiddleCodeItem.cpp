@@ -15,3 +15,10 @@ Intermediate * MiddleCodeItem::getLeftIntermediate() { return nullptr; }
 void MiddleCodeItem::setIndex(int x) {
     index = x;
 }
+
+Intermediate * MiddleCodeItem::getRightIntermediate1() {
+    return nullptr;
+}
+Intermediate * MiddleCodeItem::getRightIntermediate2() {
+    return nullptr;
+}

@@ -15,3 +15,7 @@ std::ostream & MiddleJump::output(std::ostream &os) const {
     }
     return os;
 }
+
+Intermediate * MiddleJump::getRightIntermediate1() {
+    return src;
+}

@@ -10,16 +10,26 @@
 class DefinitionSet {
 public:
     // 遍历时会按照code的index从大到小
-    std::set<MiddleCodeItem *, CompareMiddleCodeItem> defs;
+    std::set<MiddleCodeItem *, CompareMiddleCodeItem> defs{};
     int setIndex[1000] = {0};
 
     void add(MiddleCodeItem *def, int index);
 
     DefinitionSet() = default;
+    explicit DefinitionSet(DefinitionSet *src) {
+        for (auto &def : src->defs) {
+            defs.insert(def);
+        }
+        for (int i = 0; i < 1000; i ++ ){
+            setIndex[i] = src->setIndex[i];
+        }
+    }
 
     DefinitionSet* sub(DefinitionSet *defSet);
 
     DefinitionSet* plus(DefinitionSet *defSet);
+
+    bool equalTo(DefinitionSet *defSet);
 
     DefinitionSet *erase(MiddleCodeItem *def);
 

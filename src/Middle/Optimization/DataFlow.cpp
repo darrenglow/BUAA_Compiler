@@ -187,21 +187,9 @@ void DataFlow::_reachDefinition(Func *func) {
     std::cout << func->funcName << " Start Reach Definition Analysis" << std::endl;
     _initSymbolDefs(func);
 
-#ifdef DEBUG_REACH_DEFINITION
-    // 打印symbolDefs
-    for (auto pair : symbolDefs) {
-        auto symbol = pair.first;
-        auto defSet = pair.second;
-        std::cout << symbol->printMiddleCode() << ": " << std::endl;
-        for (int i = 0; i < 1000; i ++) {
-            if (defSet->setIndex[i] > 0){
-                std::cout << "--" << i << ": " << *index2code[i] << "\n";
-            }
-        }
-    }
-#endif
     _calcKill(func);
     _calcGen(func);
+    _calcDefFlow(func);
 
 #ifdef DEBUG_REACH_DEFINITION
     for (auto block : func->basicBlocks) {
@@ -212,6 +200,14 @@ void DataFlow::_reachDefinition(Func *func) {
         }
         std::cout << "GenSet: " << std::endl;
         for (auto code : block->genSet->defs) {
+            std::cout << "--" << code->index << ": " << *code << std::endl;
+        }
+        std::cout << "InFlow: " << std::endl;
+        for (auto code : block->inDefFlow->defs) {
+            std::cout << "--" << code->index << ": " << *code << std::endl;
+        }
+        std::cout << "OutFlow: " << std::endl;
+        for (auto code : block->outDefFlow->defs) {
             std::cout << "--" << code->index << ": " << *code << std::endl;
         }
     }
@@ -329,12 +325,6 @@ void DataFlow::_calcKill(Func *func) {
             for (auto index : code->killSetIndex) {
                 block->killSet->add(index2code[index], index);
             }
-#ifdef DEBUG_REACH_DEFINITION
-            std::cout << *code << ":" << std::endl;
-            for (auto index : code->killSetIndex) {
-                std::cout << "--" << index << ": " << *index2code[index] << std::endl;
-            }
-#endif
         }
     }
 }
@@ -364,6 +354,178 @@ void DataFlow::_calcGen(Func *func) {
                 tmpKillSet->add(index2code[index], index);
             }
             block->genSet->plus(tmpGenset);
+        }
+    }
+}
+
+void DataFlow::_calcDefFlow(Func *func) {
+    bool flag = true;
+    while (flag) {
+        flag = false;
+        for (auto &block : func->basicBlocks) {
+            for (auto &prev : block->prevs) {
+                block->inDefFlow->plus(prev->outDefFlow);
+            }
+            auto prevOutFlow = new DefinitionSet(block->outDefFlow);
+
+            block->outDefFlow->plus(block->genSet);
+            auto tmpDefSet = new DefinitionSet();
+            tmpDefSet = tmpDefSet->plus(block->inDefFlow);
+            tmpDefSet = tmpDefSet->sub(block->killSet);
+            block->outDefFlow->plus(tmpDefSet);
+
+            if (!block->outDefFlow->equalTo(prevOutFlow)) {
+                flag = true;
+            }
+        }
+    }
+}
+
+void DataFlow::positiveAnalysis() {
+    for (auto func : funcs) {
+        _positiveAnalysis(func);
+    }
+}
+
+void DataFlow::_positiveAnalysis(Func *func) {
+    _calcDefAndUse(func);
+    _calcPositiveFlow(func);
+#ifdef DEBUG_POSITIVE_ANALYSIS
+    std::cout << "Start Func " << func->funcName << ": " << "\n";
+    for (auto block : func->basicBlocks) {
+        std::cout << "Block [" << block->basicBlockID << "]" << ":\n";
+        std::cout << "UseSet: ";
+        for (auto valueSymbol : block->useSet->symbols) {
+            std::cout << valueSymbol->name << " ";
+        }
+        std::cout << "\n";
+        std::cout << "DefSet: ";
+        for (auto valueSymbol : block->defSet->symbols) {
+            std::cout << valueSymbol->name << " ";
+        }
+        std::cout << "\n";
+        std::cout << "inPositiveFlow: ";
+        for (auto valueSymbol : block->inPosFlow->symbols) {
+            std::cout << valueSymbol->name << " ";
+        }
+        std::cout << "\n";
+        std::cout << "outPostiveFlow: ";
+        for (auto valueSymbol : block->outPosFlow->symbols) {
+            std::cout << valueSymbol->name << " ";
+        }
+        std::cout << "\n";
+    }
+#endif
+}
+
+void DataFlow::_calcDefAndUse(Func *func) {
+    for (auto block : func->basicBlocks) {
+        for (auto code : block->middleCodeItems) {
+            auto leftSymbol = code->getLeftIntermediate();
+            if (dynamic_cast<ValueSymbol*>(leftSymbol)) {
+                if (!block->useSet->contain(dynamic_cast<ValueSymbol*>(leftSymbol))) {
+                    block->defSet->add(dynamic_cast<ValueSymbol*>(leftSymbol));
+                }
+            }
+
+            auto rightSymbol1 = code->getRightIntermediate1();
+            if (dynamic_cast<ValueSymbol*>(rightSymbol1)) {
+                if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol1))) {
+                    block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol1));
+                }
+            }
+            auto rightSymbol2 = code->getRightIntermediate2();
+            if (dynamic_cast<ValueSymbol*>(rightSymbol2)) {
+                if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol2))) {
+                    block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol2));
+                }
+            }
+        }
+    }
+    for (auto block : func->basicBlocks) {
+        if (block->basicBlockID == 20) {
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            for (auto symbol : block->defSet->symbols) {
+                std::cout << symbol->name << " " << std::endl;
+            }
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+        }
+    }
+}
+
+void DataFlow::_calcPositiveFlow(Func *func) {
+    bool flag = true;
+    while (flag) {
+        flag = false;
+        for (auto &block : func->basicBlocks) {
+            for (auto &follow : block->follows) {
+                block->outPosFlow->plus(follow->inPosFlow);
+            }
+            auto prevInFlow = new PositiveSet(block->inPosFlow);
+
+            block->inPosFlow->plus(block->useSet);
+            auto tmpPosSet = new PositiveSet();
+            tmpPosSet->plus(block->outPosFlow);
+            tmpPosSet->sub(block->defSet);
+            block->outPosFlow->plus(tmpPosSet);
+
+            if (!block->inPosFlow->equalTo(prevInFlow)) {
+                flag = true;
+            }
+        }
+    }
+}
+
+void DataFlow::deleteDeadCode() {
+    for (auto func : funcs) {
+        _deleteDeadCode(func);
+    }
+}
+
+void DataFlow::_deleteDeadCode(Func *func) {
+    for (auto block : func->basicBlocks) {
+        auto s = new PositiveSet(block->outPosFlow);
+        for (auto it = block->middleCodeItems.rbegin(); it != block->middleCodeItems.rend();) {
+            auto code = *it;
+            // 如果有左值def
+            auto leftValueSymbol = dynamic_cast<ValueSymbol*>(code->getLeftIntermediate());
+            if (leftValueSymbol) {
+                // 如果def在set中
+                if (s->contain(leftValueSymbol)) {
+                    s->remove(leftValueSymbol);
+                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
+                    if (rightValueSymbol1) {
+                        s->add(rightValueSymbol1);
+                    }
+                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
+                    if (rightValueSymbol2) {
+                        s->add(rightValueSymbol2);
+                    }
+                }
+                // 如果不在set中，删除这个code
+                else {
+                    // 不删除全局变量
+                    if (!leftValueSymbol->isLocal) {
+                        continue;
+                    }
+                    block->middleCodeItems.erase(std::next(it).base());
+                    continue;
+                }
+            }
+            // 如果没有左值def
+            else {
+                auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
+                if (rightValueSymbol1) {
+                    std::cout << "no left value, right value is : " << rightValueSymbol1->name << std::endl;
+                    s->add(rightValueSymbol1);
+                }
+                auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
+                if (rightValueSymbol2) {
+                    std::cout << "no left value, right value is : " << rightValueSymbol1->name << std::endl;
+                    s->add(rightValueSymbol2);
+                }
+            }
+            it ++ ;
         }
     }
 }

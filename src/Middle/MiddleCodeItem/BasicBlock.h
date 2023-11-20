@@ -8,6 +8,7 @@
 #include "MiddleCodeItem.h"
 #include "Label.h"
 #include "../Optimization/DefinitionSet.h"
+#include "../Optimization/PositiveSet.h"
 
 class BasicBlock : public MiddleCodeItem {
 public:
@@ -29,6 +30,15 @@ public:
     DefinitionSet *killSet=new DefinitionSet();
     DefinitionSet *genSet=new DefinitionSet();
     DefinitionSet *inDefSet=new DefinitionSet();    // block中的defset
+    DefinitionSet *inDefFlow=new DefinitionSet();
+    DefinitionSet *outDefFlow=new DefinitionSet();
+
+    // 活跃变量分析
+    PositiveSet *defSet = new PositiveSet();
+    PositiveSet *useSet = new PositiveSet();
+    PositiveSet *outPosFlow = new PositiveSet();
+    PositiveSet *inPosFlow = new PositiveSet();
+
     BasicBlock(Type type_, std::string &name) : type(type_), label(new Label(name)) { basicBlockID = blockID ++ ; }
     explicit BasicBlock(Type type_) : type(type_), label(new Label()) { basicBlockID = blockID ++ ;}
 

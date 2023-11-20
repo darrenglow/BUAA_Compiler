@@ -19,6 +19,7 @@ public:
     Intermediate * target;
     MiddleIO(Type type_, Intermediate *target_) : type(type_), target(target_) {}
     Intermediate * getLeftIntermediate() override;
+    Intermediate * getRightIntermediate1() override;
     OVERRIDE_OUTPUT;
 };
 

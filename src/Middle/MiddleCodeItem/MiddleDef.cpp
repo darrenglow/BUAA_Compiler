@@ -16,3 +16,7 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
 Intermediate * MiddleDef::getLeftIntermediate() {
     return valueSymbol;
 }
+
+Intermediate * MiddleDef::getRightIntermediate1() {
+    return srcValueSymbol;
+}

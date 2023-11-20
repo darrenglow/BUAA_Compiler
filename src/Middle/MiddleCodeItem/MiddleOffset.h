@@ -14,6 +14,8 @@ public:
     MiddleOffset(Intermediate *src_, Intermediate *offset_, Intermediate *ret_) :
             src(src_), offset(offset_), ret(ret_) {}
     Intermediate * getLeftIntermediate() override;
+    Intermediate * getRightIntermediate1() override;
+    Intermediate * getRightIntermediate2() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEOFFSET_H

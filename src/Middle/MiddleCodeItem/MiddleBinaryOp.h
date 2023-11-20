@@ -30,6 +30,8 @@ public:
     MiddleBinaryOp(Type type_, Intermediate *src1_, Intermediate *src2_, Intermediate *target_)
             : type(type_), src1(src1_), src2(src2_), target(target_) {}
     Intermediate * getLeftIntermediate() override;
+    Intermediate * getRightIntermediate1() override;
+    Intermediate * getRightIntermediate2() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEBINARYOP_H

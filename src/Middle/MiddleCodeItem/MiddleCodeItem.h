@@ -27,6 +27,8 @@ public:
     virtual std::ostream& output(std::ostream &os) const = 0;
 
     virtual Intermediate* getLeftIntermediate();
+    virtual Intermediate* getRightIntermediate1();
+    virtual Intermediate* getRightIntermediate2();
     friend std::ostream& operator<<(std::ostream& os, const MiddleCodeItem& obj);
 };
 

@@ -18,6 +18,7 @@ public:
     // STORE sym1/value sym2
     MiddleMemoryOp(Type type_, Intermediate *sym1_, Intermediate *sym2_) : type(type_), sym1(sym1_), sym2(sym2_) {}
     Intermediate * getLeftIntermediate() override;
+    Intermediate * getRightIntermediate1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEMEMORYOP_H

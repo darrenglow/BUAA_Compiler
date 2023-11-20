@@ -18,3 +18,12 @@ Intermediate * MiddleMemoryOp::getLeftIntermediate() {
         return sym1;
     }
 }
+
+Intermediate * MiddleMemoryOp::getRightIntermediate1() {
+    if (type == MiddleMemoryOp::STORE) {
+        return sym1;
+    }
+    else {
+        return sym2;
+    }
+}

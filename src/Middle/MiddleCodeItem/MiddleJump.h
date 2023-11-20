@@ -26,6 +26,8 @@ public:
     //针对visitCond中的basicBLock，方便后面搭建数据流
     MiddleJump(Type type_, Intermediate *src_, BasicBlock *target_, BasicBlock *anotherTarget_)
             : type(type_), src(src_), target(target_), anotherTarget(anotherTarget_) {}
+
+    Intermediate * getRightIntermediate1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEJUMP_H

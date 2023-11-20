@@ -43,5 +43,21 @@ public:
     void _calcKillSetPerCode(MiddleCodeItem *middleCodeItem, BasicBlock *basicBlock);
 
     void _calcGen(Func *func);
+
+    void _calcDefFlow(Func *func);
+
+    // 活跃变量分析
+    void positiveAnalysis();
+
+    void _positiveAnalysis(Func *func);
+
+    void _calcDefAndUse(Func *func);
+
+    void _calcPositiveFlow(Func *func);
+
+    // 死代码删除
+    void deleteDeadCode();
+
+    void _deleteDeadCode(Func *func);
 };
 #endif //BUAA_COMPILER_DATAFLOW_H

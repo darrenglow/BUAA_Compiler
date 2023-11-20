@@ -26,7 +26,7 @@ public:
     MiddleDef(Type type_, ValueSymbol *valueSymbol_, Intermediate *srcValueSymbol_) : type(type_), srcValueSymbol(srcValueSymbol_), valueSymbol(valueSymbol_), isInit(true) {}
 
     Intermediate * getLeftIntermediate() override;
-
+    Intermediate * getRightIntermediate1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEDEF_H

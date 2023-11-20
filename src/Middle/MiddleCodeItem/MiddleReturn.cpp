@@ -11,3 +11,8 @@ std::ostream & MiddleReturn::output(std::ostream &os) const {
     }
     return os;
 }
+
+
+Intermediate * MiddleReturn::getRightIntermediate1() {
+    return target;
+}

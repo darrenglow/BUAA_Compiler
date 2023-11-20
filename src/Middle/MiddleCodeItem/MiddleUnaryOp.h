@@ -28,6 +28,7 @@ public:
             type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_) {}
 
     Intermediate * getLeftIntermediate() override;
+    Intermediate * getRightIntermediate1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEUNARYOP_H

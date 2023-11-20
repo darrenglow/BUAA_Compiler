@@ -38,6 +38,12 @@ void Visitor::visit() {
 #ifdef REACH_DEFINITION
    dataFlow->reachDefinition();
 #endif
+#ifdef POSITIVE_ANALYSIS
+   dataFlow->positiveAnalysis();
+#endif
+#ifdef DELETE_DEADCODE
+    dataFlow->deleteDeadCode();
+#endif
 }
 
 void Visitor::visitCompUnit(CompUnit *compUnit){

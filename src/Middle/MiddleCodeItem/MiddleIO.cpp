@@ -11,5 +11,15 @@ std::ostream & MiddleIO::output(std::ostream &os) const {
 }
 
 Intermediate * MiddleIO::getLeftIntermediate() {
-    return target;
+    if (type == MiddleIO::GETINT){
+        return target;
+    }
+    return nullptr;
+}
+
+Intermediate * MiddleIO::getRightIntermediate1() {
+    if (type == MiddleIO::PRINT_INT) {
+        return target;
+    }
+    return nullptr;
 }

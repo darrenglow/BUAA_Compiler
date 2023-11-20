@@ -14,3 +14,11 @@ std::ostream & MiddleBinaryOp::output(std::ostream &os) const {
 Intermediate * MiddleBinaryOp::getLeftIntermediate() {
     return target;
 }
+
+Intermediate * MiddleBinaryOp::getRightIntermediate1() {
+    return src1;
+}
+
+Intermediate * MiddleBinaryOp::getRightIntermediate2() {
+    return src2;
+}
