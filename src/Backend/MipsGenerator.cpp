@@ -10,7 +10,7 @@
 #include "../Util/Debug.h"
 #include "MipsGenerator.h"
 #include "../Middle/MiddleCode.h"
-#include "../Middle/MiddleCodeItem.h"
+#include "../Middle/MiddleCodeItem/MiddleCodeItem.h"
 void MipsGenerator::add(Instruction* mipsCode) {
     mips.push_back(mipsCode);
 }

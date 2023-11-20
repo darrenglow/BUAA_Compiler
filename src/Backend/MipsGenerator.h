@@ -10,7 +10,7 @@
 #include <iostream>
 #include "Instruction.h"
 #include "../Middle/Symbol/Symbol.h"
-#include "../Middle/MiddleCodeItem.h"
+#include "../Middle/MiddleCodeItem/MiddleCodeItem.h"
 
 
 class MipsGenerator {

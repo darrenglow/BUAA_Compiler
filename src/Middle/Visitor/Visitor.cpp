@@ -35,6 +35,9 @@ void Visitor::visit() {
     auto dataFlow = new DataFlow(funcs);
     dataFlow->buildGraph();
 #endif
+#ifdef REACH_DEFINITION
+   dataFlow->reachDefinition();
+#endif
 }
 
 void Visitor::visitCompUnit(CompUnit *compUnit){

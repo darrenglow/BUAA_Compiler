@@ -173,24 +173,197 @@ BasicBlock *DataFlow::getTargetFromCode(MiddleCodeItem* middleCodeItem) {
     return target;
 }
 
-//void DataFlow::printGraph(BasicBlock *x) {
-//    while (!q.empty()) q.pop();
-//    q.push(x);
-//    while (!q.empty()) {
-//        auto t = q.front();
-//        std::cout << t->basicBlockID << " -> ";
-//        for (auto next : t->follows) {
-//            std:: cout << next->basicBlockID << " ";
-//            q.push(next);
-//        }
-//        std::cout << std::endl;
-//        q.pop();
-//    }
-//}
-//
-//void DataFlow::printAllGraph() {
-//    for (auto func : funcs) {
-//        std::cout << "\n" << func->funcName << ": \n";
-//        printGraph(func->root);
-//    }
-//}
+
+void DataFlow::reachDefinition() {
+    for (auto func : funcs) {
+        symbolDefs.clear();
+        index2code.clear();
+
+        _reachDefinition(func);
+    }
+}
+
+void DataFlow::_reachDefinition(Func *func) {
+    std::cout << func->funcName << " Start Reach Definition Analysis" << std::endl;
+    _initSymbolDefs(func);
+
+#ifdef DEBUG_REACH_DEFINITION
+    // 打印symbolDefs
+    for (auto pair : symbolDefs) {
+        auto symbol = pair.first;
+        auto defSet = pair.second;
+        std::cout << symbol->printMiddleCode() << ": " << std::endl;
+        for (int i = 0; i < 1000; i ++) {
+            if (defSet->setIndex[i] > 0){
+                std::cout << "--" << i << ": " << *index2code[i] << "\n";
+            }
+        }
+    }
+#endif
+    _calcKill(func);
+    _calcGen(func);
+
+#ifdef DEBUG_REACH_DEFINITION
+    for (auto block : func->basicBlocks) {
+        std::cout << "Block[" << block->basicBlockID << "]: " << std::endl;
+        std::cout << "KillSet: " << std::endl;
+        for (auto code : block->killSet->defs) {
+            std::cout << "--" << code->index << ": " << *code << std::endl;
+        }
+        std::cout << "GenSet: " << std::endl;
+        for (auto code : block->genSet->defs) {
+            std::cout << "--" << code->index << ": " << *code << std::endl;
+        }
+    }
+#endif
+}
+
+// 遍历函数的所有中间代码，将<symbol, defs>对应起来
+void DataFlow::_initSymbolDefs(Func *func) {
+    int index = 0;
+    for (auto& block : func->basicBlocks) {
+        for (auto &code : block->middleCodeItems) {
+            code->setIndex(index);
+
+            if (dynamic_cast<MiddleDef*>(code) && dynamic_cast<MiddleDef*>(code)->type == MiddleDef::DEF_VAR) {
+                auto symbol = dynamic_cast<MiddleDef*>(code)->valueSymbol;
+                // 如果symbolDefs中没有symbol，就new一个definitionSet
+                auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                if (it == symbolDefs.end()) {
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                }
+                symbolDefs[symbol]->add(code, index);
+                block->inDefSet->add(code, index);
+            }
+            else if (dynamic_cast<MiddleUnaryOp*>(code)) {
+                auto symbol = dynamic_cast<MiddleUnaryOp*>(code)->valueSymbol;
+                if (dynamic_cast<ValueSymbol*>(symbol)) {
+                    // 如果symbolDefs中没有symbol，就new一个definitionSet
+                    auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                    if (it == symbolDefs.end()) {
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                    }
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
+                    block->inDefSet->add(code, index);
+                }
+                else {
+                    std::cout << "ERROR in [_initSymbolDefs-MiddleUnaryOp] in Block " << block->basicBlockID << std::endl;
+                }
+            }
+            else if (dynamic_cast<MiddleOffset*>(code)) {
+                auto symbol = dynamic_cast<MiddleOffset*>(code)->ret;
+                if (dynamic_cast<ValueSymbol*>(symbol)) {
+                    // 如果symbolDefs中没有symbol，就new一个definitionSet
+                    auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                    if (it == symbolDefs.end()) {
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                    }
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
+                    block->inDefSet->add(code, index);
+                }
+                else {
+                    std::cout << "ERROR in [_initSymbolDefs-MiddleOffset] in Block " << block->basicBlockID << std::endl;
+                }
+            }
+            else if(dynamic_cast<MiddleMemoryOp*>(code)) {
+                auto memoryCode = dynamic_cast<MiddleMemoryOp*>(code);
+                auto symbol = memoryCode->type==MiddleMemoryOp::LOAD ? memoryCode->sym1 : memoryCode->sym2;
+                if (dynamic_cast<ValueSymbol*>(symbol)) {
+                    // 如果symbolDefs中没有symbol，就new一个definitionSet
+                    auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                    if (it == symbolDefs.end()) {
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                    }
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
+                    block->inDefSet->add(code, index);
+                }
+                else {
+                    std::cout << "ERROR in [_initSymbolDefs-MiddleMemoryOp] in Block " << block->basicBlockID << std::endl;
+                }
+            }
+            else if (dynamic_cast<MiddleBinaryOp*>(code)) {
+                auto symbol = dynamic_cast<MiddleBinaryOp*>(code)->target;
+                if (dynamic_cast<ValueSymbol*>(symbol)) {
+                    // 如果symbolDefs中没有symbol，就new一个definitionSet
+                    auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                    if (it == symbolDefs.end()) {
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                    }
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
+                    block->inDefSet->add(code, index);
+                }
+                else {
+                    std::cout << "ERROR in [_initSymbolDefs-MiddleBinaryOp] in Block " << block->basicBlockID << std::endl;
+                }
+            }
+            else if (dynamic_cast<MiddleIO*>(code)) {
+                if (dynamic_cast<MiddleIO*>(code)->type == MiddleIO::GETINT) {
+                    auto symbol = dynamic_cast<MiddleIO*>(code)->target;
+                    // 如果symbolDefs中没有symbol，就new一个definitionSet
+                    if (dynamic_cast<ValueSymbol*>(symbol)) {
+                        auto it = symbolDefs.find(dynamic_cast<ValueSymbol*>(symbol));
+                        if (it == symbolDefs.end()) {
+                            symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
+                        }
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
+                        block->inDefSet->add(code, index);
+                    }
+                    else {
+                        std::cout << "ERROR in [_initSymbolDefs-MiddleIOOp] in Block " << block->basicBlockID << std::endl;
+                    }
+                }
+            }
+            index2code[index] = code;
+            index ++ ;
+        }
+    }
+}
+
+// block的killSet就是所有代码的killSet的并集
+void DataFlow::_calcKill(Func *func) {
+    for (auto &block : func->basicBlocks) {
+        for (auto code : block->inDefSet->defs) {
+            _calcKillSetPerCode(code, block);
+            // code->killSetIndex中存的是std::vector，其killSet
+            // 所有code的killSet的并集就是block的killSet
+            for (auto index : code->killSetIndex) {
+                block->killSet->add(index2code[index], index);
+            }
+#ifdef DEBUG_REACH_DEFINITION
+            std::cout << *code << ":" << std::endl;
+            for (auto index : code->killSetIndex) {
+                std::cout << "--" << index << ": " << *index2code[index] << std::endl;
+            }
+#endif
+        }
+    }
+}
+
+void DataFlow::_calcKillSetPerCode(MiddleCodeItem *middleCodeItem, BasicBlock *basicBlock) {
+    auto symbol = middleCodeItem->getLeftIntermediate();
+    auto totalDefSet = symbolDefs[dynamic_cast<ValueSymbol*>(symbol)];
+    auto diffSet = totalDefSet->eraseNew(middleCodeItem);
+    // 此时middleCodeItem中的killSet就是diffSet中不为0的下标
+    for (int i = 0; i < 1000; i ++ ) {
+        if (diffSet->setIndex[i] > 0)
+            middleCodeItem->killSetIndex.push_back(i);
+    }
+}
+
+void DataFlow::_calcGen(Func *func) {
+    for (auto &block : func->basicBlocks) {
+        auto tmpKillSet = new DefinitionSet();
+        for (auto rit = block->inDefSet->defs.rbegin(); rit != block->inDefSet->defs.rend(); ++rit) {
+            auto tmpGenset = new DefinitionSet();
+            auto code = *rit;
+            std::cout << "############ " << *code << "############" << std::endl;
+            // gen[dn] + gen[dn-1] - kill[dn] + gen[dn-2] - kill[dn-1] - kill[dn]
+            tmpGenset->add(code, code->index);
+            tmpGenset->sub(tmpKillSet);
+            for (auto index : code->killSetIndex) {
+                tmpKillSet->add(index2code[index], index);
+            }
+            block->genSet->plus(tmpGenset);
+        }
+    }
+}

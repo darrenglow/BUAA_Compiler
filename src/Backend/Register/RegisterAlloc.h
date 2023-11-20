@@ -7,7 +7,7 @@
 
 #include <unordered_map>
 #include "../../Middle/MiddleCode.h"
-#include "../../Middle/MiddleCodeItem.h"
+#include "../../Middle/MiddleCodeItem/MiddleCodeItem.h"
 #include "../../Middle/Symbol/Symbol.h"
 #include "Register.h"
 

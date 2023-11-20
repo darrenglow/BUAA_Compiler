@@ -8,7 +8,7 @@
 #include "../../Fronted/Error/ErrorTable.h"
 #include "../../Fronted/Parser/AST.h"
 #include "../Symbol/SymbolTable.h"
-#include "../MiddleCodeItem.h"
+#include "../MiddleCodeItem/Middle.h"
 
 class Visitor {
 private:

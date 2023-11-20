@@ -7,7 +7,7 @@
 
 #include <unordered_map>
 #include "../Symbol/Symbol.h"
-#include "../MiddleCodeItem.h"
+#include "../MiddleCodeItem/Middle.h"
 
 class NoChangeValue {
 public:

@@ -7,7 +7,7 @@
 
 #include <string>
 #include <utility>
-#include "../Middle/MiddleCodeItem.h"
+#include "../Middle/MiddleCodeItem/MiddleCodeItem.h"
 #include "Register/RegisterAlloc.h"
 
 #define OVERRIDE_OUTPUT std::ostream& output(std::ostream &os) const override

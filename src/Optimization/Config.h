@@ -8,4 +8,6 @@
 // 删除无用代码
 #define UNTHROUGH_BASICBLOCK
 // 到达定义分析
+#define REACH_DEFINITION
+#define DEBUG_REACH_DEFINITION
 // 活跃变量分析
