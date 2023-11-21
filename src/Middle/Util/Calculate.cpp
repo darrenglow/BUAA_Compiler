@@ -142,9 +142,15 @@ int Calculate::calcLVal(LVal *lVal) {
             return valueSymbol->initValues[x];
         }
         else if (valueSymbol->dims.size() == 2) {
-            int x1 = calcExp(lVal->exps[0]);
-            int x2 = calcExp(lVal->exps[1]);
-            return valueSymbol->initValues[x1 * valueSymbol->dims[1] + x2];
+            if (lVal->exps.size() == 2) {
+                int x1 = calcExp(lVal->exps[0]);
+                int x2 = calcExp(lVal->exps[1]);
+                return valueSymbol->initValues[x1 * valueSymbol->dims[1] + x2];
+            }
+            else {
+                throw MyError();
+            }
+
         }
     }
     return -1;

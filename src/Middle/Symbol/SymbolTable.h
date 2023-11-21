@@ -25,6 +25,13 @@ public:
 
     Symbol* getSymbol(const std::string &name, bool up);
 
+    // 针对数组变量来特殊处理的
+    Symbol* getSymbol(const std::string &name, int offset, bool up);
+    Symbol * getSymbol(const std::string &name, Intermediate* offset, bool up);
+
+    // 针对指针变量特殊处理
+    Symbol *getSymbol(const std::string &name, int realDim, int useDim, int offset1, bool up);
+    Symbol * getSymbol(const std::string &name, int realDim, int useDim, Intermediate* offset1, bool up);
     int getSize();
 };
 

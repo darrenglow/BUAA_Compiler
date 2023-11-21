@@ -332,7 +332,7 @@ void MipsGenerator::translateMiddleMemoryOp(MiddleMemoryOp *middleMemoryOp) {
             else {
                 reg1 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol *>(sym1));
             }
-            reg2 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(sym2), false);
+            reg2 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(sym2), true);
             this->add(new M(M::sw, reg1, 0, reg2));
             break;
     }
@@ -372,6 +372,9 @@ void MipsGenerator::translateMiddleIO(MiddleIO *middleIO) {
         case MiddleIO::GETINT:
             this->add(new RI(RI::li, $v0, 5));
             this->add(new Syscall());
+            if (target == nullptr) {
+                return;
+            }
             reg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
             if (dynamic_cast<ValueSymbol*>(target)->isArrayElement) {
                 this->add(new M(M::sw, $v0, 0, reg));

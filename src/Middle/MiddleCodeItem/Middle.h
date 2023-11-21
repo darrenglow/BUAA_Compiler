@@ -18,5 +18,5 @@
 #include "MiddleOffset.h"
 #include "MiddleReturn.h"
 #include "MiddleUnaryOp.h"
-
+#include "PushParam.h"
 #endif //BUAA_COMPILER_MIDDLE_H

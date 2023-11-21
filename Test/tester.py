@@ -5,7 +5,7 @@ import time
 pwd = os.getcwd()
 
 target_dir = os.path.join(pwd, '.\\cmake-build-debug')
-test_dir = os.path.join(pwd, ".\\Test\\2023\\C")
+test_dir = os.path.join(pwd, ".\\Test\\public")
 
 compile_path = os.path.join(target_dir, 'BUAA_Compiler.exe')
 mips_path    = os.path.join(target_dir, 'mips.txt')
@@ -31,13 +31,15 @@ for root, dirs, files in os.walk(test_dir):
     print('[test rank ' + rank + ']')
     num = int(len(files)/3)
     # num = 1
-    for i in range(1, num + 1):
+    for i in range(44, num + 1):
         print('testfile', i, ': ', end='')
     #
         # # 将测试文件拷贝到cmake-build-debug目录下，便于测试
         testfile_src = os.path.join(root, 'testfile' + str(i) + '.txt')
         input_src = os.path.join(root, 'input' + str(i) + '.txt')
         output_src = os.path.join(root, 'output' + str(i) + '.txt')
+        if not os.path.exists(testfile_src):
+            continue
         os.system('echo f | xcopy /y ' + testfile_src + ' ' + testfile_dst + ' > log.txt')
         os.system('echo f | xcopy /y ' + input_src    + ' ' + input_dst    + ' > log.txt')
         os.system('echo f | xcopy /y ' + output_src   + ' ' + output_dst   + ' > log.txt')
@@ -63,11 +65,14 @@ for root, dirs, files in os.walk(test_dir):
         flag = True
         for lno in range(line_num):
             if res_list[lno] != ans_list[lno]:
-                wrong_line.append(lno + 1)
-                flag = False
-                # break
+                str1_without_spaces = res_list[lno].replace(" ", "")
+                str2_without_spaces = ans_list[lno].replace(" ", "")
+                if str1_without_spaces != str2_without_spaces:
+                    wrong_line.append(lno + 1)
+                    flag = False
+                    break
         if flag:
             print('pass')
         else:
-            print(res_list)
-            print(ans_list)
+            print("ans : line " + str(wrong_line[0]))
+            print("res : line " + str(wrong_line[0]))

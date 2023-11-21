@@ -22,7 +22,7 @@ RegType RegisterAlloc::allocRegister(Symbol *symbol, bool fromMemory) {
     // TODO: 地址不写回。
     if (registerMap[reg] != nullptr) {
         if (dynamic_cast<ValueSymbol*>(registerMap[reg])) {
-            MipsGenerator::getInstance().add(new Notation("# Register[" + Register::type2str[reg] + "] " + dynamic_cast<ValueSymbol*>(registerMap[reg])->name + " to " + symbol->name));
+            MipsGenerator::getInstance().add(new Notation("# Register[" + Register::type2str[reg] + "] " + dynamic_cast<ValueSymbol*>(registerMap[reg])->name + " to " + symbol->printMiddleCode()));
             pushBackToMem(reg, dynamic_cast<ValueSymbol*>(registerMap[reg]));
         }
     }
@@ -46,12 +46,9 @@ RegType RegisterAlloc::allocRegister(Symbol *symbol, bool fromMemory) {
                 }
                 else if (dynamic_cast<Immediate*>(offset)) {
                     if (valueSymbol->isLocal) {
-                        DEBUG_PRINT_DIRECT("!@#$$");
-                        DEBUG_PRINT_DIRECT(dynamic_cast<Immediate*>(offset)->value);
                         MipsGenerator::getInstance().add(new RRI(RRI::addiu, reg, $sp, -dynamic_cast<Immediate*>(offset)->value));
                         // !!!如果是参数数组的话，需要把地址值加载到目标寄存器中
                         if (valueSymbol->isFParam) {
-                            DEBUG_PRINT_DIRECT("!@!@!@!@!@");
                             MipsGenerator::getInstance().add(new M(M::lw, reg, 0, reg));
                         }
                     }

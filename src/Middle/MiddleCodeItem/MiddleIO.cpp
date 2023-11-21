@@ -6,7 +6,10 @@
 
 // MiddleIO
 std::ostream & MiddleIO::output(std::ostream &os) const {
-    os << type2str[type] << " " << target->printMiddleCode();
+    os << type2str[type];
+    if (target != nullptr){
+        os << " " << target->printMiddleCode();
+    }
     return os;
 }
 

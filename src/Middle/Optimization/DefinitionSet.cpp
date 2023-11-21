@@ -17,7 +17,7 @@ DefinitionSet* DefinitionSet::sub(DefinitionSet *defSet) {
         if (defs.count(def) > 0)
             defs.erase(def);
     }
-    for (int i = 0; i < 1000; i ++ ) {
+    for (int i = 0; i < 100000; i ++ ) {
         if (defSet->setIndex[i] > 0) {
             setIndex[i] = 0;
         }
@@ -32,7 +32,7 @@ DefinitionSet * DefinitionSet::plus(DefinitionSet *defSet) {
     for (auto def : defSet->defs) {
         defs.insert(def);
     }
-    for (int i = 0; i < 1000; i ++ ){
+    for (int i = 0; i < 100000; i ++ ){
         if (defSet->setIndex[i] > 0) {
             setIndex[i] = 1;
         }
@@ -51,14 +51,14 @@ DefinitionSet * DefinitionSet::eraseNew(MiddleCodeItem *def) {
     for (auto x : defs) {
         newDefSet->add(x, x->index);
     }
-    for (int i = 0; i < 1000; i ++ ) {
+    for (int i = 0; i < 100000; i ++ ) {
         newDefSet->setIndex[i] = setIndex[i];
     }
     return newDefSet->erase(def);
 }
 
 bool DefinitionSet::equalTo(DefinitionSet *defSet) {
-    for (int i = 0; i < 1000; i ++ ) {
+    for (int i = 0; i < 100000; i ++ ) {
         if (setIndex[i] != defSet->setIndex[i]) {
             return false;
         }

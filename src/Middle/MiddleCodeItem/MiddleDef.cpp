@@ -14,6 +14,9 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
 }
 
 Intermediate * MiddleDef::getLeftIntermediate() {
+    if (type == MiddleDef::END_ARRAY || type == MiddleDef::DEF_ARRAY) {
+        return nullptr;
+    }
     return valueSymbol;
 }
 

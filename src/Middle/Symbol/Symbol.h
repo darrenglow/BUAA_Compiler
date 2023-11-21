@@ -62,7 +62,7 @@ public:
     int address;
     bool isLocal=true;
     bool isFParam=false;    // 针对指针，判断其是否是函数的参数
-    Intermediate *pAddress; // 针对传参时的指针，如果是二维数组的话a[2][2]，可能传入的是a[x]，这时其地址就要动态计算
+    Intermediate *pAddress{}; // 针对传参时的指针，如果是二维数组的话a[2][2]，可能传入的是a[x]，这时其地址就要动态计算
     bool isAbsoluteAddress=false;  //仅针对func(int a[][2])调用func2(a[1])的特殊情况。
     bool isArrayElement=false;   // 仅针对a[2] = getint()这样的情况。
     // 主要用于指针，记录其偏移地址，和是否是全局的

@@ -49,6 +49,7 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
             // 得到跳转到的基本块
             auto target = dynamic_cast<MiddleJump *>(lastCodeItem)->target;
 //             如果跳转到的基本块的只有一条语句且为jump
+            auto nowTarget = target;
             while (target->middleCodeItems.size() == 1) {
                 auto code = target->middleCodeItems[0];
                 if (dynamic_cast<MiddleJump *>(code) == nullptr) {
@@ -56,6 +57,10 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
                 }
                 auto finalTarget = dynamic_cast<MiddleJump *>(code)->target;
                 target = finalTarget;
+                // 如果是环，就跳出。
+                if (target == nowTarget) {
+                    break;
+                }
             }
             dynamic_cast<MiddleJump *>(lastCodeItem)->target = target;
 
@@ -123,6 +128,10 @@ void DataFlow::buildGraph() {
         hasVisited[root] = true;
         while (!q.empty()) {
             auto t = q.front();
+            if (t->middleCodeItems.empty()) {
+                q.pop();
+                continue;
+            }
             auto target1 = getTargetFromCode(t->middleCodeItems[t->middleCodeItems.size() - 1]);
             if (target1 != nullptr) {
                 t->setNext(target1);
@@ -186,7 +195,6 @@ void DataFlow::reachDefinition() {
 void DataFlow::_reachDefinition(Func *func) {
     std::cout << func->funcName << " Start Reach Definition Analysis" << std::endl;
     _initSymbolDefs(func);
-
     _calcKill(func);
     _calcGen(func);
     _calcDefFlow(func);
@@ -331,10 +339,13 @@ void DataFlow::_calcKill(Func *func) {
 
 void DataFlow::_calcKillSetPerCode(MiddleCodeItem *middleCodeItem, BasicBlock *basicBlock) {
     auto symbol = middleCodeItem->getLeftIntermediate();
+    if (symbol == nullptr) {
+        return;
+    }
     auto totalDefSet = symbolDefs[dynamic_cast<ValueSymbol*>(symbol)];
     auto diffSet = totalDefSet->eraseNew(middleCodeItem);
     // 此时middleCodeItem中的killSet就是diffSet中不为0的下标
-    for (int i = 0; i < 1000; i ++ ) {
+    for (int i = 0; i < 100000; i ++ ) {
         if (diffSet->setIndex[i] > 0)
             middleCodeItem->killSetIndex.push_back(i);
     }
@@ -420,35 +431,33 @@ void DataFlow::_positiveAnalysis(Func *func) {
 
 void DataFlow::_calcDefAndUse(Func *func) {
     for (auto block : func->basicBlocks) {
-        for (auto code : block->middleCodeItems) {
+        for (auto it = block->middleCodeItems.begin(); it != block->middleCodeItems.end();) {
+            auto code = *it;
             auto leftSymbol = code->getLeftIntermediate();
-            if (dynamic_cast<ValueSymbol*>(leftSymbol)) {
+
+            if (dynamic_cast<ValueSymbol*>(leftSymbol) && dynamic_cast<ValueSymbol*>(leftSymbol)->valueType != ARRAY && isLegalPrefix(
+                    dynamic_cast<ValueSymbol*>(leftSymbol)->name)) {
+                auto name = dynamic_cast<ValueSymbol*>(leftSymbol)->name;
                 if (!block->useSet->contain(dynamic_cast<ValueSymbol*>(leftSymbol))) {
                     block->defSet->add(dynamic_cast<ValueSymbol*>(leftSymbol));
                 }
             }
 
             auto rightSymbol1 = code->getRightIntermediate1();
-            if (dynamic_cast<ValueSymbol*>(rightSymbol1)) {
+            if (dynamic_cast<ValueSymbol*>(rightSymbol1) && dynamic_cast<ValueSymbol*>(rightSymbol1)->valueType != ARRAY && isLegalPrefix(
+                    dynamic_cast<ValueSymbol*>(rightSymbol1)->name)) {
                 if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol1))) {
                     block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol1));
                 }
             }
             auto rightSymbol2 = code->getRightIntermediate2();
-            if (dynamic_cast<ValueSymbol*>(rightSymbol2)) {
+            if (dynamic_cast<ValueSymbol*>(rightSymbol2) && dynamic_cast<ValueSymbol*>(rightSymbol2)->valueType != ARRAY && isLegalPrefix(
+                    dynamic_cast<ValueSymbol*>(rightSymbol2)->name)) {
                 if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol2))) {
                     block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol2));
                 }
             }
-        }
-    }
-    for (auto block : func->basicBlocks) {
-        if (block->basicBlockID == 20) {
-            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-            for (auto symbol : block->defSet->symbols) {
-                std::cout << symbol->name << " " << std::endl;
-            }
-            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            it ++ ;
         }
     }
 }
@@ -457,7 +466,8 @@ void DataFlow::_calcPositiveFlow(Func *func) {
     bool flag = true;
     while (flag) {
         flag = false;
-        for (auto &block : func->basicBlocks) {
+        for (auto it = func->basicBlocks.rbegin(); it != func->basicBlocks.rend();) {
+            auto block = *it;
             for (auto &follow : block->follows) {
                 block->outPosFlow->plus(follow->inPosFlow);
             }
@@ -467,11 +477,12 @@ void DataFlow::_calcPositiveFlow(Func *func) {
             auto tmpPosSet = new PositiveSet();
             tmpPosSet->plus(block->outPosFlow);
             tmpPosSet->sub(block->defSet);
-            block->outPosFlow->plus(tmpPosSet);
+            block->inPosFlow->plus(tmpPosSet);
 
             if (!block->inPosFlow->equalTo(prevInFlow)) {
                 flag = true;
             }
+            it ++ ;
         }
     }
 }
@@ -488,44 +499,104 @@ void DataFlow::_deleteDeadCode(Func *func) {
         for (auto it = block->middleCodeItems.rbegin(); it != block->middleCodeItems.rend();) {
             auto code = *it;
             // 如果有左值def
-            auto leftValueSymbol = dynamic_cast<ValueSymbol*>(code->getLeftIntermediate());
-            if (leftValueSymbol) {
+            auto symbol = code->getLeftIntermediate();
+            if (dynamic_cast<ValueSymbol*>(symbol)) {
+                auto leftValueSymbol = dynamic_cast<ValueSymbol*>(symbol);
                 // 如果def在set中
                 if (s->contain(leftValueSymbol)) {
                     s->remove(leftValueSymbol);
+
                     auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                    if (rightValueSymbol1) {
+                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol1->name)) {
                         s->add(rightValueSymbol1);
                     }
                     auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                    if (rightValueSymbol2) {
+                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol2->name)) {
+                        s->add(rightValueSymbol2);
+                    }
+                }
+                // 如果是全局变量的话需要加入use
+                else if (!leftValueSymbol->isLocal) {
+                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
+                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol1->name)) {
+                        s->add(rightValueSymbol1);
+                    }
+
+                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
+                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol2->name)) {
+                        s->add(rightValueSymbol2);
+                    }
+                }
+                // 如果是数组成员或是指针的话，也需要加入use
+                else if (leftValueSymbol->name.rfind("ArraY_*|!123___", 0) == 0 || leftValueSymbol->name.rfind("PointeR_*|!123___", 0) == 0) {
+                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
+                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol1->name)) {
+                        s->add(rightValueSymbol1);
+                    }
+
+                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
+                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
+                            isLegalPrefix(rightValueSymbol2->name)) {
                         s->add(rightValueSymbol2);
                     }
                 }
                 // 如果不在set中，删除这个code
                 else {
-                    // 不删除全局变量
-                    if (!leftValueSymbol->isLocal) {
+                    if (dynamic_cast<MiddleIO*>(code) && dynamic_cast<MiddleIO*>(code)->type == MiddleIO::GETINT) {
+                        dynamic_cast<MiddleIO*>(code)->target = nullptr;
+                        it ++ ;
                         continue;
                     }
+                    // !!! 草，本来还想优化到让部分数组不store，但是有问题，比如a[i],不知道i的值。所以对于数组的定义，还是得全部加载。
+//                    if (dynamic_cast<MiddleMemoryOp*>(code) && dynamic_cast<MiddleMemoryOp*>(code)->type == MiddleMemoryOp::STORE) {
+//                        it ++ ;
+//                        continue;
+//                    }
+//                    if (dynamic_cast<MiddleOffset*>(code)) {
+//                        auto beforeIt = it - 1;
+//                        auto nextCode = *beforeIt;
+//                        if (dynamic_cast<MiddleMemoryOp*>(nextCode) && dynamic_cast<MiddleMemoryOp*>(nextCode)->type == MiddleMemoryOp::STORE) {
+//                            it ++ ;
+//                            continue;
+//                        }
+//                    }
                     block->middleCodeItems.erase(std::next(it).base());
+                    // !!! 草，这个erase我以为会增加it的位置，调试才发现，他甚至还往回跑了！！！气死我了。。。这块的代码有点屎。
+                    it ++ ;
                     continue;
                 }
             }
             // 如果没有左值def
-            else {
+            else if (symbol == nullptr) {
                 auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                if (rightValueSymbol1) {
+                if (rightValueSymbol1 && isLegalPrefix(rightValueSymbol1->name) && rightValueSymbol1->valueType != ARRAY) {
                     std::cout << "no left value, right value is : " << rightValueSymbol1->name << std::endl;
                     s->add(rightValueSymbol1);
                 }
                 auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                if (rightValueSymbol2) {
-                    std::cout << "no left value, right value is : " << rightValueSymbol1->name << std::endl;
+                if (rightValueSymbol2 && isLegalPrefix(rightValueSymbol2->name) && rightValueSymbol2->valueType != ARRAY) {
+                    std::cout << "no left value, right value is : " << rightValueSymbol2->name << std::endl;
                     s->add(rightValueSymbol2);
                 }
             }
+#ifdef DEBUG_DEADCODE
+            std::cout << "Now code is : " << *(*it) << std::endl;
+            std::cout << "{ ";
+            for (auto valueSymbol : s->symbols) {
+                std::cout << valueSymbol->name << " ";
+            }
+            std::cout << " }\n";
+#endif
             it ++ ;
         }
     }
+}
+
+bool DataFlow::isLegalPrefix(std::string &name) {
+    return name.rfind("ArraY_*|!123___", 0) != 0 && name.rfind("PointeR_*|!123___", 0) != 0;
 }

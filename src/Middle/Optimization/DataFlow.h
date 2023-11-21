@@ -59,5 +59,7 @@ public:
     void deleteDeadCode();
 
     void _deleteDeadCode(Func *func);
+
+    bool isLegalPrefix(std::string &name);
 };
 #endif //BUAA_COMPILER_DATAFLOW_H

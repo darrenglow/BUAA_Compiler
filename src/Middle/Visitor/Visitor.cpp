@@ -138,8 +138,16 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 curBlock->add(defArray);
                 int offsetCount = 0;
                 for (auto x : initValues) {
-                    auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                    curFunc->tempSymbols.push_back(tmp);
+//                    auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                    curFunc->tempSymbols.push_back(tmp);
+                    auto tmp = curTable->getSymbol(arraySymbol->name, offsetCount, true);
+                    if (tmp == nullptr) {
+                        auto realName = "ArraY_*|!123___" + name + "_" + std::to_string(offsetCount);
+                        tmp = new ValueSymbol(realName, 0, true);
+                        curTable->add(tmp);
+                        curFuncSymbolTable->add(tmp);
+                        updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                    }
                     auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                     auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
@@ -171,8 +179,16 @@ void Visitor::visitConstDef(ConstDef *constDef) {
                 curBlock->add(defArray);
                 int offsetCount = 0;
                 for (auto x : initValues) {
-                    auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                    curFunc->tempSymbols.push_back(tmp);
+//                    auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                    curFunc->tempSymbols.push_back(tmp);
+                    auto tmp = curTable->getSymbol(arraySymbol->name, offsetCount, true);
+                    if (tmp == nullptr) {
+                        auto realName = "ArraY_*|!123___" + name + "_" + std::to_string(offsetCount);
+                        tmp = new ValueSymbol(realName, 0, true);
+                        curTable->add(tmp);
+                        curFuncSymbolTable->add(tmp);
+                        updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                    }
                     auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                     auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, new Immediate(x), tmp);
                     curBlock->add(offset);
@@ -289,6 +305,13 @@ Intermediate *Visitor::visitUnaryExp(UnaryExp *unaryExp) {
         auto funcSymbol = dynamic_cast<FuncSymbol*>(curTable->getSymbol(name, true));
         auto funcCall = new MiddleFuncCall(name);
         visitFuncRParams(funcRParams, funcSymbol, ident->line, funcCall);
+
+        // 仅用作数据流分析方便，后端不翻译
+        for (auto param : funcCall->funcRParams) {
+            curBlock->add(new PushParam(param));
+        }
+
+
         curBlock->add(funcCall);
         // 如果是int的话，需要有返回值
         if (funcSymbol->basicType == INT) {
@@ -364,10 +387,16 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
             // TODO: 要考虑是参数数组的情况。DONE
             // 形如int a[10]; a;
             if (realDim == 0) {
-                auto pointerName = "P_" + valueSymbol->name;
-                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName,new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+                auto pointer = curTable->getSymbol(valueSymbol->name, symbolDim, realDim, 0, true);
+                if (pointer == nullptr) {
+                    auto realName = "PointeR*|!123___" + name + "_" + std::to_string(symbolDim) + "_" + std::to_string(realDim) + "_" + std::to_string(0);
+                    pointer = new ValueSymbol(ValueType::POINTER, realName, new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+                    curTable->add(pointer);
+                    curFuncSymbolTable->add(pointer);
+                    updateCurStackSize(dynamic_cast<ValueSymbol *>(pointer));
+                }
                 if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
-                    pointer->setFParam();
+                    dynamic_cast<ValueSymbol*>(pointer)->setFParam();
                 }
                 return pointer;
             }
@@ -375,9 +404,17 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                 auto index = visitExp(lVal->exps[0]);
                 Intermediate *offsetCount = getOffsetCount(index);
 
-                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curFunc->tempSymbols.push_back(tmp);
+//                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                curFunc->tempSymbols.push_back(tmp);
 
+                auto tmp = curTable->getSymbol(valueSymbol->name, index, true);
+                if (tmp == nullptr) {
+                    auto realName = "ArraY_*|!123___" + name + "_" + index->printMiddleCode();
+                    tmp = new ValueSymbol(realName, 0, true);
+                    curTable->add(tmp);
+                    curFuncSymbolTable->add(tmp);
+                    updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                }
                 auto offset = new MiddleOffset(valueSymbol, offsetCount, tmp);
                 // 如果是在等式左边的话，直接返回了
                 if (isLeft) {
@@ -395,10 +432,21 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
         else if (symbolDim == 2) {
             // TODO: 返回地址 DONE
             if (realDim == 0) {
-                auto pointerName = "P_" + valueSymbol->name;
-                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+//                auto pointerName = "P_" + valueSymbol->name;
+//                auto pointer = new ValueSymbol(ValueType::POINTER, pointerName, new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+//                if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
+//                    pointer->setFParam();
+//                }
+                auto pointer = curTable->getSymbol(valueSymbol->name, symbolDim, realDim, 0, true);
+                if (pointer == nullptr) {
+                    auto realName = "PointeR*|!123___" + name + "_" + std::to_string(symbolDim) + "_" + std::to_string(realDim) + "_" + std::to_string(0);
+                    pointer = new ValueSymbol(ValueType::POINTER, realName, new Immediate(valueSymbol->getAddress()), valueSymbol->isLocal);
+                    curTable->add(pointer);
+                    curFuncSymbolTable->add(pointer);
+                    updateCurStackSize(dynamic_cast<ValueSymbol *>(pointer));
+                }
                 if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
-                    pointer->setFParam();
+                    dynamic_cast<ValueSymbol*>(pointer)->setFParam();
                 }
                 return pointer;
             }
@@ -406,20 +454,35 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
             // TODO: 可能会出现a[2][2], 传参使用a[x], a[1]的情况
             // !!! 参数数组的话，添加middleoffset
             else if (realDim == 1){
-                auto pointerName = "P_" + valueSymbol->name;
+//                auto pointerName = "P_" + valueSymbol->name;
                 auto index = visitExp(lVal->exps[0]);
 
-                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curFunc->tempSymbols.push_back(tmp);
+//                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                curFunc->tempSymbols.push_back(tmp);
+                auto tmp = curTable->getSymbol(valueSymbol->name, index, true);
+                if (tmp == nullptr) {
+                    auto realName = "ArraY_*|!123___" + name + "_" + index->printMiddleCode();
+                    tmp = new ValueSymbol(realName, 0, true);
+                    curTable->add(tmp);
+                    curFuncSymbolTable->add(tmp);
+                    updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                }
                 if (dynamic_cast<Immediate*>(index)){
+
                     auto offsetCode = new MiddleOffset(valueSymbol, new Immediate(dynamic_cast<Immediate*>(index)->value * valueSymbol->dims[1] * sizeof(int)), tmp);
-                    DEBUG_PRINT_DIRECT("!!!!!!!!!!!!");
-                    DEBUG_PRINT_DIRECT(dynamic_cast<Immediate*>(index)->value * valueSymbol->dims[1] * sizeof(int));
                     curBlock->add(offsetCode);
                     // tmp得到的是绝对地址
-                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+//                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+                    auto pointer = curTable->getSymbol(valueSymbol->name, symbolDim, realDim, index, true);
+                    if (pointer == nullptr) {
+                        auto realName = "PointeR*|!123___" + name + "_" + std::to_string(symbolDim) + "_" + std::to_string(realDim) + "_" + index->printMiddleCode();
+                        pointer = new ValueSymbol(true, ValueType::POINTER, realName, tmp, valueSymbol->isLocal);
+                        curTable->add(pointer);
+                        curFuncSymbolTable->add(pointer);
+                        updateCurStackSize(dynamic_cast<ValueSymbol *>(pointer));
+                    }
                     if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
-                        pointer->setFParam();
+                        dynamic_cast<ValueSymbol*>(pointer)->setFParam();
                     }
                     return pointer;
                 }
@@ -428,9 +491,17 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
                     auto offsetCode = new MiddleOffset(valueSymbol, tmp, tmp);
                     curBlock->add(mulCode);
                     curBlock->add(offsetCode);
-                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+//                    auto pointer = new ValueSymbol(true, ValueType::POINTER, pointerName, tmp, valueSymbol->isLocal);
+                    auto pointer = curTable->getSymbol(valueSymbol->name, symbolDim, realDim, index, true);
+                    if (pointer == nullptr) {
+                        auto realName = "PointeR*|!123___" + name + "_" + std::to_string(symbolDim) + "_" + std::to_string(realDim) + "_" + index->printMiddleCode();
+                        pointer = new ValueSymbol(true, ValueType::POINTER, realName, tmp, valueSymbol->isLocal);
+                        curTable->add(pointer);
+                        curFuncSymbolTable->add(pointer);
+                        updateCurStackSize(dynamic_cast<ValueSymbol *>(pointer));
+                    }
                     if (valueSymbol->valueType == ValueType::FUNCFPARAM) {
-                        pointer->setFParam();
+                        dynamic_cast<ValueSymbol*>(pointer)->setFParam();
                     }
                     return pointer;
                 }
@@ -519,8 +590,16 @@ Intermediate * Visitor::visitLVal(LVal *lVal, bool isLeft) {
 
                 auto offsetCount = getOffsetCount(offsetNum);
 
-                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                curFunc->tempSymbols.push_back(tmp);
+//                auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                curFunc->tempSymbols.push_back(tmp);
+                auto tmp = curTable->getSymbol(valueSymbol->name, offsetNum, true);
+                if (tmp == nullptr) {
+                    auto realName = "ArraY_*|!123___" + name + "_" + offsetNum->printMiddleCode();
+                    tmp = new ValueSymbol(realName, 0, true);
+                    curTable->add(tmp);
+                    curFuncSymbolTable->add(tmp);
+                    updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                }
                 auto offset = new MiddleOffset(valueSymbol, offsetCount, tmp);
                 // 等式左边的话直接返回
                 if (isLeft) {
@@ -721,8 +800,16 @@ void Visitor::visitVarDef(VarDef *varDef) {
                     for (auto exp : exps) {
                         auto sym = visitExp(exp);
                         DEBUG_PRINT_DIRECT("[visitVarDef] Immediate");
-                        auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curFunc->tempSymbols.push_back(tmp);
+//                        auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                        curFunc->tempSymbols.push_back(tmp);
+                        auto tmp = curTable->getSymbol(arraySymbol->name, offsetCount, true);
+                        if (tmp == nullptr) {
+                            auto realName = "ArraY_*|!123___" + name + "_" + std::to_string(offsetCount);
+                            tmp = new ValueSymbol(realName, 0, true);
+                            curTable->add(tmp);
+                            curFuncSymbolTable->add(tmp);
+                            updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                        }
                         auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                         auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
                         curBlock->add(offset);
@@ -775,8 +862,16 @@ void Visitor::visitVarDef(VarDef *varDef) {
                     int offsetCount = 0;
                     for (auto exp : exps) {
                         auto sym = visitExp(exp);
-                        auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
-                        curFunc->tempSymbols.push_back(tmp);
+//                        auto tmp = new ValueSymbol(getTempName(), ValueType::TEMP);
+//                        curFunc->tempSymbols.push_back(tmp);
+                        auto tmp = curTable->getSymbol(arraySymbol->name, offsetCount, true);
+                        if (tmp == nullptr) {
+                            auto realName = "ArraY_*|!123___" + name + "_" + std::to_string(offsetCount);
+                            tmp = new ValueSymbol(realName, 0, true);
+                            curTable->add(tmp);
+                            curFuncSymbolTable->add(tmp);
+                            updateCurStackSize(dynamic_cast<ValueSymbol *>(tmp));
+                        }
                         auto offset = new MiddleOffset(arraySymbol, new Immediate(offsetCount * sizeof(int)), tmp);
                         auto store = new MiddleMemoryOp(MiddleMemoryOp::STORE, sym, tmp);
                         curBlock->add(offset);
@@ -1214,7 +1309,8 @@ void Visitor::visitInputStmt(InputStmt *inputStmt) {
     auto tmp = visitLVal(inputStmt->lVal, true);
     auto input = new MiddleIO(MiddleIO::GETINT, dynamic_cast<ValueSymbol*>(tmp));
     // 如果tmp是TEMP的话，只有可能是通过数组形式赋值的
-    if (dynamic_cast<ValueSymbol*>(tmp)->valueType == TEMP) {
+    // 重构了下，现在通过名字来判断是否是通过数组形式赋值。
+    if (dynamic_cast<ValueSymbol*>(tmp)->name.rfind("ArraY_*|!123___", 0) == 0) {
         dynamic_cast<ValueSymbol*>(tmp)->setArrayElement();
     }
     curBlock->add(input);
@@ -1231,6 +1327,9 @@ void Visitor::visitContinueStmt(ContinueStmt *continueStmt) {
     // 跳转到loopLabels.size()-2下标的label
     auto label = loopBlocks[loopBlocks.size() - 2];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
+    curFunc->addBlock(curBlock);
+    auto newBlock = new BasicBlock(BasicBlock::BLOCK);
+    curBlock = newBlock;
 }
 
 void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
@@ -1243,6 +1342,9 @@ void Visitor::visitBreakStmt(BreakStmt *breakStmt) {
     }
     auto label = loopBlocks[loopBlocks.size() - 1];
     curBlock->add(new MiddleJump(MiddleJump::JUMP, label));
+    curFunc->addBlock(curBlock);
+    auto newBlock = new BasicBlock(BasicBlock::BLOCK);
+    curBlock = newBlock;
 }
 
 // forStmt1

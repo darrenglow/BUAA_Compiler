@@ -24,9 +24,9 @@ public:
     std::string type2str[12] = {"ADD", "SUB", "MUL", "DIV", "MOD", "EQ", "NE", "GT", "GE", "LT", "LE", "ERROR"};
     Type type;
 
-    Intermediate *src1;
-    Intermediate *src2;
-    Intermediate *target;
+    Intermediate *src1{};
+    Intermediate *src2{};
+    Intermediate *target{};
     MiddleBinaryOp(Type type_, Intermediate *src1_, Intermediate *src2_, Intermediate *target_)
             : type(type_), src1(src1_), src2(src2_), target(target_) {}
     Intermediate * getLeftIntermediate() override;
