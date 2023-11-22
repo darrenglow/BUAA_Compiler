@@ -11,7 +11,7 @@ public:
     std::string funcName;
     std::vector<Intermediate*> funcRParams;
     ValueSymbol *ret{};
-    explicit MiddleFuncCall(std::string &funcName_) : funcName(funcName_) {}
+    explicit MiddleFuncCall(std::string &funcName_) : MiddleCodeItem(MiddleCodeItem::MiddleFuncCall), funcName(funcName_) {}
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEFUNCCALL_H

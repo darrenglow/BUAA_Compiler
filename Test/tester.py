@@ -5,7 +5,7 @@ import time
 pwd = os.getcwd()
 
 target_dir = os.path.join(pwd, '.\\cmake-build-debug')
-test_dir = os.path.join(pwd, ".\\Test\\public")
+test_dir = os.path.join(pwd, ".\\Test\\2021")
 
 compile_path = os.path.join(target_dir, 'BUAA_Compiler.exe')
 mips_path    = os.path.join(target_dir, 'mips.txt')
@@ -31,7 +31,7 @@ for root, dirs, files in os.walk(test_dir):
     print('[test rank ' + rank + ']')
     num = int(len(files)/3)
     # num = 1
-    for i in range(44, num + 1):
+    for i in range(1, num + 1):
         print('testfile', i, ': ', end='')
     #
         # # 将测试文件拷贝到cmake-build-debug目录下，便于测试

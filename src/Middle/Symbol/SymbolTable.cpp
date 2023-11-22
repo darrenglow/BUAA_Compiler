@@ -59,7 +59,7 @@ Symbol * SymbolTable::getSymbol(const std::string &name, Intermediate* offset, b
 // int a[2][2]; func(a[1]);     PointeR*|!123___a_2_1_1
 // 主要目的就是保证在符号表中的名字能够唯一
 Symbol * SymbolTable::getSymbol(const std::string &name, int realDim, int useDim, int offset1, bool up) {
-    auto realName = "PointeR*|!123___" + name + "_" + std::to_string(realDim) + "_" + std::to_string(useDim) + "_" + std::to_string(offset1);
+    auto realName = "PointeR_*|!123___" + name + "_" + std::to_string(realDim) + "_" + std::to_string(useDim) + "_" + std::to_string(offset1);
     auto it = this->getSymbol(realName, up);
     if (it != nullptr) {
         return it;
@@ -68,7 +68,7 @@ Symbol * SymbolTable::getSymbol(const std::string &name, int realDim, int useDim
 }
 
 Symbol * SymbolTable::getSymbol(const std::string &name, int realDim, int useDim, Intermediate* offset1, bool up) {
-    auto realName = "PointeR*|!123___" + name + "_" + std::to_string(realDim) + "_" + std::to_string(useDim) + "_" + offset1->printMiddleCode();
+    auto realName = "PointeR_*|!123___" + name + "_" + std::to_string(realDim) + "_" + std::to_string(useDim) + "_" + offset1->printMiddleCode();
     auto it = this->getSymbol(realName, up);
     if (it != nullptr) {
         return it;

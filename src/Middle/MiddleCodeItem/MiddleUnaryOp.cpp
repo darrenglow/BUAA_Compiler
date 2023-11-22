@@ -12,10 +12,10 @@ std::ostream & MiddleUnaryOp::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * MiddleUnaryOp::getLeftIntermediate() {
+Intermediate * MiddleUnaryOp::_getRet() {
     return valueSymbol;
 }
 
-Intermediate * MiddleUnaryOp::getRightIntermediate1() {
+Intermediate * MiddleUnaryOp::_getSrc1() {
     return srcValueSymbol;
 }

@@ -47,19 +47,17 @@ public:
     void _calcDefFlow(Func *func);
 
     // 活跃变量分析
-    void positiveAnalysis();
+    void activeAnalysis();
 
-    void _positiveAnalysis(Func *func);
+    void _activeAnalysis(Func *func);
 
     void _calcDefAndUse(Func *func);
 
-    void _calcPositiveFlow(Func *func);
+    void _calcActiveFlow(Func *func);
 
     // 死代码删除
     void deleteDeadCode();
 
     void _deleteDeadCode(Func *func);
-
-    bool isLegalPrefix(std::string &name);
 };
 #endif //BUAA_COMPILER_DATAFLOW_H

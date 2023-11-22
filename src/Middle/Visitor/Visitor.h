@@ -21,6 +21,7 @@ public:
     int curBlockLevel = 0;
     BasicBlock *curBlock{};
     int curStackSize = 0;
+    int curCodeIndex = 0;
     static int tmpVarNumber;
     static SymbolTable * curFuncSymbolTable;
     Func *curFunc;

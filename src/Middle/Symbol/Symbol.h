@@ -109,7 +109,7 @@ public:
     bool isConst() const;
     int getDim() const;
     int getSize() const;
-    explicit NumSymbol(int value_, std::string name="", BasicType basicType=BasicType::INT) :
+    explicit NumSymbol(int value_, std::string name="number", BasicType basicType=BasicType::INT) :
         Symbol(name, basicType), value(value_) {}
 };
 

@@ -10,7 +10,7 @@ std::ostream & MiddleMemoryOp::output(std::ostream &os) const {
     os << sym2->printMiddleCode();
     return os;
 }
-Intermediate * MiddleMemoryOp::getLeftIntermediate() {
+Intermediate * MiddleMemoryOp::_getRet() {
     if (type == MiddleMemoryOp::STORE) {
         return sym2;
     }
@@ -19,7 +19,7 @@ Intermediate * MiddleMemoryOp::getLeftIntermediate() {
     }
 }
 
-Intermediate * MiddleMemoryOp::getRightIntermediate1() {
+Intermediate * MiddleMemoryOp::_getSrc1() {
     if (type == MiddleMemoryOp::STORE) {
         return sym1;
     }

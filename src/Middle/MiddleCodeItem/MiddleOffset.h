@@ -12,10 +12,10 @@ public:
     Intermediate *src;
     Intermediate *ret;
     MiddleOffset(Intermediate *src_, Intermediate *offset_, Intermediate *ret_) :
-            src(src_), offset(offset_), ret(ret_) {}
-    Intermediate * getLeftIntermediate() override;
-    Intermediate * getRightIntermediate1() override;
-    Intermediate * getRightIntermediate2() override;
+            MiddleCodeItem(MiddleCodeItem::MiddleOffset), src(src_), offset(offset_), ret(ret_) {}
+    Intermediate * _getRet() override;
+    Intermediate * _getSrc1() override;
+    Intermediate * _getSrc2() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEOFFSET_H

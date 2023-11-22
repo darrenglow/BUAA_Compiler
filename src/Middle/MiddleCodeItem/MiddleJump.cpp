@@ -16,7 +16,7 @@ std::ostream & MiddleJump::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * MiddleJump::getRightIntermediate1() {
+Intermediate * MiddleJump::_getSrc1() {
     if (type == MiddleJump::JUMP_EQZ)
         return src;
     return nullptr;

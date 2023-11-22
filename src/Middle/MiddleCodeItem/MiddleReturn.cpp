@@ -13,6 +13,6 @@ std::ostream & MiddleReturn::output(std::ostream &os) const {
 }
 
 
-Intermediate * MiddleReturn::getRightIntermediate1() {
+Intermediate * MiddleReturn::_getSrc1() {
     return target;
 }

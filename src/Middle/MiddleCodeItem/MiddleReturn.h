@@ -9,9 +9,9 @@
 class MiddleReturn : public MiddleCodeItem {
 public:
     Intermediate * target{};
-    MiddleReturn() = default;
-    explicit MiddleReturn(Intermediate* target_) : target(target_) {}
-    Intermediate * getRightIntermediate1() override;
+    MiddleReturn(): MiddleCodeItem(MiddleCodeItem::MiddleReturn) {} ;
+    explicit MiddleReturn(Intermediate* target_) : MiddleCodeItem(MiddleCodeItem::MiddleReturn), target(target_) {}
+    Intermediate * _getSrc1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLERETURN_H

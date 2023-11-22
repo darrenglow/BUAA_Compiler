@@ -25,10 +25,10 @@ public:
     // op 1 a
     // op a a
     MiddleUnaryOp(Type type_, Intermediate *valueSymbol_, Intermediate *srcValueSymbol_) :
-            type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_) {}
+            MiddleCodeItem(MiddleCodeItem::MiddleUnaryOp), type(type_), valueSymbol(valueSymbol_), srcValueSymbol(srcValueSymbol_) {}
 
-    Intermediate * getLeftIntermediate() override;
-    Intermediate * getRightIntermediate1() override;
+    Intermediate * _getRet() override;
+    Intermediate * _getSrc1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEUNARYOP_H

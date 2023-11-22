@@ -15,12 +15,12 @@ std::ostream & Func::output(std::ostream &os) const {
     }
     return os;
 }
-void Func::setFuncBlock(BasicBlock *basicBlock) {
+void Func::setFuncBlock(class BasicBlock *basicBlock) {
     block = basicBlock;
 }
 int Func::getSize() {
     return funcSymbolTable->getSize();
 }
-void Func::addBlock(BasicBlock *block) {
-    basicBlocks.push_back(block);
+void Func::addBlock(class BasicBlock *x) {
+    basicBlocks.push_back(x);
 }

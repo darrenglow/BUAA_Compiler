@@ -13,13 +13,13 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * MiddleDef::getLeftIntermediate() {
+Intermediate * MiddleDef::_getRet() {
     if (type == MiddleDef::END_ARRAY || type == MiddleDef::DEF_ARRAY) {
         return nullptr;
     }
     return valueSymbol;
 }
 
-Intermediate * MiddleDef::getRightIntermediate1() {
+Intermediate * MiddleDef::_getSrc1() {
     return srcValueSymbol;
 }

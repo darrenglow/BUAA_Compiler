@@ -9,9 +9,9 @@
 class PushParam : public MiddleCodeItem {
 public:
     Intermediate *param;
-    explicit PushParam(Intermediate *param_) : param(param_) {};
+    explicit PushParam(Intermediate *param_) : MiddleCodeItem(MiddleCodeItem::PushParam), param(param_) {};
     OVERRIDE_OUTPUT;
-    Intermediate * getRightIntermediate1() override;
+    Intermediate * _getSrc1() override;
 };
 
 #endif //BUAA_COMPILER_PUSHPARAM_H

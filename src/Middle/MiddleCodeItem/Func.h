@@ -16,22 +16,22 @@ public:
     };
 
     std::string funcName;
-    BasicBlock *block{};    // 这个block就只是作为函数跳转到的入口了
-    std::vector<BasicBlock*> basicBlocks;
+    class BasicBlock *block{};    // 这个block就只是作为函数跳转到的入口了
+    std::vector<class BasicBlock*> basicBlocks{};
     SymbolTable * funcSymbolTable = new SymbolTable();
     std::vector<ValueSymbol*> tempSymbols;  // 临时变量
-    Label *label;
+    class Label *label;
     Type type;
-    BasicBlock *root;   // 数据流分析中的起始
+    class BasicBlock *root{};   // 数据流分析中的起始
     bool hasReturn{};
-    explicit Func(Type type_, std::string &funcName_) : type(type_), funcName(funcName_) {
+    explicit Func(Type type_, std::string &funcName_) : MiddleCodeItem(MiddleCodeItem::Func), type(type_), funcName(funcName_) {
         std::string tmp = "Func_" + funcName;
-        label = new Label(tmp);
+        label = new class Label(tmp);
     }
 
-    void setFuncBlock(BasicBlock* block);
+    void setFuncBlock(class BasicBlock* block);
     int getSize();
-    void addBlock(BasicBlock* block);
+    void addBlock(class BasicBlock* block);
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_FUNC_H

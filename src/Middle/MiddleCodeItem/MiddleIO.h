@@ -17,9 +17,9 @@ public:
     std::string type2str[3] = {"GETINT", "PRINT_INT", "PRINT_STR"};
     Type type;
     Intermediate * target;
-    MiddleIO(Type type_, Intermediate *target_) : type(type_), target(target_) {}
-    Intermediate * getLeftIntermediate() override;
-    Intermediate * getRightIntermediate1() override;
+    MiddleIO(Type type_, Intermediate *target_) : MiddleCodeItem(MiddleCodeItem::MiddleIO), type(type_), target(target_) {}
+    Intermediate * _getRet() override;
+    Intermediate * _getSrc1() override;
     OVERRIDE_OUTPUT;
 };
 

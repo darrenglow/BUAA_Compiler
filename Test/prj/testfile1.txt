@@ -25,7 +25,7 @@ int plus(int a, int b){
 int plusplus(int arr[]){
     int ans = 0;
     int i = 1;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[i-1] + ans;
         i = i + 1;
     }
@@ -34,27 +34,27 @@ int plusplus(int arr[]){
 int plusplusplus(int arr[][5]){
     int ans = 0;
     int i = 1;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[0][i-1] + ans;
         i = i + 1;
     }
     i = 0;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[1][i-1] + ans;
         i = i + 1;
     }
     i = 0;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[2][i-1] + ans;
         i = i + 1;
     }
     i = 0;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[3][i-1] + ans;
         i = i + 1;
     }
     i = 0;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[4][i-1] + ans;
         i = i + 1;
     }
@@ -70,7 +70,7 @@ int superplus(int a , int b, int c){
 }
 void hellow_num(int a){
     int j = 0;
-    while(j<a){
+    for(; j<a ;){
         j = j + 1;
         printf("hellow");
     }

@@ -11,10 +11,10 @@ class Label : public MiddleCodeItem {
 public:
     static int count;
     std::string label;
-    Label() : label("LABEL_" + std::to_string(count)) {
+    Label() : MiddleCodeItem(MiddleCodeItem::Label), label("LABEL_" + std::to_string(count)) {
         count ++ ;
     }
-    explicit Label(std::string &label_) : label(label_) {}
+    explicit Label(std::string &label_) : MiddleCodeItem(MiddleCodeItem::Label), label(label_) {}
     OVERRIDE_OUTPUT;
 };
 

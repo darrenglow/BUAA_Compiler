@@ -30,6 +30,7 @@ int param32_rec(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8,
                        a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31,
                        a32, 0);
   }
+  return 0;
 }
 
 int param32_arr(int a1[], int a2[], int a3[], int a4[], int a5[], int a6[],

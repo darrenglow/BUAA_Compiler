@@ -15,13 +15,13 @@ void qsort(int a[], int l, int r) {
 	if (l < r) {
 		int i = l, j = r;
 		int mid = a[l];
-		while (i < j) {
-			while (i < j && a[j] >= mid) j = j - 1;
+		for(; i < j ;) {
+			for(; i < j && a[j] >= mid ;) j = j - 1;
 			if (i < j) {
 				a[i] = a[j];
 				i = i + 1;
 			}
-			while (i < j && a[i] <= mid) i = i + 1;
+			for(; i < j && a[i] <= mid ;) i = i + 1;
 			if (i < j) {
 				a[j] = a[i];
 				j = j - 1;
@@ -35,7 +35,7 @@ void qsort(int a[], int l, int r) {
 
 void prT() {
 	int i = 0;
-	while (i < M) {
+	for(; i < M ;) {
 		printf("%d\n",t[i]);
 		i = i + 1; 
 		if (i == M) {
@@ -48,9 +48,9 @@ void prT() {
 int sum4list2(int a[][2]) {
 	int ans = 0;
 	int i = 0;
-	while (i < 3) {
+	for(; i < 3 ;) {
 		int j = 0;
-		while (j < 2) {
+		for(; j < 2 ;) {
 			ans = ans + a[i][j];
 			j = j + 1;
 		}
@@ -70,13 +70,13 @@ int main() {
 	n = getint();
 	int i = 0;
 	int num[1009];
-	while (i < n) {
+	for(; i < n ;) {
 		num[i] = getint();
 		i = i + 1;
 	}
 	qsort(num, 0, n - 1);
 	i = 0;
-	while (i < n) {
+	for(; i < n ;) {
 		printf("%d\n", num[i]);
 		i = i + 1;
 	}
@@ -88,7 +88,7 @@ int main() {
 	printf("\n");
 	qsort(ts, 0, M - 1);
 	i = 0;
-	while (i < M) {
+	for(; i < M ;) {
 		printf("%d\n", ts[i]);
 		i = i + 1;
 		if (i == 8)	break; 

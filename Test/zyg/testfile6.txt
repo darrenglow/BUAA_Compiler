@@ -13,7 +13,7 @@ int main() {
 	else if (a < b)	printf("%d\n", b - a);
 	else printf("0\n");
 	int i = 0;
-	while (i < a) {
+	for(; i < a ;) {
 		printf("%d\n", i);
 		i = i + 1;
 		if (i == b){

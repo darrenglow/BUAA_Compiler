@@ -26,7 +26,7 @@ int getSign(int a){
 int plusplus(int arr[]){
     int ans = 0;
     int i = 1;
-    while(i<=5){
+    for(; i<=5 ;){
         ans = arr[i-1] + ans;
         i = i + 1;
     }
@@ -41,7 +41,7 @@ void superplus(int a , int b, int c){
 }
 void hellow_num(int a){
     int j = 0;
-    while(j<a){
+    for(; j<a ;){
         j = j + 1;
         printf("hellow");
     }
@@ -55,7 +55,7 @@ void spacereturn(){
 int main(){
     printf("20373080\n");
     int i = 1;
-    while(i <= 9){
+    for(; i <= 9 ;){
     	printf("%d\n",i);
     	i=i+1;
 	} 

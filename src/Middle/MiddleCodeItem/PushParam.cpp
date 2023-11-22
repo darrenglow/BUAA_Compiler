@@ -8,7 +8,7 @@ std::ostream & PushParam::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * PushParam::getRightIntermediate1() {
+Intermediate * PushParam::_getSrc1() {
     // 如果PushParam的是数组元素或者是指针，不纳入数据流的考虑范围内
 //    if (dynamic_cast<ValueSymbol *>(param) &&
 //        (dynamic_cast<ValueSymbol *>(param)->name.rfind("ArraY_*|!123___", 0) == 0 ||

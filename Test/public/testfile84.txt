@@ -12,6 +12,7 @@ int exgcd(int a,int b,int x[],int y[]) {
 		y[0] = (t - a / b * y[0]);
 		return r;
 	}
+	return 0;
 } 
 
 int main() {

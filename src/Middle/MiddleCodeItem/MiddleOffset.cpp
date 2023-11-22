@@ -10,18 +10,18 @@ std::ostream & MiddleOffset::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * MiddleOffset::getLeftIntermediate() {
+Intermediate * MiddleOffset::_getRet() {
     return ret;
 //    return nullptr;
 }
 
 
-Intermediate * MiddleOffset::getRightIntermediate1() {
+Intermediate * MiddleOffset::_getSrc1() {
     return offset;
 //    return nullptr;
 }
 
-Intermediate * MiddleOffset::getRightIntermediate2() {
+Intermediate * MiddleOffset::_getSrc2() {
     return src;
 //    return nullptr;
 }

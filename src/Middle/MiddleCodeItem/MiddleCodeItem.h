@@ -13,22 +13,33 @@
 #include "../Symbol/Symbol.h"
 #include "../Intermediate/Immediate.h"
 #include "../Symbol/SymbolTable.h"
+#include <set>
 
 class MiddleCodeItem {
 public:
+    enum Type {
+        BasicBlock, Func, Label, MiddleBinaryOp, MiddleDef, MiddleFuncCall, MiddleIO,
+        MiddleJump, MiddleMemoryOp, MiddleOffset, MiddleReturn, MiddleUnaryOp, PushParam
+    };
+    Type codeType {};
+
     MiddleCodeItem()=default;
+    explicit MiddleCodeItem(Type codeType_) : codeType(codeType_) {}
 
     std::vector<int> killSetIndex;
-
-    int index;
+    int index{};
 
     void setIndex(int x);
 
-    virtual std::ostream& output(std::ostream &os) const = 0;
+    virtual Intermediate* _getSrc1();
+    virtual Intermediate* _getSrc2();
+    virtual Intermediate* _getRet();
 
-    virtual Intermediate* getLeftIntermediate();
-    virtual Intermediate* getRightIntermediate1();
-    virtual Intermediate* getRightIntermediate2();
+    ValueSymbol *getDef();
+    std::set<ValueSymbol*> *getUse();
+    ValueSymbol *getGen();
+    bool isNotArrayOrPointerElement(const std::string& name);
+    virtual std::ostream& output(std::ostream &os) const = 0;
     friend std::ostream& operator<<(std::ostream& os, const MiddleCodeItem& obj);
 };
 

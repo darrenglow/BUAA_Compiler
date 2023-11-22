@@ -10,26 +10,26 @@
 void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
     // 有些block中存在两条连着的jump，只要有一个jump后面的语句都可以去掉了
     for (auto &basicBlock : basicBlocks) {
-        for (int i = 0; i < basicBlock->middleCodeItems.size(); i++) {
-            auto code = basicBlock->middleCodeItems[i];
+        for (auto it = basicBlock->middleCodeItems.begin(); it != basicBlock->middleCodeItems.end();) {
+            auto code = *it;
             if (dynamic_cast<MiddleJump *>(code)) {
                 if (dynamic_cast<MiddleJump *>(code)->type == MiddleJump::JUMP) {
                     // 删除后面的指令
-                    for (int j = i + 1; j < basicBlock->middleCodeItems.size(); j++) {
-                        basicBlock->middleCodeItems.erase(basicBlock->middleCodeItems.begin() + j);
-                    }
+                    auto nextIt = std::next(it);
+                    basicBlock->middleCodeItems.erase(nextIt, basicBlock->middleCodeItems.end());
                     break;
                 }
             }
+            ++it;
         }
     }
     // 删除基本块为空的
     for (int i = 0; i < basicBlocks.size(); i++) {
-        if (basicBlocks[i]->middleCodeItems.size() == 0) {
+        if (basicBlocks[i]->middleCodeItems.empty()) {
             // 将跳转到这个空基本块的其他基本块的target设置为i+1
-            for (int j = 0; j < basicBlocks.size(); j++) {
-                if (!basicBlocks[j]->middleCodeItems.empty()) {
-                    auto lastCode = basicBlocks[j]->middleCodeItems.back();
+            for (auto & basicBlock : basicBlocks) {
+                if (!basicBlock->middleCodeItems.empty()) {
+                    auto lastCode = *basicBlock->middleCodeItems.rbegin();
                     if (dynamic_cast<MiddleJump *>(lastCode)) {
                         auto target = dynamic_cast<MiddleJump *>(lastCode)->target;
                         if (target == basicBlocks[i]) {
@@ -44,14 +44,14 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
 
     // 跳转合并
     for (auto &basicBlock : basicBlocks) {
-        auto lastCodeItem = basicBlock->middleCodeItems.back();
+        auto lastCodeItem = *basicBlock->middleCodeItems.rbegin();
         if (dynamic_cast<MiddleJump *>(lastCodeItem)) {
             // 得到跳转到的基本块
             auto target = dynamic_cast<MiddleJump *>(lastCodeItem)->target;
 //             如果跳转到的基本块的只有一条语句且为jump
             auto nowTarget = target;
             while (target->middleCodeItems.size() == 1) {
-                auto code = target->middleCodeItems[0];
+                auto code = *target->middleCodeItems.begin();
                 if (dynamic_cast<MiddleJump *>(code) == nullptr) {
                     break;
                 }
@@ -65,7 +65,9 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
             dynamic_cast<MiddleJump *>(lastCodeItem)->target = target;
 
             if (basicBlock->middleCodeItems.size() >= 2) {
-                auto code2 = basicBlock->middleCodeItems[basicBlock->middleCodeItems.size() - 2];
+                auto it = basicBlock->middleCodeItems.rbegin();
+                --it;
+                auto code2 = *it;
                 if (dynamic_cast<MiddleJump *>(code2) &&
                     dynamic_cast<MiddleJump *>(code2)->type == MiddleJump::JUMP_EQZ) {
                     dynamic_cast<MiddleJump *>(code2)->anotherTarget = target;
@@ -74,14 +76,17 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
         }
 
         if (basicBlock->middleCodeItems.size() >= 2) {
-            lastCodeItem = basicBlock->middleCodeItems[basicBlock->middleCodeItems.size() - 2];
+            auto it = basicBlock->middleCodeItems.rbegin();
+            -- it;
+            lastCodeItem = *it;
+//            lastCodeItem = basicBlock->middleCodeItems[basicBlock->middleCodeItems.size() - 2];
             if (dynamic_cast<MiddleJump *>(lastCodeItem)) {
                 // 得到跳转到的基本块
                 auto target = dynamic_cast<MiddleJump *>(lastCodeItem)->target;
 
 //             如果跳转到的基本块的只有一条语句且为jump
                 while (target->middleCodeItems.size() == 1) {
-                    auto code = target->middleCodeItems[0];
+                    auto code = *target->middleCodeItems.begin();
                     if (dynamic_cast<MiddleJump *>(code) == nullptr) {
                         break;
                     }
@@ -95,21 +100,24 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
 
     // 删除block中jump_nez t1和jump t1连着的情况
     for (auto &basicBlock : basicBlocks) {
-        for (int i = 0; i < basicBlock->middleCodeItems.size(); i++) {
-            auto code = basicBlock->middleCodeItems[i];
+        for (auto it = basicBlock->middleCodeItems.begin(); it != basicBlock->middleCodeItems.end();) {
+            auto code = *it;
             if (dynamic_cast<MiddleJump *>(code)) {
                 if (dynamic_cast<MiddleJump *>(code)->type == MiddleJump::JUMP_EQZ) {
-                    auto code2 = basicBlock->middleCodeItems[i + 1];
+                    it ++ ;
+                    if (it == basicBlock->middleCodeItems.end())
+                        break;
+                    auto code2 = *it;
+                    it -- ;
                     if (dynamic_cast<MiddleJump *>(code2)->type == MiddleJump::JUMP) {
-                        std::cout << "ahahaahahaahahah@@@@@@@@@@@@@@@" << std::endl;
-                        std::cout << dynamic_cast<MiddleJump *>(code)->target->label->label << std::endl;
-                        std::cout << dynamic_cast<MiddleJump *>(code2)->target->label->label << std::endl;
                         if (dynamic_cast<MiddleJump *>(code)->target == dynamic_cast<MiddleJump *>(code2)->target) {
-                            basicBlock->middleCodeItems.erase(basicBlock->middleCodeItems.begin() + i);
+                            it = basicBlock->middleCodeItems.erase(it);
+                            continue;
                         }
                     }
                 }
             }
+            it ++ ;
         }
     }
 }
@@ -132,7 +140,8 @@ void DataFlow::buildGraph() {
                 q.pop();
                 continue;
             }
-            auto target1 = getTargetFromCode(t->middleCodeItems[t->middleCodeItems.size() - 1]);
+            auto it = t->middleCodeItems.rbegin();
+            auto target1 = getTargetFromCode(*it);
             if (target1 != nullptr) {
                 t->setNext(target1);
                 if (!hasVisited[target1]) {
@@ -141,7 +150,10 @@ void DataFlow::buildGraph() {
                 }
             }
             if (t->middleCodeItems.size() >= 2) {
-                auto target2 = getTargetFromCode(t->middleCodeItems[t->middleCodeItems.size() - 2]);
+                auto it2 = t->middleCodeItems.rbegin();
+                it2 ++ ;
+                auto target2 = getTargetFromCode(*it2);
+//                auto target2 = getTargetFromCode(t->middleCodeItems[t->middleCodeItems.size() - 2]);
                 if (target2 != nullptr) {
                     t->setNext(target2);
                     if (!hasVisited[target2]){
@@ -224,10 +236,8 @@ void DataFlow::_reachDefinition(Func *func) {
 
 // 遍历函数的所有中间代码，将<symbol, defs>对应起来
 void DataFlow::_initSymbolDefs(Func *func) {
-    int index = 0;
     for (auto& block : func->basicBlocks) {
         for (auto &code : block->middleCodeItems) {
-            code->setIndex(index);
 
             if (dynamic_cast<MiddleDef*>(code) && dynamic_cast<MiddleDef*>(code)->type == MiddleDef::DEF_VAR) {
                 auto symbol = dynamic_cast<MiddleDef*>(code)->valueSymbol;
@@ -236,8 +246,8 @@ void DataFlow::_initSymbolDefs(Func *func) {
                 if (it == symbolDefs.end()) {
                     symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                 }
-                symbolDefs[symbol]->add(code, index);
-                block->inDefSet->add(code, index);
+                symbolDefs[symbol]->add(code, code->index);
+                block->inDefSet->add(code, code->index);
             }
             else if (dynamic_cast<MiddleUnaryOp*>(code)) {
                 auto symbol = dynamic_cast<MiddleUnaryOp*>(code)->valueSymbol;
@@ -247,8 +257,8 @@ void DataFlow::_initSymbolDefs(Func *func) {
                     if (it == symbolDefs.end()) {
                         symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                     }
-                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
-                    block->inDefSet->add(code, index);
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
+                    block->inDefSet->add(code, code->index);
                 }
                 else {
                     std::cout << "ERROR in [_initSymbolDefs-MiddleUnaryOp] in Block " << block->basicBlockID << std::endl;
@@ -262,8 +272,8 @@ void DataFlow::_initSymbolDefs(Func *func) {
                     if (it == symbolDefs.end()) {
                         symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                     }
-                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
-                    block->inDefSet->add(code, index);
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
+                    block->inDefSet->add(code, code->index);
                 }
                 else {
                     std::cout << "ERROR in [_initSymbolDefs-MiddleOffset] in Block " << block->basicBlockID << std::endl;
@@ -278,8 +288,8 @@ void DataFlow::_initSymbolDefs(Func *func) {
                     if (it == symbolDefs.end()) {
                         symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                     }
-                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
-                    block->inDefSet->add(code, index);
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
+                    block->inDefSet->add(code, code->index);
                 }
                 else {
                     std::cout << "ERROR in [_initSymbolDefs-MiddleMemoryOp] in Block " << block->basicBlockID << std::endl;
@@ -293,8 +303,8 @@ void DataFlow::_initSymbolDefs(Func *func) {
                     if (it == symbolDefs.end()) {
                         symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                     }
-                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
-                    block->inDefSet->add(code, index);
+                    symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
+                    block->inDefSet->add(code, code->index);
                 }
                 else {
                     std::cout << "ERROR in [_initSymbolDefs-MiddleBinaryOp] in Block " << block->basicBlockID << std::endl;
@@ -309,16 +319,14 @@ void DataFlow::_initSymbolDefs(Func *func) {
                         if (it == symbolDefs.end()) {
                             symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                         }
-                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, index);
-                        block->inDefSet->add(code, index);
+                        symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
+                        block->inDefSet->add(code, code->index);
                     }
                     else {
                         std::cout << "ERROR in [_initSymbolDefs-MiddleIOOp] in Block " << block->basicBlockID << std::endl;
                     }
                 }
             }
-            index2code[index] = code;
-            index ++ ;
         }
     }
 }
@@ -338,7 +346,7 @@ void DataFlow::_calcKill(Func *func) {
 }
 
 void DataFlow::_calcKillSetPerCode(MiddleCodeItem *middleCodeItem, BasicBlock *basicBlock) {
-    auto symbol = middleCodeItem->getLeftIntermediate();
+    auto symbol = middleCodeItem->getGen();
     if (symbol == nullptr) {
         return;
     }
@@ -392,36 +400,36 @@ void DataFlow::_calcDefFlow(Func *func) {
     }
 }
 
-void DataFlow::positiveAnalysis() {
+void DataFlow::activeAnalysis() {
     for (auto func : funcs) {
-        _positiveAnalysis(func);
+        _activeAnalysis(func);
     }
 }
 
-void DataFlow::_positiveAnalysis(Func *func) {
+void DataFlow::_activeAnalysis(Func *func) {
     _calcDefAndUse(func);
-    _calcPositiveFlow(func);
+    _calcActiveFlow(func);
 #ifdef DEBUG_POSITIVE_ANALYSIS
     std::cout << "Start Func " << func->funcName << ": " << "\n";
     for (auto block : func->basicBlocks) {
         std::cout << "Block [" << block->basicBlockID << "]" << ":\n";
         std::cout << "UseSet: ";
-        for (auto valueSymbol : block->useSet->symbols) {
+        for (auto valueSymbol : *block->useSet) {
             std::cout << valueSymbol->name << " ";
         }
         std::cout << "\n";
         std::cout << "DefSet: ";
-        for (auto valueSymbol : block->defSet->symbols) {
+        for (auto valueSymbol : *block->defSet) {
             std::cout << valueSymbol->name << " ";
         }
         std::cout << "\n";
         std::cout << "inPositiveFlow: ";
-        for (auto valueSymbol : block->inPosFlow->symbols) {
+        for (auto valueSymbol : *block->inPosFlow) {
             std::cout << valueSymbol->name << " ";
         }
         std::cout << "\n";
         std::cout << "outPostiveFlow: ";
-        for (auto valueSymbol : block->outPosFlow->symbols) {
+        for (auto valueSymbol : *block->outPosFlow) {
             std::cout << valueSymbol->name << " ";
         }
         std::cout << "\n";
@@ -431,58 +439,35 @@ void DataFlow::_positiveAnalysis(Func *func) {
 
 void DataFlow::_calcDefAndUse(Func *func) {
     for (auto block : func->basicBlocks) {
-        for (auto it = block->middleCodeItems.begin(); it != block->middleCodeItems.end();) {
-            auto code = *it;
-            auto leftSymbol = code->getLeftIntermediate();
-
-            if (dynamic_cast<ValueSymbol*>(leftSymbol) && dynamic_cast<ValueSymbol*>(leftSymbol)->valueType != ARRAY && isLegalPrefix(
-                    dynamic_cast<ValueSymbol*>(leftSymbol)->name)) {
-                auto name = dynamic_cast<ValueSymbol*>(leftSymbol)->name;
-                if (!block->useSet->contain(dynamic_cast<ValueSymbol*>(leftSymbol))) {
-                    block->defSet->add(dynamic_cast<ValueSymbol*>(leftSymbol));
-                }
-            }
-
-            auto rightSymbol1 = code->getRightIntermediate1();
-            if (dynamic_cast<ValueSymbol*>(rightSymbol1) && dynamic_cast<ValueSymbol*>(rightSymbol1)->valueType != ARRAY && isLegalPrefix(
-                    dynamic_cast<ValueSymbol*>(rightSymbol1)->name)) {
-                if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol1))) {
-                    block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol1));
-                }
-            }
-            auto rightSymbol2 = code->getRightIntermediate2();
-            if (dynamic_cast<ValueSymbol*>(rightSymbol2) && dynamic_cast<ValueSymbol*>(rightSymbol2)->valueType != ARRAY && isLegalPrefix(
-                    dynamic_cast<ValueSymbol*>(rightSymbol2)->name)) {
-                if (!block->defSet->contain(dynamic_cast<ValueSymbol*>(rightSymbol2))) {
-                    block->useSet->add(dynamic_cast<ValueSymbol*>(rightSymbol2));
-                }
-            }
-            it ++ ;
-        }
+        block->calcDefAndUse();
     }
 }
 
-void DataFlow::_calcPositiveFlow(Func *func) {
+void DataFlow::_calcActiveFlow(Func *func) {
     bool flag = true;
     while (flag) {
         flag = false;
-        for (auto it = func->basicBlocks.rbegin(); it != func->basicBlocks.rend();) {
+        for (auto it = func->basicBlocks.rbegin(); it != func->basicBlocks.rend(); it ++ ) {
             auto block = *it;
+            auto out = new std::set<ValueSymbol*>();
             for (auto &follow : block->follows) {
-                block->outPosFlow->plus(follow->inPosFlow);
+                out->insert(follow->inPosFlow->begin(), follow->inPosFlow->end());
             }
-            auto prevInFlow = new PositiveSet(block->inPosFlow);
 
-            block->inPosFlow->plus(block->useSet);
-            auto tmpPosSet = new PositiveSet();
-            tmpPosSet->plus(block->outPosFlow);
-            tmpPosSet->sub(block->defSet);
-            block->inPosFlow->plus(tmpPosSet);
-
-            if (!block->inPosFlow->equalTo(prevInFlow)) {
+            auto in = new std::set<ValueSymbol*>();
+            in->insert(out->begin(), out->end());
+            for (auto symbol : *block->useSet) {
+                in->insert(symbol);
+            }
+            for (auto symbol : *block->defSet) {
+                in->erase(symbol);
+            }
+//            in->insert(block->useSet->begin(), block->useSet->end());
+            if (*block->inPosFlow != *in || *block->outPosFlow != *out) {
+                block->inPosFlow = in;
+                block->outPosFlow = out;
                 flag = true;
             }
-            it ++ ;
         }
     }
 }
@@ -495,59 +480,49 @@ void DataFlow::deleteDeadCode() {
 
 void DataFlow::_deleteDeadCode(Func *func) {
     for (auto block : func->basicBlocks) {
-        auto s = new PositiveSet(block->outPosFlow);
+        std::cout << "#########\n" << block->basicBlockID;
+        for (auto code : block->middleCodeItems) {
+            std::cout << code->index << " " << *code << std::endl;
+        }
+        std::cout << "#########\n";
+
+        auto s = new std::set<ValueSymbol*>(block->outPosFlow->begin(), block->outPosFlow->end());
         for (auto it = block->middleCodeItems.rbegin(); it != block->middleCodeItems.rend();) {
             auto code = *it;
+#ifdef DEBUG_DEADCODE
+            std::cout << "Now code is : " << *(*it) << std::endl;
+            std::cout << "{ ";
+            for (auto valueSymbol : *s) {
+                std::cout << valueSymbol->name << " ";
+            }
+            std::cout << " }\n";
+#endif
             // 如果有左值def
-            auto symbol = code->getLeftIntermediate();
-            if (dynamic_cast<ValueSymbol*>(symbol)) {
-                auto leftValueSymbol = dynamic_cast<ValueSymbol*>(symbol);
+            auto def = code->getDef();
+            if (def != nullptr) {
                 // 如果def在set中
-                if (s->contain(leftValueSymbol)) {
-                    s->remove(leftValueSymbol);
+                if (s->count(def)) {
 
-                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol1->name)) {
-                        s->add(rightValueSymbol1);
+                    s->erase(def);
+                    auto uses = code->getUse();
+                    for (auto use : *uses) {
+                        s->insert(use);
                     }
-                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol2->name)) {
-                        s->add(rightValueSymbol2);
-                    }
+                    it ++ ;
+                    continue;
                 }
                 // 如果是全局变量的话需要加入use
-                else if (!leftValueSymbol->isLocal) {
-                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol1->name)) {
-                        s->add(rightValueSymbol1);
+                else if (!def->isLocal) {
+                    auto uses = code->getUse();
+                    for (auto use : *uses) {
+                        s->insert(use);
                     }
-
-                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol2->name)) {
-                        s->add(rightValueSymbol2);
-                    }
-                }
-                // 如果是数组成员或是指针的话，也需要加入use
-                else if (leftValueSymbol->name.rfind("ArraY_*|!123___", 0) == 0 || leftValueSymbol->name.rfind("PointeR_*|!123___", 0) == 0) {
-                    auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                    if (rightValueSymbol1 && rightValueSymbol1->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol1->name)) {
-                        s->add(rightValueSymbol1);
-                    }
-
-                    auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                    if (rightValueSymbol2 && rightValueSymbol2->valueType != ARRAY &&
-                            isLegalPrefix(rightValueSymbol2->name)) {
-                        s->add(rightValueSymbol2);
-                    }
+                    it ++ ;
+                    continue;
                 }
                 // 如果不在set中，删除这个code
                 else {
-                    if (dynamic_cast<MiddleIO*>(code) && dynamic_cast<MiddleIO*>(code)->type == MiddleIO::GETINT) {
+                    if (dynamic_cast<class MiddleIO*>(code) != nullptr && dynamic_cast<class MiddleIO*>(code)->type == MiddleIO::GETINT) {
                         dynamic_cast<MiddleIO*>(code)->target = nullptr;
                         it ++ ;
                         continue;
@@ -565,38 +540,20 @@ void DataFlow::_deleteDeadCode(Func *func) {
 //                            continue;
 //                        }
 //                    }
-                    block->middleCodeItems.erase(std::next(it).base());
+                    block->middleCodeItems.erase(code);
                     // !!! 草，这个erase我以为会增加it的位置，调试才发现，他甚至还往回跑了！！！气死我了。。。这块的代码有点屎。
-                    it ++ ;
                     continue;
                 }
             }
             // 如果没有左值def
-            else if (symbol == nullptr) {
-                auto rightValueSymbol1 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate1());
-                if (rightValueSymbol1 && isLegalPrefix(rightValueSymbol1->name) && rightValueSymbol1->valueType != ARRAY) {
-                    std::cout << "no left value, right value is : " << rightValueSymbol1->name << std::endl;
-                    s->add(rightValueSymbol1);
+            else {
+                auto uses = code->getUse();
+                for (auto use : *uses) {
+                    s->insert(use);
                 }
-                auto rightValueSymbol2 = dynamic_cast<ValueSymbol*>(code->getRightIntermediate2());
-                if (rightValueSymbol2 && isLegalPrefix(rightValueSymbol2->name) && rightValueSymbol2->valueType != ARRAY) {
-                    std::cout << "no left value, right value is : " << rightValueSymbol2->name << std::endl;
-                    s->add(rightValueSymbol2);
-                }
+                it ++ ;
+                continue;
             }
-#ifdef DEBUG_DEADCODE
-            std::cout << "Now code is : " << *(*it) << std::endl;
-            std::cout << "{ ";
-            for (auto valueSymbol : s->symbols) {
-                std::cout << valueSymbol->name << " ";
-            }
-            std::cout << " }\n";
-#endif
-            it ++ ;
         }
     }
-}
-
-bool DataFlow::isLegalPrefix(std::string &name) {
-    return name.rfind("ArraY_*|!123___", 0) != 0 && name.rfind("PointeR_*|!123___", 0) != 0;
 }

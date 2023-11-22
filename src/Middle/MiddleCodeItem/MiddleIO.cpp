@@ -13,14 +13,14 @@ std::ostream & MiddleIO::output(std::ostream &os) const {
     return os;
 }
 
-Intermediate * MiddleIO::getLeftIntermediate() {
+Intermediate * MiddleIO::_getRet() {
     if (type == MiddleIO::GETINT){
         return target;
     }
     return nullptr;
 }
 
-Intermediate * MiddleIO::getRightIntermediate1() {
+Intermediate * MiddleIO::_getSrc1() {
     if (type == MiddleIO::PRINT_INT) {
         return target;
     }
