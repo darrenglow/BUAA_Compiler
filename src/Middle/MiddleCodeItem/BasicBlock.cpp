@@ -118,9 +118,6 @@ void BasicBlock::deleteDeadCode() {
 
 
 void BasicBlock::inBroadcast() {
-    if (this->basicBlockID == 28) {
-        int a = 1;
-    }
     bool change = true;
     std::vector<MiddleCodeItem*> defs;
     // 在迭代时记录，循环结束后更新。
@@ -146,7 +143,7 @@ void BasicBlock::inBroadcast() {
                 }
                 if (flag) {
                     // 如果这个def代码的值是常数赋值
-                    if (p->codeType == MiddleCodeItem::MiddleDef &&
+                    if ((p->codeType == MiddleCodeItem::MiddleDef || p->codeType == MiddleCodeItem::MiddleUnaryOp) &&
                         p->_getSrc1() != nullptr && dynamic_cast<Immediate *>(p->_getSrc1()) != nullptr) {
                         code->reset(symbol, p->_getSrc1());
                         // 特判一下code的类型，如果是pushparam的话，那就需要加入symboltoValue中。
@@ -156,6 +153,8 @@ void BasicBlock::inBroadcast() {
                         change = true;
 
                     }
+                    // 如果是变量的话
+//                    else if (p->codeType == MiddleCodeItem::MiddleDef || )
                 }
             }
             auto def = code->getDef();
