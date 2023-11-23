@@ -27,3 +27,21 @@ Intermediate * MiddleMemoryOp::_getSrc1() {
         return sym2;
     }
 }
+
+Intermediate **MiddleMemoryOp::getPointerToRet() {
+    if (type == MiddleMemoryOp::STORE) {
+        return &sym2;
+    }
+    else {
+        return &sym1;
+    }
+}
+
+Intermediate **MiddleMemoryOp::getPointerToSrc1() {
+    if (type == MiddleMemoryOp::STORE) {
+        return &sym1;
+    }
+    else {
+        return &sym2;
+    }
+}

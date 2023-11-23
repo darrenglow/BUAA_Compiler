@@ -16,3 +16,7 @@ std::ostream & MiddleReturn::output(std::ostream &os) const {
 Intermediate * MiddleReturn::_getSrc1() {
     return target;
 }
+
+Intermediate **MiddleReturn::getPointerToSrc1() {
+    return &target;
+}

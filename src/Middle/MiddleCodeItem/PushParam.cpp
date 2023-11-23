@@ -16,3 +16,7 @@ Intermediate * PushParam::_getSrc1() {
 //        return nullptr;
     return param;
 }
+
+Intermediate **PushParam::getPointerToSrc1() {
+    return &param;
+}

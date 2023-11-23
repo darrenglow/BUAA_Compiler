@@ -47,7 +47,9 @@ public:
 
     class Label * getLabel();
     void setNext(BasicBlock *next);
+    void deleteDeadCode();
+
+    void inBroadcast();
     OVERRIDE_OUTPUT;
 };
-
 #endif //BUAA_COMPILER_BASICBLOCK_H

@@ -27,6 +27,8 @@ public:
     Func *curFunc;
     std::vector<Func*> funcs;   // 在NoChangeValue中使用，遍历所有的中间代码
 
+    void optimizeMiddle();
+
     void updateCurStackSize(ValueSymbol* valueSymbol);
     std::vector<BasicBlock*> loopBlocks;    // 确定continue /break跳转位置
 

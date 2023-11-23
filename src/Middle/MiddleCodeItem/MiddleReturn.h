@@ -12,6 +12,7 @@ public:
     MiddleReturn(): MiddleCodeItem(MiddleCodeItem::MiddleReturn) {} ;
     explicit MiddleReturn(Intermediate* target_) : MiddleCodeItem(MiddleCodeItem::MiddleReturn), target(target_) {}
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLERETURN_H

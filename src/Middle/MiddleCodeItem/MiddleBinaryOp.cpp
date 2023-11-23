@@ -22,3 +22,15 @@ Intermediate * MiddleBinaryOp::_getSrc1() {
 Intermediate * MiddleBinaryOp::_getSrc2() {
     return src2;
 }
+
+Intermediate **MiddleBinaryOp::getPointerToRet() {
+    return &target;
+}
+
+Intermediate **MiddleBinaryOp::getPointerToSrc1() {
+    return &src1;
+}
+
+Intermediate **MiddleBinaryOp::getPointerToSrc2() {
+    return &src2;
+}

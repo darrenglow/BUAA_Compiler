@@ -12,6 +12,7 @@ public:
     explicit PushParam(Intermediate *param_) : MiddleCodeItem(MiddleCodeItem::PushParam), param(param_) {};
     OVERRIDE_OUTPUT;
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
 };
 
 #endif //BUAA_COMPILER_PUSHPARAM_H

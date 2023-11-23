@@ -25,3 +25,15 @@ Intermediate * MiddleOffset::_getSrc2() {
     return src;
 //    return nullptr;
 }
+
+Intermediate **MiddleOffset::getPointerToSrc1() {
+    return &offset;
+}
+
+Intermediate **MiddleOffset::getPointerToSrc2() {
+    return &src;
+}
+
+Intermediate **MiddleOffset::getPointerToRet() {
+    return &ret;
+}

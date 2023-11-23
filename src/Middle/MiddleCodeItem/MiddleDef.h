@@ -19,7 +19,7 @@ public:
     Type type;
     bool isInit{};
 
-    ValueSymbol *valueSymbol;
+    Intermediate *valueSymbol;
     Intermediate *srcValueSymbol{};   // src可能是立即数，可能是变量名
 
     MiddleDef(Type type_, ValueSymbol *valueSymbol_) : MiddleCodeItem(MiddleCodeItem::MiddleDef), type(type_), valueSymbol(valueSymbol_) {}
@@ -27,6 +27,8 @@ public:
 
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToRet() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEDEF_H

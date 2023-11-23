@@ -28,7 +28,7 @@ void NoChangeValue::replace(std::vector<Func *> &funcs) {
     for (auto func : funcs) {
         auto block = func->block;
         for (auto middleCode : block->middleCodeItems) {
-            if (dynamic_cast<MiddleFuncCall*>(middleCode)) {
+            if (dynamic_cast<MiddleFuncCall*>(middleCode) != nullptr) {
                 auto middleFuncCall = dynamic_cast<MiddleFuncCall*>(middleCode);
                 for (int i = 0; i < middleFuncCall->funcRParams.size(); i ++ ) {
                     if (exist(dynamic_cast<ValueSymbol*>(middleFuncCall->funcRParams[i]))) {
@@ -36,19 +36,19 @@ void NoChangeValue::replace(std::vector<Func *> &funcs) {
                     }
                 }
             }
-            else if (dynamic_cast<MiddleReturn*>(middleCode)) {
+            else if (dynamic_cast<MiddleReturn*>(middleCode) != nullptr) {
                 auto valueSymbol = dynamic_cast<MiddleReturn*>(middleCode)->target;
                 if (exist(dynamic_cast<ValueSymbol*>(valueSymbol))) {
                     dynamic_cast<MiddleReturn*>(middleCode)->target = new Immediate(noChangeValues[dynamic_cast<ValueSymbol*>(valueSymbol)]);
                 }
             }
-            else if (dynamic_cast<MiddleDef*>(middleCode)) {
+            else if (dynamic_cast<MiddleDef*>(middleCode) != nullptr) {
                 auto valueSymbol = dynamic_cast<MiddleDef*>(middleCode)->srcValueSymbol;
                 if (exist(dynamic_cast<ValueSymbol*>(valueSymbol))) {
                     dynamic_cast<MiddleDef*>(middleCode)->srcValueSymbol = new Immediate(noChangeValues[dynamic_cast<ValueSymbol*>(valueSymbol)]);
                 }
             }
-            else if (dynamic_cast<MiddleBinaryOp*>(middleCode)) {
+            else if (dynamic_cast<MiddleBinaryOp*>(middleCode) != nullptr) {
                 auto symbol1 = dynamic_cast<MiddleBinaryOp*>(middleCode)->src1;
                 auto symbol2 = dynamic_cast<MiddleBinaryOp*>(middleCode)->src2;
                 auto valueSymbol1 = dynamic_cast<ValueSymbol*>(symbol1);
@@ -60,14 +60,14 @@ void NoChangeValue::replace(std::vector<Func *> &funcs) {
                     dynamic_cast<MiddleBinaryOp*>(middleCode)->src2 = new Immediate(noChangeValues[valueSymbol2]);
                 }
             }
-            else if (dynamic_cast<MiddleOffset*>(middleCode)) {
+            else if (dynamic_cast<MiddleOffset*>(middleCode) != nullptr) {
                 auto sym = dynamic_cast<MiddleOffset*>(middleCode)->offset;
                 auto valueSymbol = dynamic_cast<ValueSymbol*>(sym);
                 if (exist(valueSymbol)) {
                     dynamic_cast<MiddleOffset*>(middleCode)->offset = new Immediate(noChangeValues[valueSymbol]);
                 }
             }
-            else if (dynamic_cast<MiddleMemoryOp*>(middleCode)) {
+            else if (dynamic_cast<MiddleMemoryOp*>(middleCode) != nullptr) {
                 auto sym1 = dynamic_cast<MiddleMemoryOp*>(middleCode)->sym1;
                 auto sym2 = dynamic_cast<MiddleMemoryOp*>(middleCode)->sym2;
                 auto val1 = dynamic_cast<ValueSymbol*>(sym1);
@@ -79,21 +79,21 @@ void NoChangeValue::replace(std::vector<Func *> &funcs) {
                     dynamic_cast<MiddleMemoryOp*>(middleCode)->sym2 = new Immediate(noChangeValues[val2]);
                 }
             }
-            else if (dynamic_cast<MiddleUnaryOp*>(middleCode)) {
+            else if (dynamic_cast<MiddleUnaryOp*>(middleCode) != nullptr) {
                 auto sym = dynamic_cast<MiddleUnaryOp*>(middleCode)->srcValueSymbol;
                 auto val = dynamic_cast<ValueSymbol*>(sym);
                 if (exist(val)) {
                     dynamic_cast<MiddleUnaryOp*>(middleCode)->srcValueSymbol = new Immediate(noChangeValues[val]);
                 }
             }
-            else if (dynamic_cast<MiddleJump*>(middleCode)) {
+            else if (dynamic_cast<MiddleJump*>(middleCode) != nullptr) {
                 auto sym = dynamic_cast<MiddleJump*>(middleCode)->src;
                 auto val = dynamic_cast<ValueSymbol*>(sym);
                 if (exist(val)) {
                     dynamic_cast<MiddleJump*>(middleCode)->src = new Immediate(noChangeValues[val]);
                 }
             }
-            else if (dynamic_cast<MiddleIO*>(middleCode)) {
+            else if (dynamic_cast<MiddleIO*>(middleCode) != nullptr) {
                 auto sym = dynamic_cast<MiddleIO*>(middleCode)->target;
                 auto val = dynamic_cast<ValueSymbol*>(sym);
                 if (exist(val)) {

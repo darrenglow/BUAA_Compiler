@@ -28,6 +28,7 @@ public:
             : MiddleCodeItem(MiddleCodeItem::MiddleJump), type(type_), src(src_), target(target_), anotherTarget(anotherTarget_) {}
 
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEJUMP_H

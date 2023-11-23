@@ -153,18 +153,18 @@ void MipsGenerator::translateMiddleDef(MiddleDef *middleDef) {
     if (src != nullptr) {
         if (dynamic_cast<Immediate*>(src) != nullptr) {
             auto rs = dynamic_cast<Immediate*>(src)->value;
-            auto rt = RegisterAlloc::getInstance().allocRegister(target, false);
+            auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
             this->add(new RI(RI::li, rt, rs));
         }
         else if (dynamic_cast<ValueSymbol*>(src)) {
             auto rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src));
-            auto rt = RegisterAlloc::getInstance().allocRegister(target, false);
+            auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
             this->add(new RR(RR::move, rt, rs));
         }
     }
 
     else if (src == nullptr) {
-        RegisterAlloc::getInstance().allocRegister(target,false);
+        RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol *>(target), false);
     }
 }
 

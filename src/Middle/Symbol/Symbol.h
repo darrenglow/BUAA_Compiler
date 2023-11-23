@@ -56,10 +56,10 @@ public:
     ValueType valueType;
     std::vector<int> dims;   //具体维度
     std::vector<int> initValues; //展开后的一维值
-    int initValue;
-    bool isConstValue;
-    int blockLevel;         //是在第几个嵌套括号中，全局变量就是0
-    int address;
+    int initValue{};
+    bool isConstValue{};
+    int blockLevel{};         //是在第几个嵌套括号中，全局变量就是0
+    int address{};
     bool isLocal=true;
     bool isFParam=false;    // 针对指针，判断其是否是函数的参数
     Intermediate *pAddress{}; // 针对传参时的指针，如果是二维数组的话a[2][2]，可能传入的是a[x]，这时其地址就要动态计算

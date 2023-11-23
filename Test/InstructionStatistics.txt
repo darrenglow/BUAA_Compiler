@@ -1,6 +1,0 @@
-DIV 	: 0
-MULT 	: 0
-JUMP/BRANCH 	: 0
-MEM 	: 0
-OTHER 	: 9
-FinalCycle : 9.0

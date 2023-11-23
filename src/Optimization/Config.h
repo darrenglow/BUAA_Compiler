@@ -1,6 +1,6 @@
 //// 中端优化
 #define CONSTANT_CALCULATE
-#define NO_CHANGE_VALUE
+//#define NO_CHANGE_VALUE
 //////// 删除无用的跳转语句
 #define MERGE_JUMP
 ////// 生成流图
@@ -16,3 +16,5 @@
 ////死代码删除
 #define DELETE_DEADCODE
 //#define DEBUG_DEADCODE
+// 基本块内传播
+#define IN_BROADCAST

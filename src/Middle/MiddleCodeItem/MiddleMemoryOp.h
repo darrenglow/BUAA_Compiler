@@ -19,6 +19,8 @@ public:
     MiddleMemoryOp(Type type_, Intermediate *sym1_, Intermediate *sym2_) : MiddleCodeItem(MiddleCodeItem::MiddleMemoryOp), type(type_), sym1(sym1_), sym2(sym2_) {}
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToRet() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEMEMORYOP_H

@@ -20,6 +20,8 @@ public:
     MiddleIO(Type type_, Intermediate *target_) : MiddleCodeItem(MiddleCodeItem::MiddleIO), type(type_), target(target_) {}
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToRet() override;
     OVERRIDE_OUTPUT;
 };
 

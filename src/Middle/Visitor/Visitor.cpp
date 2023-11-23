@@ -19,9 +19,7 @@
 SymbolTable* Visitor::curTable;
 SymbolTable* Visitor::curFuncSymbolTable;
 
-void Visitor::visit() {
-    auto compUnit = ast->root;
-    visitCompUnit(compUnit);
+void Visitor::optimizeMiddle() {
 #ifdef NO_CHANGE_VALUE
     // 翻译完所有中间代码后，将其中变量都没变的替换为值
     NoChangeValue::getInstance().replace(funcs);
@@ -36,14 +34,23 @@ void Visitor::visit() {
     dataFlow->buildGraph();
 #endif
 #ifdef REACH_DEFINITION
-   dataFlow->reachDefinition();
+    dataFlow->reachDefinition();
 #endif
 #ifdef POSITIVE_ANALYSIS
-   dataFlow->activeAnalysis();
+    dataFlow->activeAnalysis();
 #endif
 #ifdef DELETE_DEADCODE
     dataFlow->deleteDeadCode();
 #endif
+#ifdef IN_BROADCAST
+    dataFlow->inBroadcast();
+#endif
+}
+
+void Visitor::visit() {
+    auto compUnit = ast->root;
+    visitCompUnit(compUnit);
+    optimizeMiddle();
 }
 
 void Visitor::visitCompUnit(CompUnit *compUnit){

@@ -66,9 +66,9 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
 
             if (basicBlock->middleCodeItems.size() >= 2) {
                 auto it = basicBlock->middleCodeItems.rbegin();
-                --it;
+                ++ it;
                 auto code2 = *it;
-                if (dynamic_cast<MiddleJump *>(code2) &&
+                if (dynamic_cast<MiddleJump *>(code2) != nullptr&&
                     dynamic_cast<MiddleJump *>(code2)->type == MiddleJump::JUMP_EQZ) {
                     dynamic_cast<MiddleJump *>(code2)->anotherTarget = target;
                 }
@@ -77,7 +77,7 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
 
         if (basicBlock->middleCodeItems.size() >= 2) {
             auto it = basicBlock->middleCodeItems.rbegin();
-            -- it;
+            ++ it;
             lastCodeItem = *it;
 //            lastCodeItem = basicBlock->middleCodeItems[basicBlock->middleCodeItems.size() - 2];
             if (dynamic_cast<MiddleJump *>(lastCodeItem)) {
@@ -123,9 +123,16 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
 }
 
 void DataFlow::buildGraph() {
+    // init
+    hasVisited.clear();
     for (auto func : funcs) {
-        std::cout << "\n" << func->funcName << ": \n";
-
+        for (auto block : func->basicBlocks) {
+            block->prevs.clear();
+            block->follows.clear();
+        }
+    }
+    // 开始建图
+    for (auto func : funcs) {
         auto& basicBlocks = func->basicBlocks;
         while (!q.empty()) q.pop();
 
@@ -246,7 +253,7 @@ void DataFlow::_initSymbolDefs(Func *func) {
                 if (it == symbolDefs.end()) {
                     symbolDefs[dynamic_cast<ValueSymbol*>(symbol)] = new DefinitionSet();
                 }
-                symbolDefs[symbol]->add(code, code->index);
+                symbolDefs[dynamic_cast<ValueSymbol*>(symbol)]->add(code, code->index);
                 block->inDefSet->add(code, code->index);
             }
             else if (dynamic_cast<MiddleUnaryOp*>(code)) {
@@ -400,6 +407,8 @@ void DataFlow::_calcDefFlow(Func *func) {
     }
 }
 
+
+// 活跃变量分析
 void DataFlow::activeAnalysis() {
     for (auto func : funcs) {
         _activeAnalysis(func);
@@ -472,88 +481,55 @@ void DataFlow::_calcActiveFlow(Func *func) {
     }
 }
 
+// 死代码删除
 void DataFlow::deleteDeadCode() {
     for (auto func : funcs) {
+        bool change = _deleteDeadCode(func);
+        while (change) {
+            mergeJump(func->basicBlocks);
+            buildGraph();
+            _activeAnalysis(func);
+            change = _deleteDeadCode(func);
+        }
+    }
+}
+
+bool DataFlow::_deleteDeadCode(Func *func) {
+    auto codeSet = new std::set<MiddleCodeItem*>();
+    for (auto block : func->basicBlocks) {
+        for (auto code : block->middleCodeItems) {
+            codeSet->insert(code);
+        }
+    }
+
+    auto nowCodeSet = new std::set<MiddleCodeItem*>();
+    for (auto block : func->basicBlocks) {
+        block->deleteDeadCode();
+        for (auto code : block->middleCodeItems) {
+            nowCodeSet->insert(code);
+        }
+    }
+
+    // 如果不等说明发生了删除
+    return *codeSet != *nowCodeSet;
+}
+
+
+// ------------------基本块内常量传播-------------------------------
+// 块内的传播的话，_inBlockcast(func)得到的就会是全部常量完成的，然后进行死代码删除。
+void DataFlow::inBroadcast() {
+    for (auto func : funcs) {
+        _activeAnalysis(func);
+        _deleteDeadCode(func);
+        _inBroadcast(func);
         _deleteDeadCode(func);
     }
 }
 
-void DataFlow::_deleteDeadCode(Func *func) {
+// 得到的就是当前基本块的常量传播结果了
+void DataFlow::_inBroadcast(Func *func) {
     for (auto block : func->basicBlocks) {
-        std::cout << "#########\n" << block->basicBlockID;
-        for (auto code : block->middleCodeItems) {
-            std::cout << code->index << " " << *code << std::endl;
-        }
-        std::cout << "#########\n";
-
-        auto s = new std::set<ValueSymbol*>(block->outPosFlow->begin(), block->outPosFlow->end());
-        for (auto it = block->middleCodeItems.rbegin(); it != block->middleCodeItems.rend();) {
-            auto code = *it;
-#ifdef DEBUG_DEADCODE
-            std::cout << "Now code is : " << *(*it) << std::endl;
-            std::cout << "{ ";
-            for (auto valueSymbol : *s) {
-                std::cout << valueSymbol->name << " ";
-            }
-            std::cout << " }\n";
-#endif
-            // 如果有左值def
-            auto def = code->getDef();
-            if (def != nullptr) {
-                // 如果def在set中
-                if (s->count(def)) {
-
-                    s->erase(def);
-                    auto uses = code->getUse();
-                    for (auto use : *uses) {
-                        s->insert(use);
-                    }
-                    it ++ ;
-                    continue;
-                }
-                // 如果是全局变量的话需要加入use
-                else if (!def->isLocal) {
-                    auto uses = code->getUse();
-                    for (auto use : *uses) {
-                        s->insert(use);
-                    }
-                    it ++ ;
-                    continue;
-                }
-                // 如果不在set中，删除这个code
-                else {
-                    if (dynamic_cast<class MiddleIO*>(code) != nullptr && dynamic_cast<class MiddleIO*>(code)->type == MiddleIO::GETINT) {
-                        dynamic_cast<MiddleIO*>(code)->target = nullptr;
-                        it ++ ;
-                        continue;
-                    }
-                    // !!! 草，本来还想优化到让部分数组不store，但是有问题，比如a[i],不知道i的值。所以对于数组的定义，还是得全部加载。
-//                    if (dynamic_cast<MiddleMemoryOp*>(code) && dynamic_cast<MiddleMemoryOp*>(code)->type == MiddleMemoryOp::STORE) {
-//                        it ++ ;
-//                        continue;
-//                    }
-//                    if (dynamic_cast<MiddleOffset*>(code)) {
-//                        auto beforeIt = it - 1;
-//                        auto nextCode = *beforeIt;
-//                        if (dynamic_cast<MiddleMemoryOp*>(nextCode) && dynamic_cast<MiddleMemoryOp*>(nextCode)->type == MiddleMemoryOp::STORE) {
-//                            it ++ ;
-//                            continue;
-//                        }
-//                    }
-                    block->middleCodeItems.erase(code);
-                    // !!! 草，这个erase我以为会增加it的位置，调试才发现，他甚至还往回跑了！！！气死我了。。。这块的代码有点屎。
-                    continue;
-                }
-            }
-            // 如果没有左值def
-            else {
-                auto uses = code->getUse();
-                for (auto use : *uses) {
-                    s->insert(use);
-                }
-                it ++ ;
-                continue;
-            }
-        }
+        block->inBroadcast();
     }
 }
+

@@ -32,6 +32,11 @@ public:
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
     Intermediate * _getSrc2() override;
+
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToSrc2() override;
+    Intermediate** getPointerToRet() override;
+
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEBINARYOP_H

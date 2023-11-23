@@ -29,6 +29,8 @@ public:
 
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToRet() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEUNARYOP_H

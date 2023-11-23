@@ -19,3 +19,11 @@ Intermediate * MiddleUnaryOp::_getRet() {
 Intermediate * MiddleUnaryOp::_getSrc1() {
     return srcValueSymbol;
 }
+
+Intermediate **MiddleUnaryOp::getPointerToSrc1() {
+    return &srcValueSymbol;
+}
+
+Intermediate **MiddleUnaryOp::getPointerToRet() {
+    return &valueSymbol;
+}

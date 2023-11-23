@@ -9,7 +9,7 @@ std::ostream & MiddleDef::output(std::ostream &os) const {
     if (isInit && type == DEF_VAR && srcValueSymbol != nullptr) {
         os << srcValueSymbol->printMiddleCode() << " ";
     }
-    os << valueSymbol->name << "[0x" << std::hex << valueSymbol->getAddress() << "]";
+    os << dynamic_cast<ValueSymbol*>(valueSymbol)->name << "[0x" << std::hex << dynamic_cast<ValueSymbol*>(valueSymbol)->getAddress() << "]";
     return os;
 }
 
@@ -22,4 +22,12 @@ Intermediate * MiddleDef::_getRet() {
 
 Intermediate * MiddleDef::_getSrc1() {
     return srcValueSymbol;
+}
+
+Intermediate **MiddleDef::getPointerToRet() {
+    return &valueSymbol;
+}
+
+Intermediate **MiddleDef::getPointerToSrc1() {
+    return &srcValueSymbol;
 }

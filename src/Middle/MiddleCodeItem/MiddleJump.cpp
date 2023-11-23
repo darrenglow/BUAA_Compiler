@@ -21,3 +21,10 @@ Intermediate * MiddleJump::_getSrc1() {
         return src;
     return nullptr;
 }
+
+
+Intermediate **MiddleJump::getPointerToSrc1() {
+    if (type == MiddleJump::JUMP_EQZ)
+        return &src;
+    return nullptr;
+}

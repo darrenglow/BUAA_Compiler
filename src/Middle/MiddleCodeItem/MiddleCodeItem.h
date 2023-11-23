@@ -41,6 +41,18 @@ public:
     bool isNotArrayOrPointerElement(const std::string& name);
     virtual std::ostream& output(std::ostream &os) const = 0;
     friend std::ostream& operator<<(std::ostream& os, const MiddleCodeItem& obj);
+
+    virtual Intermediate** getPointerToSrc1();
+    virtual Intermediate** getPointerToSrc2();
+    virtual Intermediate** getPointerToRet();
+
+    void reset(Intermediate *prev, Intermediate *now);
+    void setCodeType(Type codeType_);
+    void setSrc1(Intermediate* src1_);
+    void setSrc2(Intermediate* src2_);
+    void setRet(Intermediate* ret_);
+    void clearSrc1();
+    void clearSrc2();
 };
 
 struct CompareMiddleCodeItem {

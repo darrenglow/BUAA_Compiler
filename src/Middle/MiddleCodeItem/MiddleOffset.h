@@ -16,6 +16,9 @@ public:
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;
     Intermediate * _getSrc2() override;
+    Intermediate** getPointerToSrc1() override;
+    Intermediate** getPointerToRet() override;
+    Intermediate** getPointerToSrc2() override;
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_MIDDLEOFFSET_H

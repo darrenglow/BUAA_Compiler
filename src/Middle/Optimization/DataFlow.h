@@ -58,6 +58,11 @@ public:
     // 死代码删除
     void deleteDeadCode();
 
-    void _deleteDeadCode(Func *func);
+    bool _deleteDeadCode(Func *func);
+
+    // 基本块内常量传播
+    void inBroadcast();
+
+    void _inBroadcast(Func *func);
 };
 #endif //BUAA_COMPILER_DATAFLOW_H

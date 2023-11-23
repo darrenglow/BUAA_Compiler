@@ -83,3 +83,57 @@ ValueSymbol * MiddleCodeItem::getGen() {
 bool MiddleCodeItem::isNotArrayOrPointerElement(const std::string& name) {
     return name.rfind("ArraY_*$+|!123___", 0) != 0 && name.rfind("PointeR_*$+|!123___", 0) != 0;
 }
+
+Intermediate **MiddleCodeItem::getPointerToRet() {
+    return nullptr;
+}
+
+Intermediate **MiddleCodeItem::getPointerToSrc1() {
+    return nullptr;
+}
+
+Intermediate **MiddleCodeItem::getPointerToSrc2() {
+    return nullptr;
+}
+
+void MiddleCodeItem::setCodeType(MiddleCodeItem::Type codeType_) {
+    this->codeType = codeType_;
+}
+
+void MiddleCodeItem::setRet(Intermediate *ret_) {
+    auto pointerToRet = getPointerToRet();
+    *pointerToRet = ret_;
+}
+
+void MiddleCodeItem::setSrc1(Intermediate *src1_) {
+    auto pointerToSrc1 = getPointerToSrc1();
+    *pointerToSrc1 = src1_;
+}
+
+void MiddleCodeItem::setSrc2(Intermediate *src2_) {
+    auto pointerToSrc2 = getPointerToSrc2();
+    *pointerToSrc2 = src2_;
+}
+
+void MiddleCodeItem::clearSrc1() {
+    auto p = getPointerToSrc1();
+    *p = nullptr;
+}
+
+void MiddleCodeItem::clearSrc2() {
+    auto p = getPointerToSrc2();
+    *p = nullptr;
+}
+
+void MiddleCodeItem::reset(Intermediate *prev, Intermediate *now) {
+    auto prevSrc1 = _getSrc1();
+    if (prevSrc1 == prev) {
+        auto pointerToSrc1 = getPointerToSrc1();
+        *pointerToSrc1 = now;
+    }
+    auto prevSrc2 = _getSrc2();
+    if (prevSrc2 == prev) {
+        auto pointerToSrc2 = getPointerToSrc2();
+        *pointerToSrc2 = now;
+    }
+}

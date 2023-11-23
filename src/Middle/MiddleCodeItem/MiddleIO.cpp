@@ -26,3 +26,17 @@ Intermediate * MiddleIO::_getSrc1() {
     }
     return nullptr;
 }
+
+Intermediate **MiddleIO::getPointerToRet() {
+    if (type == MiddleIO::GETINT) {
+        return &target;
+    }
+    return nullptr;
+}
+
+Intermediate **MiddleIO::getPointerToSrc1() {
+    if (type == MiddleIO::PRINT_INT) {
+        return &target;
+    }
+    return nullptr;
+}
