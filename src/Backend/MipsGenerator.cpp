@@ -11,6 +11,8 @@
 #include "MipsGenerator.h"
 #include "../Middle/MiddleCode.h"
 #include "../Middle/MiddleCodeItem/MiddleCodeItem.h"
+#include "./Optimization/ColorAllocator.h"
+
 void MipsGenerator::add(Instruction* mipsCode) {
     mips.push_back(mipsCode);
 }
@@ -79,6 +81,10 @@ void MipsGenerator::translateFuncs(const std::vector<Func *>& funcs) {
 
 void MipsGenerator::translateFunc(Func *func) {
     currentFunc = func;
+
+//    auto allocator = new ColorAllocator(func);
+//    allocator->allocate();
+
     auto code = new Notation("\n# ===============" +func->funcName + "=================");
     this->add(code);
     this->add(new MipsLabel(func->label));

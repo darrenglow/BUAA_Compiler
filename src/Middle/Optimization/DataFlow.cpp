@@ -465,13 +465,12 @@ void DataFlow::_calcActiveFlow(Func *func) {
 
             auto in = new std::set<ValueSymbol*>();
             in->insert(out->begin(), out->end());
-            for (auto symbol : *block->useSet) {
-                in->insert(symbol);
-            }
             for (auto symbol : *block->defSet) {
                 in->erase(symbol);
             }
-//            in->insert(block->useSet->begin(), block->useSet->end());
+            for (auto symbol : *block->useSet) {
+                in->insert(symbol);
+            }
             if (*block->inPosFlow != *in || *block->outPosFlow != *out) {
                 block->inPosFlow = in;
                 block->outPosFlow = out;

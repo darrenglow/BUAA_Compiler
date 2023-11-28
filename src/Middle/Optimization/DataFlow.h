@@ -10,9 +10,15 @@
 
 #include "../MiddleCodeItem/Middle.h"
 #include "DefinitionSet.h"
+#include "../../Backend/Optimization/ColorAllocator.h"
+#include "../../Backend/MipsGenerator.h"
 
 class DataFlow{
 public:
+    static DataFlow& getInstance() {
+        static DataFlow instance;
+        return instance;
+    }
     std::vector<Func*> funcs;
     BasicBlock *root{};
     std::queue<BasicBlock*> q;  // 每个func时，bfs遍历所有的block
@@ -20,7 +26,6 @@ public:
     std::unordered_map<ValueSymbol*, DefinitionSet*> symbolDefs;
     std::unordered_map<int, MiddleCodeItem*> index2code;
 
-    DataFlow()=default;
     explicit DataFlow(std::vector<Func*> &funcs_) : funcs(funcs_) {
 
     }
@@ -53,7 +58,7 @@ public:
 
     void _calcDefAndUse(Func *func);
 
-    void _calcActiveFlow(Func *func);
+    static void _calcActiveFlow(Func *func);
 
     // 死代码删除
     void deleteDeadCode();
@@ -64,5 +69,9 @@ public:
     void inBroadcast();
 
     void _inBroadcast(Func *func);
+
+private:
+    DataFlow()=default;
+    ~DataFlow()=default;
 };
 #endif //BUAA_COMPILER_DATAFLOW_H

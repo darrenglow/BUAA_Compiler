@@ -12,9 +12,9 @@
 ////#define DEBUG_REACH_DEFINITION
 ////// 活跃变量分析
 #define POSITIVE_ANALYSIS
-//#define DEBUG_POSITIVE_ANALYSIS
+#define DEBUG_POSITIVE_ANALYSIS
 ////死代码删除
 #define DELETE_DEADCODE
 //#define DEBUG_DEADCODE
 // 基本块内传播
-#define IN_BROADCAST
+//#define IN_BROADCAST

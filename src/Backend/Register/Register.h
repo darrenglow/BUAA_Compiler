@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 enum RegType {
     $zero, $at, // 0-1
@@ -22,10 +23,14 @@ enum RegType {
     $ra, //31
     none
 };
+
+
+
 class Register {
 public:
     static std::string type2str[33];
     static int registerValues[33];
+    static std::set<RegType> globalRegisters;
 };
 
 #endif //BUAA_COMPILER_REGISTER_H

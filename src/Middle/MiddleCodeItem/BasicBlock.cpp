@@ -4,6 +4,7 @@
 #include "Middle.h"
 #include "BasicBlock.h"
 #include <set>
+#include "../../Optimization/Config.h"
 #include <unordered_map>
 
 // BasicBlock
@@ -31,23 +32,36 @@ void BasicBlock::calcDefAndUse() {
     this->defSet->clear();
     this->useSet->clear();
     for (auto code : this->middleCodeItems) {
-        auto def = code->getDef();
-        if (def != nullptr) {
-            auto name = def->name;
-            if (!this->useSet->count(def)) {
-                this->defSet->insert(def);
-            }
-        }
+        ValueSymbol* toInsertDef = nullptr;
+        auto toInsertUses = new std::vector<ValueSymbol*>();
         auto uses = code->getUse();
         if (uses != nullptr) {
             for (auto use : *uses) {
                 if (use != nullptr) {
                     if (!this->defSet->count(use)) {
-                        this->useSet->insert(use);
+//                        toInsertUses->push_back(use);
+                        useSet->insert(use);
                     }
                 }
             }
         }
+        auto def = code->getDef();
+        if (def != nullptr) {
+            auto name = def->name;
+            if (!this->useSet->count(def)) {
+//                toInsertDef = def;
+                defSet->insert(def);
+            }
+        }
+
+//        if (toInsertDef != nullptr) {
+//            defSet->insert(toInsertDef);
+//        }
+//        if (!toInsertUses->empty()) {
+//            for (auto use : *toInsertUses) {
+//                useSet->insert(use);
+//            }
+//        }
     }
 }
 
@@ -143,7 +157,7 @@ void BasicBlock::inBroadcast() {
                 }
                 if (flag) {
                     // 如果这个def代码的值是常数赋值
-                    if ((p->codeType == MiddleCodeItem::MiddleDef || p->codeType == MiddleCodeItem::MiddleUnaryOp) &&
+                    if ((p->codeType == MiddleCodeItem::MiddleDef) &&
                         p->_getSrc1() != nullptr && dynamic_cast<Immediate *>(p->_getSrc1()) != nullptr) {
                         code->reset(symbol, p->_getSrc1());
                         // 特判一下code的类型，如果是pushparam的话，那就需要加入symboltoValue中。
@@ -151,13 +165,59 @@ void BasicBlock::inBroadcast() {
                             symbolToValueList->push_back({{code, symbol}, dynamic_cast<Immediate*>(p->_getSrc1())->value});
                         }
                         change = true;
-
                     }
-                    // 如果是变量的话
-//                    else if (p->codeType == MiddleCodeItem::MiddleDef || )
+                    // 如果这个def的代码定义的是变量的话, int a = b；需要从这个代码向后看，看b是否被重新定义了。
+                    else if (p->codeType == MiddleCodeItem::MiddleDef && p->_getSrc1() != nullptr
+                            && dynamic_cast<ValueSymbol*>(p->_getSrc1()) != nullptr && dynamic_cast<ValueSymbol*>(p->_getSrc1())->isLocal && symbol != p->_getSrc1()) {
+                        bool flag2 = true;
+                        auto it = middleCodeItems.find(p);
+                        it ++ ;
+                        for (; it != middleCodeItems.end(); it ++ ) {
+                            auto q = *it;
+                            if (q->getDef() != nullptr && q->getDef() == p->_getSrc1()) {
+                                flag2 = false;
+                                break;
+                            }
+                        }
+                        if (flag2) {
+                            code->reset(symbol, p->_getSrc1());
+                            // 特判一下code的类型，如果是pushparam的话，需要改变后面的funcCall
+                            if (dynamic_cast<class PushParam*>(code) != nullptr) {
+                                auto it2 = middleCodeItems.find(code);
+                                auto funcCall = *it2;
+                                while (dynamic_cast<class MiddleFuncCall*>(funcCall) == nullptr) {
+                                    it2 ++ ;
+                                    funcCall = *it2;
+                                }
+                                auto &rParams = dynamic_cast<class MiddleFuncCall*>(funcCall)->funcRParams;
+                                auto it3 = rParams.begin();
+                                for (it3 = rParams.begin(); it3 != rParams.end(); it3 ++ ) {
+                                    if (dynamic_cast<ValueSymbol*>(*it3) == symbol) {
+                                        break;
+                                    }
+                                }
+                                it3 = rParams.erase(it3);
+                                rParams.insert(it3, p->_getSrc1());
+                            }
+                        }
+                    }
                 }
             }
             auto def = code->getDef();
+            // 处理unaryOp
+            if (code->codeType == MiddleCodeItem::MiddleUnaryOp && dynamic_cast<Immediate*>(code->_getSrc1()) != nullptr) {
+                int src1 = dynamic_cast<Immediate*>(code->_getSrc1())->value;
+                int res = 0;
+                auto op = dynamic_cast<class MiddleUnaryOp*>(code)->type;
+                switch (op) {
+                    case MiddleUnaryOp::NOT: res = !src1; break;
+                    case MiddleUnaryOp::ASSIGN: res = src1; break;
+                    case MiddleUnaryOp::POSITIVE: res = src1; break;
+                    case MiddleUnaryOp::NEGATIVE: res = -src1; break;
+                    default: break;
+                }
+                symbolToValueList->push_back({{code, def}, res});
+            }
             if (dynamic_cast<Immediate *>(code->_getSrc1()) != nullptr &&
                 dynamic_cast<Immediate *>(code->_getSrc2()) != nullptr) {
                 int src1 = dynamic_cast<Immediate *>(code->_getSrc1())->value;
@@ -239,4 +299,44 @@ void BasicBlock::inBroadcast() {
             }
         }
     }
+}
+
+
+std::vector<std::set<ValueSymbol*>> *BasicBlock::calcCodeActive() {
+    auto groups = new std::vector<std::set<ValueSymbol*>>();
+
+    auto out = std::set<ValueSymbol*>();
+    auto in = std::set<ValueSymbol*>();
+
+    for (auto it = middleCodeItems.rbegin(); it != middleCodeItems.rend(); it ++ ) {
+        // 每个code的冲突集合
+        auto codeConflictGroup = new std::set<ValueSymbol*>();
+        auto code = *it;
+        // 最后一个代码，和该block的out是一样的
+        if (it == middleCodeItems.rbegin()) {
+            for (auto symbol : *this->inPosFlow) {
+                out.insert(symbol);
+            }
+        }
+        // 如果不是最后一行代码，那就是其下一行代码的in
+        else {
+            for (auto symbol : in) {
+                out.insert(symbol);
+            }
+        }
+        // 计算该行代码的in
+        for (auto symbol : out) {
+            in.insert(symbol);
+        }
+        in.erase(code->getDef());
+        for (auto use : *code->getUse()) {
+            in.insert(use);
+        }
+        // 将out填入conflictGroup中
+        for (auto symbol : out) {
+            codeConflictGroup->insert(symbol);
+        }
+        groups->push_back(*codeConflictGroup);
+    }
+    return groups;
 }
