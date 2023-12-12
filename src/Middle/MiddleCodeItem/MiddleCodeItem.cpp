@@ -27,15 +27,15 @@ void MiddleCodeItem::setIndex(int x) {
 }
 
 ValueSymbol * MiddleCodeItem::getDef() {
-    // 定义的话，只考虑二元计算、一元计算、定义、输入，LOAD中的变量
+    // 定义的话，只考虑二元计算、一元计算、定义、输入，LOAD中的变量，OFFSET
     if (this == nullptr) return nullptr;
     if (this->codeType == MiddleBinaryOp || this->codeType == MiddleUnaryOp
         || (this->codeType == MiddleCodeItem::MiddleDef && dynamic_cast<class MiddleDef*>(this)->type == MiddleDef::DEF_VAR)
         || (this->codeType == MiddleIO && dynamic_cast<class MiddleIO*>(this)->type == MiddleIO::GETINT)
-        || (this->codeType == MiddleMemoryOp && dynamic_cast<class MiddleMemoryOp*>(this)->type == MiddleMemoryOp::LOAD)) {
+        || (this->codeType == MiddleMemoryOp && dynamic_cast<class MiddleMemoryOp*>(this)->type == MiddleMemoryOp::LOAD)
+        || (this->codeType == MiddleOffset)) {
         auto ret = this->_getRet();
-        if (dynamic_cast<ValueSymbol*>(ret) && dynamic_cast<ValueSymbol*>(ret)->getDim() == 0 &&
-                isNotArrayOrPointerElement(dynamic_cast<ValueSymbol*>(ret)->name))
+        if (dynamic_cast<ValueSymbol*>(ret) && dynamic_cast<ValueSymbol*>(ret)->getDim() == 0)
             return dynamic_cast<ValueSymbol*>(ret);
     }
     return nullptr;
@@ -52,16 +52,22 @@ std::set<ValueSymbol *>* MiddleCodeItem::getUse() {
         || (this->codeType == MiddleJump && dynamic_cast<class MiddleJump*>(this)->type == MiddleJump::JUMP_EQZ)
         || this->codeType == PushParam
         || this->codeType == MiddleOffset
-        || (this->codeType == MiddleMemoryOp && dynamic_cast<class MiddleMemoryOp*>(this)->type == MiddleMemoryOp::STORE)
+        || (this->codeType == MiddleMemoryOp)
         || (this->codeType == MiddleReturn)) {
         auto src1 = _getSrc1();
-        if (dynamic_cast<ValueSymbol*>(src1) != nullptr && dynamic_cast<ValueSymbol*>(src1)->getDim() == 0
-            && isNotArrayOrPointerElement(dynamic_cast<ValueSymbol*>(src1)->name)) {
+//        if (dynamic_cast<ValueSymbol*>(src1) != nullptr && dynamic_cast<ValueSymbol*>(src1)->getDim() == 0
+//            && isNotArrayOrPointerElement(dynamic_cast<ValueSymbol*>(src1)->name)) {
+//            set->insert(dynamic_cast<ValueSymbol*>(src1));
+//        }
+        if (dynamic_cast<ValueSymbol*>(src1) != nullptr) {
             set->insert(dynamic_cast<ValueSymbol*>(src1));
         }
         auto src2 = _getSrc2();
-        if (dynamic_cast<ValueSymbol*>(src2) != nullptr && dynamic_cast<ValueSymbol*>(src2)->getDim() == 0
-            && isNotArrayOrPointerElement(dynamic_cast<ValueSymbol*>(src2)->name)) {
+//        if (dynamic_cast<ValueSymbol*>(src2) != nullptr && dynamic_cast<ValueSymbol*>(src2)->getDim() == 0
+//            && isNotArrayOrPointerElement(dynamic_cast<ValueSymbol*>(src2)->name)) {
+//            set->insert(dynamic_cast<ValueSymbol*>(src2));
+//        }
+        if (dynamic_cast<ValueSymbol*>(src2) != nullptr) {
             set->insert(dynamic_cast<ValueSymbol*>(src2));
         }
     }
@@ -136,4 +142,8 @@ void MiddleCodeItem::reset(Intermediate *prev, Intermediate *now) {
         auto pointerToSrc2 = getPointerToSrc2();
         *pointerToSrc2 = now;
     }
+}
+
+void MiddleCodeItem::setInFuncIndex(int x) {
+    inFuncIndex = x;
 }

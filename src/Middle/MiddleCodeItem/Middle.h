@@ -6,7 +6,7 @@
 #define BUAA_COMPILER_MIDDLE_H
 
 #include "MiddleCodeItem.h"
-#include "BasicBlock.h"
+//#include "BasicBlock.h"
 #include "Func.h"
 #include "Label.h"
 #include "MiddleBinaryOp.h"

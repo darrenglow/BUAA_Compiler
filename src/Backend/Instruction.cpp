@@ -61,7 +61,11 @@ std::ostream & RR::output(std::ostream &os) const {
 }
 
 std::ostream & RRR::output(std::ostream &os) const {
-    os << type2str[type] << " " << Register::type2str[rd] << " " << Register::type2str[rs] << " " << Register::type2str[rt];
+    if (rt != none)
+        os << type2str[type] << " " << Register::type2str[rd] << " " << Register::type2str[rs] << " " << Register::type2str[rt];
+    else {
+        os << type2str[type] << " " << Register::type2str[rd] << " " << Register::type2str[rs] << " " << x;
+    }
     return os;
 }
 

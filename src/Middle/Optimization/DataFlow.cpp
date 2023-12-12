@@ -120,6 +120,11 @@ void DataFlow::mergeJump(std::vector<BasicBlock *> &basicBlocks) {
             it ++ ;
         }
     }
+
+    // 删除后下标需要重排
+    for (auto bb : basicBlocks) {
+        bb->resetIndex();
+    }
 }
 
 void DataFlow::buildGraph() {
@@ -147,10 +152,12 @@ void DataFlow::buildGraph() {
                 q.pop();
                 continue;
             }
+            std::cout << t->basicBlockID << ": #########" << std::endl;
             auto it = t->middleCodeItems.rbegin();
             auto target1 = getTargetFromCode(*it);
             if (target1 != nullptr) {
                 t->setNext(target1);
+                std::cout << target1->basicBlockID << std::endl;
                 if (!hasVisited[target1]) {
                     q.push(target1);
                     hasVisited[target1] = true;
@@ -162,6 +169,7 @@ void DataFlow::buildGraph() {
                 auto target2 = getTargetFromCode(*it2);
 //                auto target2 = getTargetFromCode(t->middleCodeItems[t->middleCodeItems.size() - 2]);
                 if (target2 != nullptr) {
+                    std::cout << target2->basicBlockID << std::endl;
                     t->setNext(target2);
                     if (!hasVisited[target2]){
                         q.push(target2);
@@ -486,6 +494,7 @@ void DataFlow::deleteDeadCode() {
         bool change = _deleteDeadCode(func);
         while (change) {
             mergeJump(func->basicBlocks);
+            func->resetCode();
             buildGraph();
             _activeAnalysis(func);
             change = _deleteDeadCode(func);
@@ -509,7 +518,7 @@ bool DataFlow::_deleteDeadCode(Func *func) {
         }
     }
 
-    // 如果不等说明发生了删除
+    // 如果不等,说明发生了删除
     return *codeSet != *nowCodeSet;
 }
 

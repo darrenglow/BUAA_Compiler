@@ -19,6 +19,7 @@ static const std::string prePath = "./";
 std::ifstream input(prePath + "testfile.txt");
 std::ofstream output(prePath + "output.txt");
 std::ofstream middleCodeOutput(prePath + "middleCode.txt");
+std::ofstream premipsOutput(prePath + "premips.txt");
 std::ofstream mipsOutput(prePath + "mips.txt");
 std::ofstream errorOutput(prePath + "error.txt");
 int main()

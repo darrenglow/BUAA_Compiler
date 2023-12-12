@@ -22,15 +22,17 @@ public:
         MiddleJump, MiddleMemoryOp, MiddleOffset, MiddleReturn, MiddleUnaryOp, PushParam
     };
     Type codeType {};
-
     MiddleCodeItem()=default;
     explicit MiddleCodeItem(Type codeType_) : codeType(codeType_) {}
 
     std::vector<int> killSetIndex;
     int index{};
+    int inFuncIndex{};
+    std::set<ValueSymbol*> *activeSymbols{};
+
 
     void setIndex(int x);
-
+    void setInFuncIndex(int x);
     virtual Intermediate* _getSrc1();
     virtual Intermediate* _getSrc2();
     virtual Intermediate* _getRet();
@@ -58,6 +60,12 @@ public:
 struct CompareMiddleCodeItem {
     bool operator()(const MiddleCodeItem* a, const MiddleCodeItem* b) const {
         return a->index < b->index;
+    }
+};
+
+struct InFuncCompareMiddleCodeItem {
+    bool operator()(const MiddleCodeItem* a, const MiddleCodeItem* b) const {
+        return a->inFuncIndex < b->inFuncIndex;
     }
 };
 #endif //BUAA_COMPILER_MIDDLECODEITEM_H

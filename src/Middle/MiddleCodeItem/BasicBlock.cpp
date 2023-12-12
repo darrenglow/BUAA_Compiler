@@ -23,6 +23,7 @@ std::ostream & BasicBlock::output(std::ostream &os) const {
 Label * BasicBlock::getLabel() {
     return label;
 }
+
 void BasicBlock::setNext(BasicBlock *next) {
     follows.push_back(next);
     next->prevs.push_back(this);
@@ -32,36 +33,25 @@ void BasicBlock::calcDefAndUse() {
     this->defSet->clear();
     this->useSet->clear();
     for (auto code : this->middleCodeItems) {
-        ValueSymbol* toInsertDef = nullptr;
-        auto toInsertUses = new std::vector<ValueSymbol*>();
         auto uses = code->getUse();
         if (uses != nullptr) {
             for (auto use : *uses) {
                 if (use != nullptr) {
-                    if (!this->defSet->count(use)) {
-//                        toInsertUses->push_back(use);
-                        useSet->insert(use);
-                    }
+//                    if (!this->defSet->count(use)) {
+//                        useSet->insert(use);
+//                    }
+                    useSet->insert(use);
                 }
             }
         }
         auto def = code->getDef();
         if (def != nullptr) {
             auto name = def->name;
-            if (!this->useSet->count(def)) {
-//                toInsertDef = def;
-                defSet->insert(def);
-            }
-        }
-
-//        if (toInsertDef != nullptr) {
-//            defSet->insert(toInsertDef);
-//        }
-//        if (!toInsertUses->empty()) {
-//            for (auto use : *toInsertUses) {
-//                useSet->insert(use);
+//            if (!this->useSet->count(def)) {
+//                defSet->insert(def);
 //            }
-//        }
+            defSet->insert(def);
+        }
     }
 }
 
@@ -75,6 +65,7 @@ void BasicBlock::deleteDeadCode() {
     auto s = new std::set<ValueSymbol*>(outPosFlow->begin(), outPosFlow->end());
     for (auto it = middleCodeItems.rbegin(); it != middleCodeItems.rend();) {
         auto code = *it;
+
 #ifdef DEBUG_DEADCODE
         std::cout << "Now code is : " << *(*it) << std::endl;
             std::cout << "{ ";
@@ -109,10 +100,25 @@ void BasicBlock::deleteDeadCode() {
                 // 如果不在set中，删除这个code
             else {
                 if (dynamic_cast<class MiddleIO*>(code) != nullptr && dynamic_cast<class MiddleIO*>(code)->type == MiddleIO::GETINT) {
+                    auto target = dynamic_cast<class MiddleIO*>(code)->target;
+                    if (dynamic_cast<ValueSymbol*>(target) != nullptr && dynamic_cast<ValueSymbol*>(target)->name.rfind("ArraY_*$+|!123___", 0) == 0) {
+                        it ++ ;
+                        continue;
+                    }
                     dynamic_cast<class MiddleIO*>(code)->target = nullptr;
                     it ++ ;
                     continue;
                 }
+                // 如果碰到OFFSET, STORE的组合，不能删，且田家庵OFFSET的use
+                if (code->codeType == MiddleOffset) {
+                    auto uses = code->getUse();
+                    for (auto use : *uses) {
+                        s->insert(use);
+                    }
+                    it ++ ;
+                    continue;
+                }
+
                 middleCodeItems.erase(code);
                 // !!! 草，这个erase我以为会增加it的位置，调试才发现，他甚至还往回跑了！！！气死我了。。。这块的代码有点屎。
                 continue;
@@ -128,8 +134,8 @@ void BasicBlock::deleteDeadCode() {
             continue;
         }
     }
+    resetIndex();
 }
-
 
 void BasicBlock::inBroadcast() {
     bool change = true;
@@ -282,6 +288,7 @@ void BasicBlock::inBroadcast() {
             // 如果是pushparam的话，函数调用实际的值并没有发生替换
             if (dynamic_cast<class PushParam*>(code) != nullptr) {
                 auto it = middleCodeItems.find(code);
+                // 找到funcCall
                 while (dynamic_cast<class MiddleFuncCall*>(*it) == nullptr) {
                     it ++ ;
                 }
@@ -294,14 +301,17 @@ void BasicBlock::inBroadcast() {
                         break;
                     }
                 }
-                it2 = rParams.erase(it2);
-                rParams.insert(it2, new Immediate(pair.second));
+                if (insertFlag) {
+                    it2 = rParams.erase(it2);
+                    rParams.insert(it2, new Immediate(pair.second));
+                }
             }
         }
     }
 }
 
 
+// 为了建立冲突图
 std::vector<std::set<ValueSymbol*>> *BasicBlock::calcCodeActive() {
     auto groups = new std::vector<std::set<ValueSymbol*>>();
 
@@ -314,29 +324,75 @@ std::vector<std::set<ValueSymbol*>> *BasicBlock::calcCodeActive() {
         auto code = *it;
         // 最后一个代码，和该block的out是一样的
         if (it == middleCodeItems.rbegin()) {
-            for (auto symbol : *this->inPosFlow) {
-                out.insert(symbol);
+            for (auto symbol : *this->outPosFlow) {
+                if (symbol->isLocal) {
+                    out.insert(symbol);
+                }
             }
         }
         // 如果不是最后一行代码，那就是其下一行代码的in
         else {
             for (auto symbol : in) {
-                out.insert(symbol);
+                // 建立冲突图时只考虑局部变量
+                if (symbol->isLocal) {
+                    out.insert(symbol);
+                }
             }
         }
         // 计算该行代码的in
         for (auto symbol : out) {
-            in.insert(symbol);
+            if (symbol->isLocal) {
+                in.insert(symbol);
+            }
         }
         in.erase(code->getDef());
         for (auto use : *code->getUse()) {
-            in.insert(use);
+            if (use->isLocal) {
+                in.insert(use);
+            }
         }
         // 将out填入conflictGroup中
         for (auto symbol : out) {
             codeConflictGroup->insert(symbol);
         }
+        // !!!建立冲突图时还应该包括该行代码的def和use
+        // 如果是funcCall的话，还有其参数
+        if (code->getDef() != nullptr) {
+            codeConflictGroup->insert(code->getDef());
+        }
+        for (auto symbol : *code->getUse()) {
+            codeConflictGroup->insert(symbol);
+        }
+        if (dynamic_cast<class MiddleFuncCall*>(code) != nullptr) {
+            auto params = dynamic_cast<class MiddleFuncCall*>(code)->funcRParams;
+            for (auto symbol : params) {
+                if (dynamic_cast<ValueSymbol*>(symbol) != nullptr) {
+                    codeConflictGroup->insert(dynamic_cast<ValueSymbol*>(symbol));
+                }
+            }
+        }
+
+
+        // code的activeSymbols设置为在函数中，该行代码之后的所有use
+        // !!! 还要加上活跃变量分析的结果，因为如果是for(a)的话，代码后并不会出现a
+        code->activeSymbols = codeConflictGroup;
         groups->push_back(*codeConflictGroup);
+
+#ifdef DEBUG
+        std::cout << "#######[calcCodeActive] " << std::endl;
+        std::cout << *(*it) << std::endl;
+        for (auto symbol : *codeConflictGroup) {
+            std::cout << symbol->name << " " << symbol << "\n";
+        }
+#endif
     }
     return groups;
+}
+
+void BasicBlock::resetIndex() {
+    int i = 0;
+    for (auto code : middleCodeItems) {
+        code->setIndex(i);
+        i ++ ;
+    }
 }

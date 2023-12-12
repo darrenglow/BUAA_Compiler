@@ -87,8 +87,9 @@ public:
     enum Type {
         move,
         div,    // mflo: 商， mfhi: 余数
+        neg
     };
-    std::string type2str[2] = {"move", "div"};
+    std::string type2str[3] = {"move", "div", "neg"};
     Type type;
     RegType rs;
     RegType rt;
@@ -125,8 +126,11 @@ public:
             "slt", "sltu", "seq", "sgt", "sne", "sge", "sle"
     };
     Type type;
-    RegType rd, rs, rt;
+    RegType rd, rs, rt=none;
+    int x;
     RRR(Type type_, RegType rd_, RegType rs_, RegType rt_) : type(type_), rs(rs_), rd(rd_), rt(rt_) {}
+    RRR(Type type_, RegType rd_, RegType rs_, int x_) : type(type_), rs(rs_), rd(rd_), x(x_) {}
+
     OVERRIDE_OUTPUT;
 };
 

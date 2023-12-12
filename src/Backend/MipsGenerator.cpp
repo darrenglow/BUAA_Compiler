@@ -12,16 +12,43 @@
 #include "../Middle/MiddleCode.h"
 #include "../Middle/MiddleCodeItem/MiddleCodeItem.h"
 #include "./Optimization/ColorAllocator.h"
+#include "../Optimization/Config.h"
+#include "./Optimization/MulAndDiv.h"
+#include "./Optimization/DeleteUseless.h"
 
 void MipsGenerator::add(Instruction* mipsCode) {
     mips.push_back(mipsCode);
 }
 
 extern std::ofstream mipsOutput;
+extern std::ofstream premipsOutput;
 void MipsGenerator::doMipsGeneration() {
-    // 生成mips代码
+    // 生成premips代码
     translate();
-    // 输出mips
+    // 输出premips
+    for (const auto& code : mips) {
+        premipsOutput << *code << std::endl;
+    }
+
+    // 消除所有的注释
+    std::set<Instruction*> s;
+    for (const auto& code : mips) {
+        if (dynamic_cast<Notation*>(code) != nullptr) {
+            auto content = dynamic_cast<Notation*>(code)->notation;
+            if (content[0] == '#' || content[0] == '\n') {
+                s.insert(code);
+            }
+        }
+    }
+    for (auto x : s) {
+        auto it = std::find(mips.begin(), mips.end(), x);
+        mips.erase(it);
+    }
+
+#ifdef USELESS_JUMP
+    auto deleteUseless = DeleteUseless(&mips);
+    deleteUseless.deleteUselessJump();
+#endif
     for (const auto& code : mips) {
         mipsOutput << *code << std::endl;
     }
@@ -67,6 +94,13 @@ void MipsGenerator::translateGlobalValues(const std::vector<ValueSymbol *>& valu
 }
 
 void MipsGenerator::translateFuncs(const std::vector<Func *>& funcs) {
+    // 对每个函数跑一个图着色寄存器分配，并存到函数中去
+    for (auto func : funcs) {
+        auto colorAllocator = new ColorAllocator(func);
+        colorAllocator->run();
+        auto funcAllocator = new RegisterAlloc(colorAllocator);
+        func->registerAlloc = funcAllocator;
+    }
     for (auto func : funcs) {
         if (func->funcName == "main") {
             translateFunc(func);
@@ -82,26 +116,38 @@ void MipsGenerator::translateFuncs(const std::vector<Func *>& funcs) {
 void MipsGenerator::translateFunc(Func *func) {
     currentFunc = func;
 
-//    auto allocator = new ColorAllocator(func);
-//    allocator->allocate();
+    allocator = func->registerAlloc;
 
     auto code = new Notation("\n# ===============" +func->funcName + "=================");
     this->add(code);
     this->add(new MipsLabel(func->label));
     curStackSize = func->getSize();
     processTempSymbols(func->tempSymbols);
+    // 计算变量的使用次数
+    func->calculateSymbolUse();
+    this->symbolUse = func->symbolUse;
+
+    int i = 0;
     for (auto basicBlock : func->basicBlocks) {
+        if (i == 0) {
+            curBlock = basicBlock;
+            for (auto symbol : func->funcSymbol->funcFParamSymbols) {
+                allocator->allocRegister(symbol, curBlock, 0, true);
+            }
+        }
         translateBlock(basicBlock);
+        i ++ ;
     }
 }
 
 void MipsGenerator::translateBlock(BasicBlock *block) {
     // 每个block开始的时候就清空所有的寄存器
     this->add(new Notation("### BLOCK [" + std::to_string(block->basicBlockID) + "] BEGIN"));
-    RegisterAlloc::getInstance().clearAllRegister();
-
+//    allocator->clearAllRegister();
+    curBlock = block;
     auto code = new MipsLabel(block->label);
     this->add(code);
+
     for (auto x : block->middleCodeItems) {
         // 如果不是block块才输出注释
         if (dynamic_cast<BasicBlock*>(x) == nullptr) {
@@ -109,7 +155,6 @@ void MipsGenerator::translateBlock(BasicBlock *block) {
             ss << *x;
             this->add(new Notation("\n# " + ss.str()));
         }
-
 
         if (dynamic_cast<MiddleDef*>(x) != nullptr) {
             translateMiddleDef(dynamic_cast<MiddleDef*>(x));
@@ -156,22 +201,34 @@ void MipsGenerator::translateMiddleDef(MiddleDef *middleDef) {
     auto src = middleDef->srcValueSymbol;
     auto target = middleDef->valueSymbol;
 
+    // !!!特判POINTER的情况。
+    if (dynamic_cast<ValueSymbol*>(target) != nullptr && dynamic_cast<ValueSymbol*>(target)->valueType == POINTER) {
+        auto rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src), curBlock, middleDef->index);
+        allocator->forceAllocRegister(dynamic_cast<Symbol*>(target), rs);
+        return;
+    }
+
+
     if (src != nullptr) {
         if (dynamic_cast<Immediate*>(src) != nullptr) {
             auto rs = dynamic_cast<Immediate*>(src)->value;
-            auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            auto rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleDef->index, false);
             this->add(new RI(RI::li, rt, rs));
         }
         else if (dynamic_cast<ValueSymbol*>(src)) {
-            auto rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src));
-            auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            auto rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src), curBlock, middleDef->index);
+            auto rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleDef->index, false);
             this->add(new RR(RR::move, rt, rs));
+
         }
     }
 
     else if (src == nullptr) {
-        RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol *>(target), false);
+        allocator->allocRegister(dynamic_cast<ValueSymbol *>(target), curBlock, middleDef->index, false);
     }
+
+    consumeUse(dynamic_cast<Symbol*>(src));
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
 void MipsGenerator::translateMiddleUnaryOp(MiddleUnaryOp *middleUnaryOp) {
@@ -179,9 +236,11 @@ void MipsGenerator::translateMiddleUnaryOp(MiddleUnaryOp *middleUnaryOp) {
     auto src = middleUnaryOp->srcValueSymbol;
     auto target = middleUnaryOp->valueSymbol;
 
+
+
     if (dynamic_cast<Immediate*>(src)) {
         auto rs = dynamic_cast<Immediate*>(src)->value;
-        auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+        auto rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleUnaryOp->index, false);
         switch(type) {
             case MiddleUnaryOp::ASSIGN: this->add(new RI(RI::li, rt, rs)); break;
             case MiddleUnaryOp::POSITIVE: this->add(new RI(RI::li, rt, rs)); break;
@@ -191,8 +250,8 @@ void MipsGenerator::translateMiddleUnaryOp(MiddleUnaryOp *middleUnaryOp) {
         }
     }
     else if (dynamic_cast<ValueSymbol*>(src)) {
-        auto rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src));
-        auto rd = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+        auto rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src), curBlock, middleUnaryOp->index);
+        auto rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleUnaryOp->index, false);
         switch(type) {
             case MiddleUnaryOp::ASSIGN:
             case MiddleUnaryOp::POSITIVE: this->add(new RR(RR::move, rd, rs)); break;
@@ -201,6 +260,8 @@ void MipsGenerator::translateMiddleUnaryOp(MiddleUnaryOp *middleUnaryOp) {
             default: break;
         }
     }
+    consumeUse(dynamic_cast<Symbol*>(src));
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
 void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
@@ -208,6 +269,9 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
     auto src1 = middleBinaryOp->src1;
     auto src2 = middleBinaryOp->src2;
     auto target = middleBinaryOp->target;
+
+
+
 
     auto t1 = dynamic_cast<Immediate*>(src1);
     auto t2 = dynamic_cast<Immediate*>(src2);
@@ -228,28 +292,67 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
             case MiddleBinaryOp::LE: ans = (t1->value <= t2->value) ? 1 : 0; break;
             default: break;
         }
-        auto rt = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+        auto rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
         this->add(new RI(RI::li, rt, ans));
     }
     else {
         RegType rd, rs, rt;
+#ifdef MULT_OPTIM
+        rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
+        if (type == MiddleBinaryOp::MUL) {
+            bool flag = false;
+            int num = -1;
+            ValueSymbol *symbol = nullptr;
+            if (t1 != nullptr) {
+                num = t1->value;
+                symbol = dynamic_cast<ValueSymbol*>(src2);
+                flag = true;
+            }
+            else if (t2 != nullptr) {
+                num = t2->value;
+                symbol = dynamic_cast<ValueSymbol*>(src1);
+                flag = true;
+            }
+            if (flag) {
+                if (num == 0) {
+                    this->add(new RI(RI::li, rd, 0));
+                }
+                else {
+                    rt = allocator->allocRegister(symbol, curBlock, middleBinaryOp->index);
+                    if (num == -1) {
+                        this->add(new RR(RR::neg, rd, rt));
+                        return;
+                    }
+                    auto v = MulAndDiv::mul(rd, rt, num);
+                    for (auto x : *v) {
+                        this->add(x);
+                    }
+                }
+                return;
+            }
+        }
+#endif
+
+
+
+
         // t1是立即数，t2不是立即数
         if (t1 != nullptr) {
-            rs = RegisterAlloc::getInstance().allocRegister(new NumSymbol(t1->value));
-            rt = RegisterAlloc::getInstance().allocRegisterAvoid(rs, dynamic_cast<ValueSymbol*>(src2));
-            rd = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            rs = allocator->allocRegister(new NumSymbol(t1->value), curBlock, middleBinaryOp->index);
+            rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src2), curBlock, middleBinaryOp->index);
+            rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
         }
         // t1不是立即数，t2是立即数
         else if (t2 != nullptr) {
-            rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src1));
-            rt = RegisterAlloc::getInstance().allocRegisterAvoid(rs, new NumSymbol(t2->value));
-            rd = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src1), curBlock, middleBinaryOp->index);
+            rt = allocator->allocRegister(new NumSymbol(t2->value), curBlock, middleBinaryOp->index);
+            rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
         }
         // t1, t2都不是立即数
         else {
-            rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src1));
-            rt = RegisterAlloc::getInstance().allocRegisterAvoid(rs, dynamic_cast<ValueSymbol*>(src2));
-            rd = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src1), curBlock, middleBinaryOp->index);
+            rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src2), curBlock, middleBinaryOp->index);
+            rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
         }
         switch (type) {
             case MiddleBinaryOp::ADD: this->add(new RRR(RRR::addu, rd, rs, rt)); break;
@@ -268,6 +371,10 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
             default: break;
         }
     }
+
+    consumeUse(dynamic_cast<Symbol*>(src1));
+    consumeUse(dynamic_cast<Symbol*>(src2));
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
 // 如果是在函数中是a[1]=10;
@@ -276,13 +383,13 @@ void MipsGenerator::translateMiddleOffset(MiddleOffset *middleOffset) {
     auto offset = middleOffset->offset;
     auto base = dynamic_cast<ValueSymbol*>(middleOffset->src);
     auto target = dynamic_cast<ValueSymbol*>(middleOffset->ret);
-    auto reg = RegisterAlloc::getInstance().allocRegister(target, false);
+    auto reg = allocator->allocRegister(target, curBlock, middleOffset->index, false);
 
     // 如果offset是立即数
     if (dynamic_cast<Immediate*>(offset)) {
         // 如果数组是函数的形参
-        if (base->valueType == FUNCFPARAM) {
-            auto baseReg = RegisterAlloc::getInstance().allocRegister(base);    // 如果是参数数组的话，此时会将数组的绝对地址放入寄存器baseReg中, base对应的symbol是参数数组
+        if (base->valueType == FUNCFPARAM && base->getDim() > 0) {
+            auto baseReg = allocator->allocRegister(base, curBlock, middleOffset->index);    // 如果是参数数组的话，此时会将数组的绝对地址放入寄存器baseReg中, base对应的symbol是参数数组
             this->add(new RRI(RRI::addiu, reg, baseReg, dynamic_cast<Immediate*>(offset)->value));
         }
         else {
@@ -297,15 +404,15 @@ void MipsGenerator::translateMiddleOffset(MiddleOffset *middleOffset) {
     }
     // 如果offset是变量
     else {
-        auto offReg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(offset));
+        auto offReg = allocator->allocRegister(dynamic_cast<ValueSymbol*>(offset), curBlock, middleOffset->index);
         // 如果数组是函数的形参
-        if (base->valueType == FUNCFPARAM) {
-            auto baseReg = RegisterAlloc::getInstance().allocRegister(base);    // 此时会将数组的绝对地址放入寄存器baseReg中
+        if (base->valueType == FUNCFPARAM && base->getDim() > 0) {
+            auto baseReg = allocator->allocRegister(base, curBlock, middleOffset->index);    // 此时会将数组的绝对地址放入寄存器baseReg中
             this->add(new Notation("# !!!!" + base->name + " -> " + Register::type2str[baseReg]));
             this->add(new RRR(RRR::addu, reg, baseReg, offReg));
         }
         else {
-            auto baseReg = RegisterAlloc::getInstance().allocRegister(base, false);
+            auto baseReg = allocator->allocRegister(base, curBlock, middleOffset->index, false);
             if (base->isLocal) {
                 this->add(new RRI(RRI::addi, baseReg, RegType::$sp, -base->getAddress()));
             }
@@ -315,6 +422,9 @@ void MipsGenerator::translateMiddleOffset(MiddleOffset *middleOffset) {
             this->add(new RRR(RRR::addu, reg, baseReg, offReg));
         }
     }
+    consumeUse(dynamic_cast<Symbol*>(offset));
+    consumeUse(dynamic_cast<Symbol*>(base));
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
 // STORE 1 T0   sw 1 0(T0)
@@ -323,25 +433,28 @@ void MipsGenerator::translateMiddleMemoryOp(MiddleMemoryOp *middleMemoryOp) {
     auto type = middleMemoryOp->type;
     auto sym1 = middleMemoryOp->sym1;
     auto sym2 = middleMemoryOp->sym2;
+
     RegType reg1, reg2;
     switch (type) {
         case MiddleMemoryOp::LOAD:
             // load的话，第一个变量不需要从内存中取值
-            reg1 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(sym1), false);
-            reg2 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(sym2));
+            reg1 = allocator->allocRegister(dynamic_cast<ValueSymbol*>(sym1), curBlock, middleMemoryOp->index, false);
+            reg2 = allocator->allocRegister(dynamic_cast<ValueSymbol*>(sym2), curBlock, middleMemoryOp->index);
             this->add(new M(M::lw, reg1, 0, reg2));
             break;
         case MiddleMemoryOp::STORE:
             if (dynamic_cast<Immediate*>(sym1) != nullptr) {
-                reg1 = RegisterAlloc::getInstance().allocRegister(new NumSymbol(dynamic_cast<Immediate*>(sym1)->value));
+                reg1 = allocator->allocRegister(new NumSymbol(dynamic_cast<Immediate*>(sym1)->value), curBlock, middleMemoryOp->index);
             }
             else {
-                reg1 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol *>(sym1));
+                reg1 = allocator->allocRegister(dynamic_cast<ValueSymbol *>(sym1), curBlock, middleMemoryOp->index);
             }
-            reg2 = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(sym2), true);
+            reg2 = allocator->allocRegister(dynamic_cast<ValueSymbol*>(sym2), curBlock, middleMemoryOp->index, true);
             this->add(new M(M::sw, reg1, 0, reg2));
             break;
     }
+    consumeUse(dynamic_cast<Symbol*>(sym1));
+    consumeUse(dynamic_cast<Symbol*>(sym2));
 }
 
 void MipsGenerator::translateMiddleJump(MiddleJump *middleJump) {
@@ -350,20 +463,25 @@ void MipsGenerator::translateMiddleJump(MiddleJump *middleJump) {
     auto src = middleJump->src;
     RegType rd = RegType::none;
 
-    RegisterAlloc::getInstance().saveRegisters();
+    if (label->label->label == "LABEL_47") {
+        int a = 1;
+    }
+//    allocator->saveRegisters();
+    allocator->freeRegisters(TYPE_TEMP |TYPE_GLOBAL | TYPE_SPILL, true);
 
     if (dynamic_cast<Immediate*>(src)) {
-        rd = RegisterAlloc::getInstance().allocRegister(new NumSymbol(dynamic_cast<Immediate*>(src)->value));
+        rd = allocator->allocRegister(new NumSymbol(dynamic_cast<Immediate*>(src)->value), curBlock, middleJump->index);
         this->add(new RI(RI::li, rd, dynamic_cast<Immediate*>(src)->value));
     }
     else if (dynamic_cast<ValueSymbol*>(src)){
-        rd = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(src));
+        rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src), curBlock, middleJump->index);
     }
     switch(type) {
         case MiddleJump::JUMP: this->add(new L(L::j, label)); break;
         case MiddleJump::JUMP_EQZ: this->add(new RL(RL::beqz, rd, label)); break;
         case MiddleJump::JUMP_NEZ: this->add(new RL(RL::bnez, rd, label)); break;
     }
+    consumeUse(dynamic_cast<Symbol*>(src));
 }
 
 void MipsGenerator::translateLabel(Label *label) {
@@ -374,6 +492,8 @@ void MipsGenerator::translateMiddleIO(MiddleIO *middleIO) {
     auto type = middleIO->type;
     auto target = middleIO->target;
     RegType reg = RegType::none;
+
+
     switch (type) {
         case MiddleIO::GETINT:
             this->add(new RI(RI::li, $v0, 5));
@@ -381,7 +501,7 @@ void MipsGenerator::translateMiddleIO(MiddleIO *middleIO) {
             if (target == nullptr) {
                 return;
             }
-            reg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target), false);
+            reg = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleIO->index, false);
             if (dynamic_cast<ValueSymbol*>(target)->isArrayElement) {
                 this->add(new M(M::sw, $v0, 0, reg));
             }
@@ -396,7 +516,7 @@ void MipsGenerator::translateMiddleIO(MiddleIO *middleIO) {
             }
             // 如果是变量
             else if (dynamic_cast<ValueSymbol*>(target)){
-                auto rs = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target));
+                auto rs = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleIO->index);
                 this->add(new RR(RR::move, $a0, rs));
             }
             this->add(new RI(RI::li, $v0, 1));
@@ -413,6 +533,7 @@ void MipsGenerator::translateMiddleIO(MiddleIO *middleIO) {
             this->add(new Syscall());
             break;
     }
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
 void MipsGenerator::processTempSymbols(std::vector<ValueSymbol *> &tempSymbols) {
@@ -445,10 +566,6 @@ int MipsGenerator::calculateStringMemorySize(const std::basic_string<char> &basi
 
 void MipsGenerator::translateMiddleFuncCall(MiddleFuncCall *middleFuncCall) {
     auto funcName = middleFuncCall->funcName;
-    // 先将寄存器的值写回内存中
-    this->add(new Notation("# clear Register"));
-    RegisterAlloc::getInstance().saveRegisters();
-    this->add(new Notation("# end clear Register"));
     // 保存$ra到0($sp)处
     this->add(new M(M::sw, $ra, 0, $sp));
     // 先暂时计算被调用函数栈底地址$a0，因为sp可能会在算地址时还会用到，不能直接移动。
@@ -463,33 +580,47 @@ void MipsGenerator::translateMiddleFuncCall(MiddleFuncCall *middleFuncCall) {
         // 如果valuesymbol是POINTER类型的话，reg中存的就是POINTER指向的在内存中的地址
         // 如果valueSymbol是FUNCFPAMRA类型的话，他在栈上存储的是数组的起始地址，将这个值load到reg寄存器中。
         else if (dynamic_cast<ValueSymbol*>(param)) {
-            auto reg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(param));
+            auto reg = allocator->allocRegister(dynamic_cast<ValueSymbol*>(param), curBlock, middleFuncCall->index);
             this->add(new M(M::sw, reg, -offset, $a0));
         }
         offset += 4;
+        consumeUse(dynamic_cast<Symbol*>(param));
     }
+
+    // 得到跳转前占用全局寄存器的活跃变量
+    auto activeGlobalSymbols = allocator->colorAllocator->getActiveGlobalSymbols(middleFuncCall);
+
+    allocator->freeRegisters(TYPE_GLOBAL | TYPE_TEMP | TYPE_PARAM | TYPE_SPILL, true);
+    allocator->saveAllGlobalRegisters(middleFuncCall);
 
     // 移动$sp
     this->add(new RR(RR::move, $sp, $a0));
     // 调用函数
     auto labelStr = "Func_" + middleFuncCall->funcName;
     auto label = new Label(labelStr);
+
     this->add(new JAL(label));
     // 清空所有寄存器
-    RegisterAlloc::getInstance().clearAllRegister();
+//    allocator->clearAllRegister();
     // 回栈
+    int a = 1;
     this->add(new RRI(RRI::addiu, $sp, $sp, curStackSize + 4));
     // 恢复$ra
     this->add(new M(M::lw, $ra, 0, $sp));
     // 获取到返回值，此时$v0中是已经保存了值的
     if (middleFuncCall->ret != nullptr) {
-        auto reg = RegisterAlloc::getInstance().allocRegister(middleFuncCall->ret, false);
+        auto reg = allocator->allocRegister(middleFuncCall->ret, curBlock, middleFuncCall->index, false);
         this->add(new RR(RR::move, reg, $v0));
+    }
+    // 恢复之前的寄存器状态
+    for (auto symbol : *activeGlobalSymbols) {
+        allocator->allocRegister(symbol, curBlock, middleFuncCall->index, true, true);
     }
 }
 
 void MipsGenerator::translateMiddleReturn(MiddleReturn *middleReturn) {
     auto target = middleReturn->target;
+
     if (currentFunc->funcName == "main") {
         this->add(new RI(RI::li, $v0, 10));
         this->add(new Syscall());
@@ -501,11 +632,26 @@ void MipsGenerator::translateMiddleReturn(MiddleReturn *middleReturn) {
             this->add(new RI(RI::li, $v0, dynamic_cast<Immediate*>(target)->value));
         }
         else {
-            auto reg = RegisterAlloc::getInstance().allocRegister(dynamic_cast<ValueSymbol*>(target));
+            auto reg = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleReturn->index);
             this->add(new RR(RR::move, $v0, reg));
         }
     }
-    RegisterAlloc::getInstance().saveRegisters();
+//    allocator->saveRegisters();
+    allocator->freeRegisters(TYPE_GLOBAL, true);
     this->add(new R(R::jr, $ra));
+    consumeUse(dynamic_cast<Symbol*>(target));
 }
 
+void MipsGenerator::consumeUse(Symbol *symbol) {
+    if (symbol == nullptr) {
+        return;
+    }
+    symbolUse[symbol] -- ;
+    // 如果在函数中的使用次数为0了，除了全局变量外，其他的都可以释放寄存器了。
+    if (symbolUse[symbol] == 0 && allocator->tempRegisters.count(symbol) != 0 && dynamic_cast<ValueSymbol*>(symbol)->valueType == TEMP) {
+//        std::cout << symbol->printMiddleCode() << " " << symbolUse[symbol] << std::endl;
+//        std::cout << "Before free a symbol, tempRegisters size is : " << allocator->tempRegisters.size() << std::endl;
+        allocator->freeSymbolInRegs(symbol, false);
+//        std::cout << "After free a symbol, tempRegisters size is : " << allocator->tempRegisters.size() << std::endl;
+    }
+}

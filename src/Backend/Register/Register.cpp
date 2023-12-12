@@ -33,3 +33,8 @@ int Register::registerValues[33] = {
         0,
         0,
 };
+
+std::set<RegType> Register::globalRegisters = {
+        $a1,
+        $a2, $a3, $t0, $t1,$t2, $t3, // 6-7
+};

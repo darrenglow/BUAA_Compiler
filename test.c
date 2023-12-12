@@ -1,32 +1,124 @@
-#include <stdio.h>
-int f1(int a[], int b[][10])
-{
-    return a[0] * b[0][0];
+#include<stdio.h>
+int getint(){
+	int n;
+	scanf("%d",&n);
+	return n;
 }
-int f2(int a[][10], int b, int c[][10])
-{
-    return (a[0][0] + c[1][0]) * b;
+
+const int singleConstDecl = 23;
+const int arrayConstDecl[3] = {1,2,3};
+const int array2ConstDecl[3][3] = {{1,2,3},{1,2,3},{1,2,3}};
+//const int singleConstDecl_0 = singleConstDecl + 123 ,singleConstDecl_1 = singleConstDecl + 3 ;
+const int singleConstDecl_0 = 13 ,singleConstDecl_1 = 3 ;
+
+int singleVarDecl = 3 - 13;
+int singleVarDecl_0 = 23 ,singleVarDecl_1 = +-+(3-13),singleVarDecl_2;
+int arrayVarDecl[3] = {1-2,2+3*4,4};
+int array2VarDecl_0[3][3] = {{1+3,2+1,5},{1,2,3},{5,4,3}};
+int array_1[3];
+int array_2[3][3];
+void funcDef_void(){
+
+}
+
+int funcDef_0(int var){
+    int ans = var * 10;
+    return ans;
+}
+
+int funcDef_1(int var1, int var2){
+    int a = var1 * var2;
+    int b;
+    int c;
+    if (var2 != 0){
+        b = a + var1%var2;
+        c = var1/var2;
+    }
+    else {
+        b = a+var1;
+        c = var1/2;
+    }
+
+    b = b - a;
+    {
+        ;
+        a+b;
+    }
+    if (a < 0) a = -a;
+    return (1+a)*(b+c);
+}
+int sumarray(int rate,int array1[],int array2[][3]){
+    int i = 0;
+    int sum =  0;
+    for(;i<3;){
+        int j=0;
+        for (;j<3;){
+            printf("%d %d\n", array1[i], array2[i][j]);
+            sum = sum + array1[i]+array2[i][j];
+            j = j+1;
+        }
+
+
+        i = i +1;
+    }
+    sum = sum * rate;
+    return sum ;
+}
+void printInt(int var){
+    printf("print int : %d\n",var);
+    return ;
 }
 int main(){
-    printf("20376158\n");
-    //常量定义
-    const int a[10] = {1};
-    const int b[10][10] = {{1}, {2}};
-    const int c[10] = {};
-    int x[10] = {1};
-    int y[10][10] = {{10}, {20}};
-    int z = 100;
-    int m[10] = {};
-    //左值表达式
-    x[1] = 10;
-    printf("%d\n", x[1]);
-    y[0][1] = 10;
-    printf("%d\n", y[0][1]);
-    //函数实参
-    int xx = f1(x, y);
-    int yy = f2(y, z, y);
-    int zz = f1(y[1], y);	//部分数组传参
-    printf("%d %d %d\n", xx, yy, zz);
-    printf("1\n");printf("1\n");printf("1\n");printf("1\n");printf("1\n");printf("1\n");
+    int a = 10,b,c,d,e;
+    b = getint();
+    c = getint();
+    d = getint();
+    e = getint();
+    if(b>5){
+        b = 5;
+
+    }
+    for (;a;) {
+        a = a - 1;
+        if (c>=a){
+            c = c / (a+1) + a;
+        }
+        if (d <= a){
+            d = d*a;
+        }
+        else{
+            d = d % (a+3);
+        }
+        for(;e < d;){
+            e = e + a;
+            if (e == b) break;
+            if (e != c) {
+                e  = c + e;
+                continue;
+            }
+        }
+    }
+
+    if(!a){
+        arrayVarDecl[0] = b;
+        printInt(b);
+        array2VarDecl_0[0][a] = d;
+        printInt(c);
+        array2VarDecl_0[0][2-a] = c;
+        printInt(d);
+        arrayVarDecl[2] = e;
+        printInt(e);
+    }
+    int f = funcDef_1(e,d);
+    int g = funcDef_1(f, funcDef_0(c));
+    funcDef_void();
+    printInt(f);
+    printInt(g);
+    arrayVarDecl[1] = f;
+    array2VarDecl_0[2][2] = g;
+    singleVarDecl_2 = funcDef_1(funcDef_1(singleVarDecl,singleVarDecl_2), funcDef_1(singleConstDecl_0,singleConstDecl_1));
+    printInt(singleVarDecl_2);
+    printInt(sumarray(2,arrayVarDecl,array2VarDecl_0));
+
     return 0;
 }

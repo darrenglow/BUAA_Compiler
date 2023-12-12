@@ -7,7 +7,7 @@
 
 // 定义 DEBUG 宏
 
-#define DEBUG
+//#define DEBUG
 
 #include <stdio.h>
 

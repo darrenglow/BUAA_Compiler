@@ -7,7 +7,10 @@
 
 #include <iostream>
 #include <vector>
-#include "MiddleCodeItem/Middle.h"
+//#include "MiddleCodeItem/Middle.h"
+#include "MiddleCodeItem/Func.h"
+
+class Func;
 class MiddleCode {
 public:
     static MiddleCode& getInstance() {

@@ -15,6 +15,7 @@ RegType GraphNode::getRegister() {
     return reg;
 }
 
+// 得到这个节点相邻的节点所分配到的寄存器
 std::set<RegType> GraphNode::getConflictRegisters() {
     auto set = std::set<RegType>();
     for (auto node : neighborNodes) {

@@ -9,6 +9,7 @@
 #include "../../Fronted/Parser/AST.h"
 #include "../Symbol/SymbolTable.h"
 #include "../MiddleCodeItem/Middle.h"
+#include "../MiddleCodeItem/Func.h"
 
 class Visitor {
 private:

@@ -52,6 +52,8 @@ public:
     void inBroadcast();
 
     std::vector<std::set<ValueSymbol*>> *calcCodeActive();
+
+    void resetIndex();
     OVERRIDE_OUTPUT;
 };
 #endif //BUAA_COMPILER_BASICBLOCK_H

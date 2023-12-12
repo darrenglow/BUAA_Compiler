@@ -22,8 +22,8 @@ public:
     Intermediate *valueSymbol;
     Intermediate *srcValueSymbol{};   // src可能是立即数，可能是变量名
 
-    MiddleDef(Type type_, ValueSymbol *valueSymbol_) : MiddleCodeItem(MiddleCodeItem::MiddleDef), type(type_), valueSymbol(valueSymbol_) {}
-    MiddleDef(Type type_, ValueSymbol *valueSymbol_, Intermediate *srcValueSymbol_) : MiddleCodeItem(MiddleCodeItem::MiddleDef), type(type_), srcValueSymbol(srcValueSymbol_), valueSymbol(valueSymbol_), isInit(true) {}
+    MiddleDef(Type type_, Intermediate *valueSymbol_) : MiddleCodeItem(MiddleCodeItem::MiddleDef), type(type_), valueSymbol(valueSymbol_) {}
+    MiddleDef(Type type_, Intermediate *valueSymbol_, Intermediate *srcValueSymbol_) : MiddleCodeItem(MiddleCodeItem::MiddleDef), type(type_), srcValueSymbol(srcValueSymbol_), valueSymbol(valueSymbol_), isInit(true) {}
 
     Intermediate * _getRet() override;
     Intermediate * _getSrc1() override;

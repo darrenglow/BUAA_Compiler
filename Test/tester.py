@@ -5,7 +5,7 @@ import time
 pwd = os.getcwd()
 
 target_dir = os.path.join(pwd, '.\\cmake-build-debug')
-test_dir = os.path.join(pwd, ".\\Test\\2021")
+test_dir = os.path.join(pwd, ".\\Test\\public")
 
 compile_path = os.path.join(target_dir, 'BUAA_Compiler.exe')
 mips_path    = os.path.join(target_dir, 'mips.txt')

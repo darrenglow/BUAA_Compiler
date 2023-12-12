@@ -74,6 +74,7 @@ public:
     ValueSymbol(std::string name_, ValueType valueType_, int initValue_=0, bool isConst_=false)
         : Symbol(name_), valueType(valueType_), initValue(initValue_), isConstValue(isConst_) {};
     //形如int a; int a=10; const int a = 10;
+    // 形如数组的变量 a[0]也是
     ValueSymbol(std::string name_, int initValue_=0, bool isConst_=false)
     : Symbol(name_), valueType(SINGLE), initValue(initValue_), isConstValue(isConst_) {};
     //形如int a[10];

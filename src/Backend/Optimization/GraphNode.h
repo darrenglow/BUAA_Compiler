@@ -5,13 +5,15 @@
 #ifndef BUAA_COMPILER_GRAPHNODE_H
 #define BUAA_COMPILER_GRAPHNODE_H
 
-#include "../../Middle/MiddleCodeItem/Middle.h"
+//#include "../../Middle/MiddleCodeItem/Middle.h"
+#include "../../Middle/Symbol/Symbol.h"
 #include "../Register/Register.h"
+
 class GraphNode {
 public:
     ValueSymbol *symbol;
     std::set<GraphNode*> neighborNodes;
-    RegType reg;
+    RegType reg{};
 
     explicit GraphNode(ValueSymbol *symbol_) : symbol(symbol_) {}
     void addNeighborNode(GraphNode *node);
