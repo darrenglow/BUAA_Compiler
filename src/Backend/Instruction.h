@@ -87,9 +87,10 @@ public:
     enum Type {
         move,
         div,    // mflo: 商， mfhi: 余数
-        neg
+        neg,
+        mult,
     };
-    std::string type2str[3] = {"move", "div", "neg"};
+    std::string type2str[4] = {"move", "div", "neg", "mult"};
     Type type;
     RegType rs;
     RegType rt;
@@ -101,11 +102,11 @@ class RRI : public Instruction {
 public:
     enum Type {
         addi, addiu, andi, ori, xori, slti, sltiu, subiu,
-        sll, srl,
+        sll, sgt, srl, sra
     };
-    std::string type2str[10] = {
+    std::string type2str[12] = {
             "addi", "addiu", "andi", "ori", "xori", "slti", "sltiu", "subiu",
-            "sll", "srl"
+            "sll", "sgt", "srl", "sra"
     };
     Type type;
     RegType rd, rs;
@@ -183,6 +184,21 @@ public:
     BasicBlock *target;
     RegType rd;
     RL(Type type_, RegType rd_, BasicBlock*target_) : type(type_), rd(rd_), target(target_) {}
+    OVERRIDE_OUTPUT;
+};
+
+class RRL : public Instruction {
+public:
+    enum Type {
+        bne,
+        beq
+    };
+    std::string type2str[2] = {"bne", "beq"};
+    Type type;
+    BasicBlock *target;
+    RegType rs;
+    RegType rt;
+    RRL(Type type_, RegType rs_, RegType rt_, BasicBlock*target_) : type(type_), rs(rs_), rt(rt_), target(target_) {}
     OVERRIDE_OUTPUT;
 };
 

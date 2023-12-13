@@ -8,13 +8,9 @@
 
 void ColorAllocator::run() {
     DataFlow::getInstance()._activeAnalysis(func);
-    std::cout << "0";
     buildGraph();
-    std::cout << "1";
-    printGraph();
-    std::cout << "2";
+//    printGraph();
     doAllocate();
-    std::cout << "3";
 }
 
 // 每条代码都对应着一个冲突集合。
@@ -140,7 +136,7 @@ void ColorAllocator::doAllocate() {
                 break;
             }
         }
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cout << "[ColorAllocator-doAllocate]FUNC: " << func->funcName << ":\n";
         for (auto pair : symbolToRegister) {
             std::cout << pair.first->name << " " << Register::type2str[pair.second] << "\n";
@@ -149,7 +145,7 @@ void ColorAllocator::doAllocate() {
         for (auto symbol : spillSet) {
             std::cout << symbol->name << "\n";
         }
-#endif
+//#endif
     }
 }
 

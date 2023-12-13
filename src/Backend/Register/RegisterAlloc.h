@@ -51,6 +51,7 @@ public:
     };
 
     std::vector<RegType> availableRegs = {
+            $v1,
             $a1,
             $a2, $a3, // 6-7
             $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, // 8-15
@@ -63,10 +64,10 @@ public:
     std::vector<RegType> globalRegs = {
             $a1,
             $a2, $a3, // 6-7
-            $t0, $t1, $t2, $t3, $t4, $t5, $t6, $t7, // 8-15
+            $t0, $t1, // 8-15
     };
     std::vector<RegType> localRegs = {
-            $t4, $t5, $t6, $t7,
+            $t3,$t4, $t5, $t6, $t7,
             $s0, $s1, $s2, $s3, $s4, $s5, $s6, $s7, // 16-23
             $t8, $t9, // 24-25
             $k0, $k1, // 26-27
@@ -74,7 +75,7 @@ public:
     };
     // 使用localRegs
     std::list<RegType> freeRegs = {
-            $t4, $t5, $t6, $t7,
+            $t3,$t4, $t5, $t6, $t7,
             $s0, $s1, $s2, $s3, $s4, $s5, $s6, $s7, // 16-23
             $t8, $t9, // 24-25
             $k0, $k1, // 26-27
@@ -127,7 +128,7 @@ public:
     int TYPE_PARAM = 2;
     int TYPE_TEMP = 4;
     int TYPE_SPILL = 8;
-    void freeRegisters(int type, bool save);
+    void freeRegisters(int type, bool save, Symbol *exceptSymbol = nullptr);
     void saveAllGlobalRegisters(MiddleCodeItem *code);
     void forceAllocRegister(Symbol* symbol, RegType reg);
 };

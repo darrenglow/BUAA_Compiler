@@ -45,6 +45,12 @@ void Visitor::optimizeMiddle() {
 #ifdef IN_BROADCAST
     dataFlow->inBroadcast();
 #endif
+#ifdef PEEP_HOLE
+//    dataFlow->deleteUselessJump();
+#endif
+#ifdef DELETE_USELESSCALL
+    dataFlow->deleteUselessCall();
+#endif
 }
 
 void Visitor::visit() {

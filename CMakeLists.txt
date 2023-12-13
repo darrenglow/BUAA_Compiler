@@ -15,4 +15,4 @@ add_executable(BUAA_Compiler ${DIR_SRC} ${DIR_Lexer} src/Fronted/Parser/Parser.h
         src/Backend/Optimization/GraphNode.cpp
         src/Backend/Register/Registers.h
         src/Backend/Register/Registers.cpp
-        src/Backend/Optimization/MulAndDiv.h src/Backend/Optimization/MulAndDiv.cpp src/Backend/Optimization/DeleteUseless.h src/Backend/Optimization/DeleteUseless.cpp)
+        src/Backend/Optimization/MulAndDiv.h src/Backend/Optimization/MulAndDiv.cpp src/Backend/Optimization/PeepHole.h src/Backend/Optimization/PeepHole.cpp)

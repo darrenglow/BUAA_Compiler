@@ -541,3 +541,77 @@ void DataFlow::_inBroadcast(Func *func) {
     }
 }
 
+void DataFlow::deleteUselessJump() {
+    for (auto func : funcs) {
+        for (int i = 0; i < func->basicBlocks.size(); i ++ ) {
+            auto block = func->basicBlocks[i];
+            auto nextBlock = func->basicBlocks[i + 1];
+
+            auto it = block->middleCodeItems.rbegin();
+            auto code = *it;
+            if (dynamic_cast<MiddleJump*>(code) != nullptr && dynamic_cast<MiddleJump*>(code)->target == nextBlock) {
+                if (nextBlock->prevs.size() == 1) {
+                    block->middleCodeItems.erase(*it);
+                }
+            }
+        }
+    }
+}
+
+void DataFlow::deleteUselessCall() {
+    for (auto func : funcs) {
+        for (auto block : func->basicBlocks) {
+            auto toEraseSet = new std::set<MiddleCodeItem*>();
+            for (auto code : block->middleCodeItems) {
+                if (dynamic_cast<MiddleFuncCall*>(code) != nullptr) {
+                    auto funcName = dynamic_cast<MiddleFuncCall*>(code)->funcName;
+                    // 得到调用的函数
+                    Func *callFunc = nullptr;
+                    for (auto f : funcs) {
+                        if (f->funcName == funcName) {
+                            callFunc = f;
+                        }
+                    }
+                    if (callFunc == nullptr) {
+                        continue;
+                    }
+                    bool notHasReturn = true;
+                    bool notChangeGlobal = true;
+                    bool notIO = true;
+                    bool notCall = true;
+                    bool notAddress = true;
+
+                    if (callFunc->hasReturn) {
+                        notHasReturn = false;
+                    }
+                    for (auto x : callFunc->middleCodeItems) {
+                        auto def = x->getDef();
+                        if (def != nullptr && !def->isLocal) {
+                            notChangeGlobal = false;
+                        }
+                    }
+                    for (auto x : callFunc->middleCodeItems) {
+                        if (dynamic_cast<MiddleIO*>(x) != nullptr) {
+                            notIO = false;
+                        }
+                        if (dynamic_cast<MiddleFuncCall*>(x) != nullptr) {
+                            notCall = false;
+                        }
+                    }
+                    for (auto param : dynamic_cast<MiddleFuncCall*>(code)->funcRParams) {
+                        if (dynamic_cast<ValueSymbol*>(param) && dynamic_cast<ValueSymbol*>(param)->name.rfind("ArraY_*$+|!123___", 0) == 0) {
+                            notAddress = false;
+                        }
+                    }
+                    if (notHasReturn && notChangeGlobal && notIO && notCall && notAddress) {
+                        toEraseSet->insert(code);
+                    }
+                }
+            }
+            for (auto x : *toEraseSet) {
+                block->middleCodeItems.erase(x);
+            }
+        }
+        func->resetCode();
+    }
+}

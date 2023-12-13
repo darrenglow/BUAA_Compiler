@@ -98,3 +98,8 @@ std::ostream & Syscall::output(std::ostream &os) const {
     os << "syscall";
     return os;
 }
+
+std::ostream & RRL::output(std::ostream &os) const {
+    os << type2str[type] << " " << Register::type2str[rs] << " " << Register::type2str[rt] << " " << target->label->label;
+    return os;
+}

@@ -36,5 +36,5 @@ int Register::registerValues[33] = {
 
 std::set<RegType> Register::globalRegisters = {
         $a1,
-        $a2, $a3, $t0, $t1,$t2, $t3, // 6-7
+        $a2, $a3, $t0, $t1, $v1,$t2// 6-7
 };

@@ -12,15 +12,16 @@
 ////#define DEBUG_REACH_DEFINITION
 ////// 活跃变量分析
 #define POSITIVE_ANALYSIS
-#define DEBUG_POSITIVE_ANALYSIS
+//#define DEBUG_POSITIVE_ANALYSIS
 ////死代码删除
 #define DELETE_DEADCODE
 //#define DEBUG_DEADCODE
 // 基本块内传播，还有bug，如[2023-A-12]
 //#define IN_BROADCAST
+//#define DELETE_USELESSCALL
 
 
 // 后端优化
-// 会占用$a1
-//#define MULT_OPTIM
-#define USELESS_JUMP
+#define MULT_OPTIM
+#define DIV_OPTIM
+#define PEEP_HOLE

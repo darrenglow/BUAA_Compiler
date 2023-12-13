@@ -70,6 +70,10 @@ public:
 
     void _inBroadcast(Func *func);
 
+    void deleteUselessJump();
+
+    void deleteUselessCall();
+
 private:
     DataFlow()=default;
     ~DataFlow()=default;

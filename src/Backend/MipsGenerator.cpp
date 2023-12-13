@@ -14,7 +14,7 @@
 #include "./Optimization/ColorAllocator.h"
 #include "../Optimization/Config.h"
 #include "./Optimization/MulAndDiv.h"
-#include "./Optimization/DeleteUseless.h"
+#include "Optimization/PeepHole.h"
 
 void MipsGenerator::add(Instruction* mipsCode) {
     mips.push_back(mipsCode);
@@ -45,9 +45,9 @@ void MipsGenerator::doMipsGeneration() {
         mips.erase(it);
     }
 
-#ifdef USELESS_JUMP
-    auto deleteUseless = DeleteUseless(&mips);
-    deleteUseless.deleteUselessJump();
+#ifdef PEEP_HOLE
+    auto peepHole = new PeepHole(&mips);
+    peepHole->doPeepHole();
 #endif
     for (const auto& code : mips) {
         mipsOutput << *code << std::endl;
@@ -236,8 +236,6 @@ void MipsGenerator::translateMiddleUnaryOp(MiddleUnaryOp *middleUnaryOp) {
     auto src = middleUnaryOp->srcValueSymbol;
     auto target = middleUnaryOp->valueSymbol;
 
-
-
     if (dynamic_cast<Immediate*>(src)) {
         auto rs = dynamic_cast<Immediate*>(src)->value;
         auto rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleUnaryOp->index, false);
@@ -298,7 +296,6 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
     else {
         RegType rd, rs, rt;
 #ifdef MULT_OPTIM
-        rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
         if (type == MiddleBinaryOp::MUL) {
             bool flag = false;
             int num = -1;
@@ -314,6 +311,7 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
                 flag = true;
             }
             if (flag) {
+                rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
                 if (num == 0) {
                     this->add(new RI(RI::li, rd, 0));
                 }
@@ -328,14 +326,28 @@ void MipsGenerator::translateMiddleBinaryOp(MiddleBinaryOp *middleBinaryOp) {
                         this->add(x);
                     }
                 }
+                consumeUse(dynamic_cast<Symbol*>(src1));
+                consumeUse(dynamic_cast<Symbol*>(src2));
+                consumeUse(dynamic_cast<Symbol*>(target));
                 return;
             }
         }
 #endif
-
-
-
-
+#ifdef DIV_OPTIM
+        if ((type == MiddleBinaryOp::DIV || type == MiddleBinaryOp::MOD) && t2 != nullptr) {
+            auto num = t2->value;
+            rd = allocator->allocRegister(dynamic_cast<ValueSymbol*>(target), curBlock, middleBinaryOp->index, false);
+            rt = allocator->allocRegister(dynamic_cast<ValueSymbol*>(src1), curBlock, middleBinaryOp->index);
+            auto v = MulAndDiv::div(rd, rt, num, type == MiddleBinaryOp::DIV);
+            for (auto x : *v) {
+                this->add(x);
+            }
+            consumeUse(dynamic_cast<Symbol*>(src1));
+            consumeUse(dynamic_cast<Symbol*>(src2));
+            consumeUse(dynamic_cast<Symbol*>(target));
+            return;
+        }
+#endif
         // t1是立即数，t2不是立即数
         if (t1 != nullptr) {
             rs = allocator->allocRegister(new NumSymbol(t1->value), curBlock, middleBinaryOp->index);
@@ -463,11 +475,8 @@ void MipsGenerator::translateMiddleJump(MiddleJump *middleJump) {
     auto src = middleJump->src;
     RegType rd = RegType::none;
 
-    if (label->label->label == "LABEL_47") {
-        int a = 1;
-    }
 //    allocator->saveRegisters();
-    allocator->freeRegisters(TYPE_TEMP |TYPE_GLOBAL | TYPE_SPILL, true);
+    allocator->freeRegisters(TYPE_TEMP |TYPE_GLOBAL | TYPE_SPILL, true, dynamic_cast<Symbol*>(src));
 
     if (dynamic_cast<Immediate*>(src)) {
         rd = allocator->allocRegister(new NumSymbol(dynamic_cast<Immediate*>(src)->value), curBlock, middleJump->index);

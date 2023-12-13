@@ -7,7 +7,7 @@
 #include "Register.h"
 #include "../../Util/Debug.h"
 #include "../../Middle/MiddleCodeItem/PushParam.h"
-
+#include "../../Optimization/Config.h"
 // 看Symbol是否在globalRegisters中
 // 如果不在，并且满足globalRegister的条件，那就分配一个globalRegister
 // 看symbol是否在tempRegisters中
@@ -49,11 +49,11 @@ RegType RegisterAlloc::allocRegister(Symbol *symbol, BasicBlock *curBlock, int c
         if (dynamic_cast<NumSymbol*>(symbol)->value == 0) {
             return $zero;
         }
-        for (auto x : tempRegisters) {
-            if (dynamic_cast<NumSymbol*>(x.first) != nullptr && dynamic_cast<NumSymbol*>(symbol)->value == dynamic_cast<NumSymbol*>(x.first)->value) {
-                return x.second;
-            }
-        }
+//        for (auto x : tempRegisters) {
+//            if (dynamic_cast<NumSymbol*>(x.first) != nullptr && dynamic_cast<NumSymbol*>(symbol)->value == dynamic_cast<NumSymbol*>(x.first)->value) {
+//                return x.second;
+//            }
+//        }
     }
     // 如果已经在临时寄存器中
     if (tempRegisters.count(symbol) != 0) {
@@ -434,11 +434,11 @@ void RegisterAlloc::freeRegister(RegType reg) {
     }
 }
 
-// TEMP 表示是临时变量，或者是函数参数。
+// TEMP 表示是临时变量
 // PARAM 表示函数参数。
 // GLOBAL 表示全局变量
 // SPILL 表示溢出变量。
-void RegisterAlloc::freeRegisters(int type, bool save) {
+void RegisterAlloc::freeRegisters(int type, bool save, Symbol *exceptSymbol) {
     auto toErase = new std::set<Symbol*>();
     for (auto pair : tempRegisters) {
         auto symbol = pair.first;
@@ -467,6 +467,16 @@ void RegisterAlloc::freeRegisters(int type, bool save) {
             freeSymbolInRegs(symbol, false);
         }
         else if (dynamic_cast<ValueSymbol*>(symbol) != nullptr) {
+            // 如果是except的变量，就不写回
+#ifdef PEEP_HOLE
+            if (symbol == exceptSymbol) {
+                continue;
+            }
+#endif
+            // 如果是地址变量，不save
+            if (dynamic_cast<ValueSymbol*>(symbol)->name.rfind("ArraY_*$+|!123___", 0) == 0) {
+                freeSymbolInRegs(symbol, false);
+            }
             freeSymbolInRegs(symbol, save);
         }
     }
