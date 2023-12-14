@@ -1,0 +1,127 @@
+Date : 2023-12-14 15:39:45
+Directory : e:\ProgramCode\Project\BUAA_Compiler\src
+Total : 84 files,  7700 codes, 1111 comments, 1161 blanks, all 9972 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C++      |         84 |      7,700 |      1,111 |      1,161 |      9,972 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                              | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                 |         84 |      7,700 |      1,111 |      1,161 |      9,972 |
+| . (Files)                                                                         |          1 |         51 |          6 |          5 |         62 |
+| Backend                                                                           |         18 |      1,931 |        396 |        274 |      2,601 |
+| Backend (Files)                                                                   |          4 |        877 |         73 |        122 |      1,072 |
+| Backend\Optimization                                                              |          8 |        583 |         96 |         71 |        750 |
+| Backend\Register                                                                  |          6 |        471 |        227 |         81 |        779 |
+| Fronted                                                                           |         11 |      1,917 |        103 |        288 |      2,308 |
+| Fronted\Error                                                                     |          3 |         67 |          9 |         21 |         97 |
+| Fronted\Lexer                                                                     |          4 |        415 |         30 |         38 |        483 |
+| Fronted\Parser                                                                    |          4 |      1,435 |         64 |        229 |      1,728 |
+| Middle                                                                            |         51 |      3,767 |        580 |        578 |      4,925 |
+| Middle (Files)                                                                    |          2 |         70 |          7 |         22 |         99 |
+| Middle\Intermediate                                                               |          3 |         33 |          9 |         10 |         52 |
+| Middle\MiddleCodeItem                                                             |         29 |      1,099 |        168 |        170 |      1,437 |
+| Middle\Optimization                                                               |          8 |        834 |         67 |        115 |      1,016 |
+| Middle\Symbol                                                                     |          4 |        250 |         28 |         53 |        331 |
+| Middle\Util                                                                       |          3 |        155 |         12 |         37 |        204 |
+| Middle\Visitor                                                                    |          2 |      1,326 |        289 |        171 |      1,786 |
+| Optimization                                                                      |          1 |          9 |         16 |          3 |         28 |
+| Util                                                                              |          2 |         25 |         10 |         13 |         48 |
++-----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                          | language | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Instruction.cpp                  | C++      |         78 |          8 |         19 |        105 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Instruction.h                    | C++      |        175 |         12 |         24 |        211 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\MipsGenerator.cpp                | C++      |        563 |         48 |         55 |        666 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\MipsGenerator.h                  | C++      |         61 |          5 |         24 |         90 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\ColorAllocator.cpp  | C++      |        188 |         54 |         27 |        269 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\ColorAllocator.h    | C++      |         40 |          7 |          7 |         54 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\GraphNode.cpp       | C++      |         20 |          4 |          5 |         29 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\GraphNode.h         | C++      |         17 |          4 |          6 |         27 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\MulAndDiv.cpp       | C++      |        101 |          3 |          5 |        109 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\MulAndDiv.h         | C++      |         14 |          3 |          4 |         21 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\PeepHole.cpp        | C++      |        185 |         18 |         11 |        214 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Optimization\PeepHole.h          | C++      |         18 |          3 |          6 |         27 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\Register.cpp            | C++      |         33 |          3 |          4 |         40 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\Register.h              | C++      |         26 |          3 |          8 |         37 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\RegisterAlloc.cpp       | C++      |        296 |        196 |         35 |        527 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\RegisterAlloc.h         | C++      |         90 |         19 |         28 |        137 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\Registers.cpp           | C++      |         13 |          3 |          2 |         18 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Backend\Register\Registers.h             | C++      |         13 |          3 |          4 |         20 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Error\Error.h                    | C++      |         29 |          3 |          6 |         38 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Error\ErrorTable.cpp             | C++      |         19 |          3 |          7 |         29 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Error\ErrorTable.h               | C++      |         19 |          3 |          8 |         30 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Lexer\Lexer.cpp                  | C++      |        173 |          3 |         16 |        192 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Lexer\Lexer.h                    | C++      |         24 |          3 |          6 |         33 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Lexer\Token.cpp                  | C++      |        176 |         13 |         10 |        199 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Lexer\Token.h                    | C++      |         42 |         11 |          6 |         59 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Parser\AST.cpp                   | C++      |        522 |          6 |         55 |        583 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Parser\AST.h                     | C++      |        325 |          3 |         49 |        377 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Parser\Parser.cpp                | C++      |        529 |         52 |         73 |        654 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Fronted\Parser\Parser.h                  | C++      |         59 |          3 |         52 |        114 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Intermediate\Immediate.cpp        | C++      |          8 |          3 |          2 |         13 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Intermediate\Immediate.h          | C++      |         17 |          3 |          5 |         25 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Intermediate\Intermediate.h       | C++      |          8 |          3 |          3 |         14 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCode.cpp                    | C++      |         45 |          3 |         12 |         60 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCode.h                      | C++      |         25 |          4 |         10 |         39 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\BasicBlock.cpp     | C++      |        341 |         38 |         19 |        398 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\BasicBlock.h       | C++      |         42 |          5 |         13 |         60 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\Func.cpp           | C++      |         45 |          4 |          2 |         51 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\Func.h             | C++      |         39 |          4 |          8 |         51 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\Label.cpp          | C++      |          6 |          3 |          1 |         10 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\Label.h            | C++      |         14 |          3 |          5 |         22 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\Middle.h           | C++      |         16 |          4 |          3 |         23 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleBinaryOp.cpp | C++      |         26 |          4 |          6 |         36 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleBinaryOp.h   | C++      |         35 |          3 |          5 |         43 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleCodeItem.cpp | C++      |        113 |         16 |         20 |        149 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleCodeItem.h   | C++      |         56 |          3 |         13 |         72 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleDef.cpp      | C++      |         24 |          4 |          5 |         33 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleDef.h        | C++      |         24 |          5 |          6 |         35 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleFuncCall.cpp | C++      |          9 |          4 |          1 |         14 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleFuncCall.h   | C++      |         12 |          3 |          3 |         18 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleIO.cpp       | C++      |         32 |          4 |          6 |         42 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleIO.h         | C++      |         21 |          3 |          5 |         29 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleJump.cpp     | C++      |         21 |          4 |          5 |         30 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleJump.h       | C++      |         27 |          5 |          3 |         35 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleMemoryOp.cpp | C++      |         39 |          4 |          4 |         47 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleMemoryOp.h   | C++      |         21 |          4 |          2 |         27 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleOffset.cpp   | C++      |         23 |          8 |          8 |         39 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleOffset.h     | C++      |         19 |          3 |          3 |         25 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleReturn.cpp   | C++      |         14 |          4 |          4 |         22 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleReturn.h     | C++      |         13 |          3 |          3 |         19 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleUnaryOp.cpp  | C++      |         19 |          4 |          6 |         29 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\MiddleUnaryOp.h    | C++      |         25 |          8 |          4 |         37 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\PushParam.cpp      | C++      |         11 |          8 |          3 |         22 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\MiddleCodeItem\PushParam.h        | C++      |         12 |          3 |          4 |         19 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\DataFlow.cpp         | C++      |        537 |         40 |         40 |        617 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\DataFlow.h           | C++      |         47 |          8 |         27 |         82 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\DefinitionSet.cpp    | C++      |         57 |          3 |          7 |         67 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\DefinitionSet.h      | C++      |         25 |          4 |         10 |         39 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\NoChangeValue.cpp    | C++      |        102 |          3 |          5 |        110 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\NoChangeValue.h      | C++      |         22 |          3 |          6 |         31 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\PositiveSet.cpp      | C++      |         23 |          3 |          7 |         33 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Optimization\PositiveSet.h        | C++      |         21 |          3 |         13 |         37 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Symbol\Symbol.cpp                 | C++      |         65 |          3 |         19 |         87 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Symbol\Symbol.h                   | C++      |         96 |         11 |         11 |        118 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Symbol\SymbolTable.cpp            | C++      |         66 |          9 |         11 |         86 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Symbol\SymbolTable.h              | C++      |         23 |          5 |         12 |         40 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Util\Calculate.cpp                | C++      |        136 |          6 |         22 |        164 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Util\Calculate.h                  | C++      |         13 |          3 |         11 |         27 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Util\Flatten.h                    | C++      |          6 |          3 |          4 |         13 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Visitor\Visitor.cpp               | C++      |      1,252 |        286 |        119 |      1,657 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Middle\Visitor\Visitor.h                 | C++      |         74 |          3 |         52 |        129 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Optimization\Config.h                    | C++      |          9 |         16 |          3 |         28 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Util\Debug.h                             | C++      |         15 |          7 |          8 |         30 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\Util\Exception.h                         | C++      |         10 |          3 |          5 |         18 |
+| e:\ProgramCode\Project\BUAA_Compiler\src\main.cpp                                 | C++      |         51 |          6 |          5 |         62 |
+| Total                                                                             |          |      7,700 |      1,111 |      1,161 |      9,972 |
++-----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
